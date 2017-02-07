@@ -1,16 +1,15 @@
-FROM node:7.3-slim
+FROM node:7.2-slim
 # Create app directory
-RUN mkdir -p /usr/classroom/api
-WORKDIR /usr/classroom/api
+RUN mkdir -p /usr/generaptr
+WORKDIR /usr/generaptr
 
 # Set environment vars
 ENV APP_ENV development
-ENV TZ Europe/Bucharest
 
 ENV PORT 80
 
 # Install app dependencies
-COPY . /usr/classroom/api
+COPY . /usr/generaptr
 
 RUN npm install
 
