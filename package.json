@@ -4,7 +4,7 @@
     "start": "gulp start"
   },
   "version": "1.0.0",
-  "description": "Api for classroom",
+  "description": "Api generator",
   "license": "MIT",
   "repository": "https://bitbucket.com/cupsadarius/generatr",
   "author": "Darius Cupsa <cupsadarius@gmail.com>",
