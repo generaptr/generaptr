@@ -2,6 +2,7 @@ import * as express from 'express';
 import { Request, Response } from 'express';
 import params from './configs/params';
 import loadExpressConfigs from './configs/experss';
+import router from './configs/router';
 
 namespace express_web_api {
 
@@ -10,10 +11,7 @@ namespace express_web_api {
 
     app = loadExpressConfigs(app);
 
-    // Handle GET for the root URL
-    app.get('/', (req: Request, resp: Response) => {
-        resp.send('Hello Express!');
-    });
+    app.use(router);
 
     // Start the web app
     app.listen(params.APP_PORT, () => console.log(`App listening on port ${params.APP_PORT}`));
