@@ -12,5 +12,4 @@ app.use(router);
 // Start the web app
 app.listen(params.APP_PORT, () => console.log(`App listening on port ${params.APP_PORT}`));
 
-
 module.exports = app;
