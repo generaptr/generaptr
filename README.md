@@ -1,5 +1,5 @@
 ![](http://i.imgur.com/yCRAubA.png)
-# generaptr - REST without stress
+# generaptr - REST without stress [![](https://circleci.com/gh/cupsadarius/generaptr.svg?style=svg)](https://circleci.com/gh/cupsadarius/generaptr)
 
 ### Global dependencies
 
