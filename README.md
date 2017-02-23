@@ -1,5 +1,5 @@
 ![](http://i.imgur.com/yCRAubA.png)
-# generaptr - REST without stress
+# generaptr - REST without stress [![](https://circleci.com/gh/cupsadarius/generaptr.svg?style=svg)](https://circleci.com/gh/cupsadarius/generaptr)
 
 ### Generaptr is a node cli package that:
 * for relational databases
@@ -11,12 +11,11 @@
 
 ## Docs
 
-* [RFC: Approach for generating api's from relational databses.](./docs/rfc/ForRelationalDatbases.md)
-* [RFC: Approach for generating api's from non-relational databses.](./docs/rfc/ForNonRelationalDatbases.md)
-
+* [RFC: Approach for generating api's from relational databses.](./docs/rfc/ForRelationalDatabases.md)
+* [RFC: Approach for generating api's from non-relational databses.](./docs/rfc/ForNonRelationalDatabases.md)
 
 
 ## Global dependencies
 
-* node >= v7.2.0
+* node >= v7.5.0
 * npm >= v3.10.10
