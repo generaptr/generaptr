@@ -1,1 +1,1 @@
-# Approach for generating api from a relational database
+# Approach for generating api from a non-relational database
