@@ -19,3 +19,8 @@
 
 * node >= v7.5.0
 * npm >= v3.10.10
+
+## Research
+
+* [RAML](http://raml.org)
+* [Commander.js](https://github.com/tj/commander.js)
