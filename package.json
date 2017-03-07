@@ -1,30 +1,13 @@
 {
   "name": "generaptr",
   "scripts": {
-    "start": "node src/server.js",
-    "start:dev": "./node_modules/.bin/nodemon src/server.js",
-    "test:api": "./node_modules/.bin/mocha tests/api"
   },
   "version": "1.0.0",
   "description": "Api generator",
   "license": "MIT",
-  "repository": "https://bitbucket.com/cupsadarius/generatr",
+  "repository": "https://github.com/cupsadarius/generatr",
   "author": "Darius Cupsa <cupsadarius@gmail.com>",
   "keywords": [
-    "nodejs",
-    "express"
-  ],
-  "devDependencies": {
-    "del": "^2.2.2",
-    "mocha": "^3.2.0",
-    "nodemon": "^1.11.0",
-    "should": "^11.2.0",
-    "supertest": "^3.0.0"
-  },
-  "dependencies": {
-    "body-parser": "^1.15.2",
-    "express": "^4.14.0",
-    "jsonwebtoken": "^7.1.9",
-    "morgan": "~1.6.1"
-  }
+    "nodejs"
+  ]
 }

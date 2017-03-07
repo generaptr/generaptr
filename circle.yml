@@ -6,4 +6,4 @@ dependencies:
     - npm install --dev
 test:
   override:
-    - npm run test:api
+    - "true"
