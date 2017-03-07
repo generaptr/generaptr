@@ -3,11 +3,18 @@
 
 ### Global dependencies
 
-* node >= v7.2.0
+* node >= v7.5.0
 * npm >= v3.10.10
 
 ## Usage
+* npm install -g
 
-* npm run start
-* npm run start:dev
-* npm run test:api
+## Global dependencies
+
+* node >= v7.5.0
+* npm >= v3.10.10
+
+## Research
+
+* [RAML](http://raml.org)
+* [Commander.js](https://github.com/tj/commander.js)

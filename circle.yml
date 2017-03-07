@@ -3,7 +3,7 @@ machine:
     version: 7.5.0
 dependencies:
   override:
-    - npm install --dev
+    - npm install
 test:
   override:
-    - npm run test:api
+    - npm test
