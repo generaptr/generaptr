@@ -7,7 +7,7 @@ class MysqlHandler {
     this.connection = mysql.createConnection({
       host: this.options.host,
       port: this.options.port,
-      user: this.options.username,
+      user: this.options.user,
       password: this.options.password,
       database: 'information_schema',
     });
@@ -17,14 +17,53 @@ class MysqlHandler {
     this.connection.connect();
   }
 
-  readSchema() {
-    console.log(`SELECT TABLE_NAME FROM TABLES WHERE TABLE_SCHEMA = ${this.options.database};`);
-    this.connection.query(`SELECT TABLE_NAME FROM TABLES WHERE TABLE_SCHEMA = ${this.options.database};`, (err, results, fields) => {
-      if (err) {
-        throw new Error(err);
-      }
-      console.log(results, fields);
-    })
+  readTables() {
+    return new Promise((resolve, reject) => {
+      this.connection.query(`SELECT TABLE_NAME FROM TABLES WHERE TABLE_SCHEMA = '${this.options.database}';`, (err, results, fields) => {
+        if (err) {
+          return reject(err);
+        }
+        const tables = results.map((result) => {
+          return result['TABLE_NAME'];
+        });
+
+        resolve(tables);
+      });
+    });
+  }
+
+  readSchema(tables) {
+    const promises = [];
+    for (const key in tables) {
+      promises.push(
+        new Promise((resolve, reject) => {
+          this.connection.query(`SELECT COLUMN_NAME, IS_NULLABLE, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH FROM COLUMNS WHERE TABLE_SCHEMA = '${this.options.database}' AND TABLE_NAME = '${tables[key]}';`, (err, results, fields) => {
+            if (err) {
+              return reject(err);
+            }
+            const table = {
+              tables: tables[key],
+              columns: {},
+            };
+
+            results.forEach((result) => {
+              table.columns[result['COLUMN_NAME']] = {
+                nullable: result['IS_NULLABLE'].toString(),
+                type: result['DATA_TYPE'],
+                length: result['CHARACTER_MAXIMUM_LENGTH'],
+              };
+            });
+
+            resolve(table);
+          });
+        })
+      );
+    }
+    return Promise.all(promises);
+  }
+
+  close() {
+    this.connection.end();
   }
 }
 
