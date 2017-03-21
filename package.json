@@ -1,16 +1,16 @@
- {
-   "name": "generaptr",
-   "scripts": {
+{
+  "name": "generaptr",
+  "scripts": {
     "test": "./node_modules/.bin/mocha test"
-   },
+  },
   "version": "0.0.1",
-   "description": "Api generator",
-   "license": "MIT",
+  "description": "Api generator",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git@github.com:cupsadarius/generatr.git"
   },
-   "author": "Darius Cupsa <cupsadarius@gmail.com>",
+  "author": "Darius Cupsa <cupsadarius@gmail.com>",
   "main": "index.js",
   "bugs": {
     "url": "https://github.com/cupsadarius/generatr/issues"
@@ -18,8 +18,8 @@
   "contributors": [
     "Boieru Luca <luca.boieru@yahoo.com>"
   ],
-   "keywords": [
-     "nodejs"
+  "keywords": [
+    "nodejs"
   ],
   "bin": {
     "generaptr": "./bin/generaptr"
@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "colors": "^1.1.2",
-    "commander": "^2.9.0"
+    "commander": "^2.9.0",
+    "mysql": "^2.13.0"
   }
- }
+}
