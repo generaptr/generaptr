@@ -18,7 +18,8 @@ class MysqlHandler {
   }
 
   readSchema() {
-    this.connection.query(`SELECT * FROM TABLES WHERE TABLE_NAME = ${this.options.database}`, (err, results, fields) => {
+    console.log(`SELECT TABLE_NAME FROM TABLES WHERE TABLE_SCHEMA = ${this.options.database};`);
+    this.connection.query(`SELECT TABLE_NAME FROM TABLES WHERE TABLE_SCHEMA = ${this.options.database};`, (err, results, fields) => {
       if (err) {
         throw new Error(err);
       }
