@@ -1,13 +1,38 @@
-{
-  "name": "generaptr",
-  "scripts": {
+ {
+   "name": "generaptr",
+   "scripts": {
+    "test": "./node_modules/.bin/mocha test"
+   },
+  "version": "0.0.2",
+   "description": "Api generator",
+   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:cupsadarius/generatr.git"
   },
-  "version": "1.0.0",
-  "description": "Api generator",
-  "license": "MIT",
-  "repository": "https://github.com/cupsadarius/generatr",
-  "author": "Darius Cupsa <cupsadarius@gmail.com>",
-  "keywords": [
-    "nodejs"
-  ]
-}
+   "author": "Darius Cupsa <cupsadarius@gmail.com>",
+  "main": "index.js",
+  "bugs": {
+    "url": "https://github.com/cupsadarius/generatr/issues"
+  },
+  "contributors": [
+    "Boieru Luca <luca.boieru@yahoo.com>"
+  ],
+   "keywords": [
+     "nodejs"
+  ],
+  "bin": {
+    "generaptr": "./bin/generaptr"
+  },
+  "engines": {
+    "node": ">= 7.5.0"
+  },
+  "devDependencies": {
+    "assert": "^1.4.1",
+    "mocha": "^3.2.0"
+  },
+  "dependencies": {
+    "colors": "^1.1.2",
+    "commander": "^2.9.0"
+  }
+ }

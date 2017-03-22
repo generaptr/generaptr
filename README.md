@@ -20,6 +20,9 @@
 * node >= v7.5.0
 * npm >= v3.10.10
 
+## Usage
+* npm install -g
+
 ## Research
 
 * [RAML](http://raml.org)
