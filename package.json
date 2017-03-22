@@ -2,10 +2,10 @@
   "name": "generaptr",
   "scripts": {
     "test": "./node_modules/.bin/mocha test"
-  },
-  "version": "0.0.1",
-  "description": "Api generator",
-  "license": "MIT",
+   },
+  "version": "0.0.2",
+   "description": "Api generator",
+   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git@github.com:cupsadarius/generatr.git"
