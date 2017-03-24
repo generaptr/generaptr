@@ -19,16 +19,19 @@ class MysqlHandler {
 
   readTables() {
     return new Promise((resolve, reject) => {
-      this.connection.query(`SELECT TABLE_NAME FROM TABLES WHERE TABLE_SCHEMA = '${this.options.database}';`, (err, results, fields) => {
-        if (err) {
-          return reject(err);
-        }
-        const tables = results.map((result) => {
-          return result['TABLE_NAME'];
-        });
+      this.connection.query(
+        `SELECT TABLE_NAME FROM TABLES WHERE TABLE_SCHEMA = '${this.options.database}';`,
+        (err, results, fields) => {
+          if (err) {
+            return reject(err);
+          }
+          const tables = results.map((result) => {
+            return result['TABLE_NAME'];
+          });
 
-        resolve(tables);
-      });
+          resolve(tables);
+        }
+      );
     });
   }
 
@@ -37,25 +40,28 @@ class MysqlHandler {
     for (const key in tables) {
       promises.push(
         new Promise((resolve, reject) => {
-          this.connection.query(`SELECT COLUMN_NAME, IS_NULLABLE, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH FROM COLUMNS WHERE TABLE_SCHEMA = '${this.options.database}' AND TABLE_NAME = '${tables[key]}';`, (err, results, fields) => {
-            if (err) {
-              return reject(err);
-            }
-            const table = {
-              tables: tables[key],
-              columns: {},
-            };
-
-            results.forEach((result) => {
-              table.columns[result['COLUMN_NAME']] = {
-                nullable: result['IS_NULLABLE'].toString(),
-                type: result['DATA_TYPE'],
-                length: result['CHARACTER_MAXIMUM_LENGTH'],
+          this.connection.query(
+            `SELECT COLUMN_NAME, IS_NULLABLE, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH FROM COLUMNS WHERE TABLE_SCHEMA = '${this.options.database}' AND TABLE_NAME = '${tables[key]}';`,
+            (err, results, fields) => {
+              if (err) {
+                return reject(err);
+              }
+              const table = {
+                tables: tables[key],
+                columns: {},
               };
-            });
 
-            resolve(table);
-          });
+              results.forEach((result) => {
+                table.columns[result['COLUMN_NAME']] = {
+                  nullable: result['IS_NULLABLE'],
+                  type: result['DATA_TYPE'],
+                  length: result['CHARACTER_MAXIMUM_LENGTH'],
+                };
+              });
+
+              resolve(table);
+            }
+          );
         })
       );
     }
