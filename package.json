@@ -1,7 +1,7 @@
 {
   "name": "generaptr",
   "scripts": {
-    "test": "./node_modules/.bin/mocha test"
+    "test": "./node_modules/.bin/mocha test/**/*.js"
    },
   "version": "0.0.2",
    "description": "Api generator",
