@@ -1,36 +1,47 @@
 const assert = require('assert');
-const cli = '../lib/cli.js';
-const exec = require('child_process').exec;
+const cli = require('../../lib/cli.js');
 
 describe('print', () => {
-  it('should throw an error without a host provided', () => {
-    exec(`${cli} -h`, (err, stdout, stderr) => {
-      assert.equal('[ generaptr ] Error: Host not provided.', stdout);
-    });
+  it('should throw an error without a database provided', () => {
+    try {
+      cli.handleMysqlConnection({
+        host: '127.0.0.1',
+        port: '3306',
+      });
+    } catch (e) {
+      assert.equal('Database not provided.', e.message);
+    }
   });
 
-  it('should throw an error without a port provided', () => {
-    exec(`${cli} -h`, (err, stdout, stderr) => {
-      assert.equal('[ generaptr ] Error: Port not provided.', stdout);
-    });
+  it('should throw an error without a user provided', () => {
+    try {
+      cli.handleMysqlConnection({
+        host: '127.0.0.1',
+        port: '3306',
+        database: 'test'
+      });
+    } catch (e) {
+      assert.equal('User not provided.', e.message);
+    }
   });
 
-  it('should throw an error without a databse provided', () => {
-    exec(`${cli} -h`, (err, stdout, stderr) => {
-      assert.equal('[ generaptr ] Error: Database not provided.', stdout);
-    });
+  it('should return a valid schema', () => {
+    try {
+      cli.handleMysqlConnection({
+        host: '127.0.0.1',
+        port: '3306',
+        database: 'test',
+        user: 'root',
+        password: '',
+      }).then((schema) => {
+        assert.equal(1, schema.length);
+        const table = schema.pop();
+        assert.equal('test', table.name);
+        assert.equal(4, table.columns.length);
+      });
+    } catch (e) {
+      assert.fail();
+    }
   });
-
-  it('should throw an error without a username provided', () => {
-    exec(`${cli} -h`, (err, stdout, stderr) => {
-      assert.equal('[ generaptr ] Error: Username not provided.', stdout);
-    });
-  });
-
-  it('should throw an error without a Password provided', () => {
-    exec(`${cli} -h`, (err, stdout, stderr) => {
-      assert.equal('[ generaptr ] Error: Password not provided.', stdout);
-    });
-  });
-
+  
 });

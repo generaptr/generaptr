@@ -47,7 +47,7 @@ class MysqlHandler {
                 return reject(err);
               }
               const table = {
-                tables: tables[key],
+                name: tables[key],
                 columns: {},
               };
 
