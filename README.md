@@ -1,5 +1,5 @@
 ![](http://i.imgur.com/yCRAubA.png)
-# generaptr - REST without stress [![](https://circleci.com/gh/cupsadarius/generaptr.svg?style=svg)](https://circleci.com/gh/cupsadarius/generaptr)
+# generaptr - REST without stress [![Build Status](https://travis-ci.org/cupsadarius/generaptr.svg)](http://travis-ci.org/cupsadarius/generaptr)
 
 ### Generaptr is a node cli package that:
 * for relational databases

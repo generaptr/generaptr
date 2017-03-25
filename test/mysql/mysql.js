@@ -36,8 +36,7 @@ describe('print', () => {
       }).then((schema) => {
         assert.equal(1, schema.length);
         const table = schema.pop();
-        console.log(table);
-        assert.equal('test', table.name);
+        assert.equal('users', table.name);
         assert.equal(4, table.columns.length);
         done();
       });
