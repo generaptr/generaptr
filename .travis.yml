@@ -2,6 +2,12 @@ language: node_js
 
 notifications:
   slack: generaptr:WVInkDTeAegbpm2wBcMmCKv2
+  webhooks:
+    urls:
+      - https://webhooks.gitter.im/e/992482f9a296f6c9204f
+    on_success: change  
+    on_failure: always  
+    on_start: never     
 
 node_js:
   - "7.5"
