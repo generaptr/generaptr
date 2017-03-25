@@ -25,7 +25,7 @@ describe('print', () => {
     }
   });
 
-  it('should return a valid schema', () => {
+  it('should return a valid schema', (done) => {
     try {
       cli.handleMysqlConnection({
         host: '127.0.0.1',
@@ -39,9 +39,11 @@ describe('print', () => {
         console.log(table);
         assert.equal('test', table.name);
         assert.equal(4, table.columns.length);
+        done();
       });
     } catch (e) {
       assert.fail();
+      done();
     }
   });
   
