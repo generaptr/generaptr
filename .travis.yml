@@ -1,15 +1,10 @@
-sudo: required
-
 language: node_js
 
 node_js:
   - "7.5"
 
 services:
-  - docker
+  - mysql
 
 before_install:
-  - docker pull mysql
-  - docker run --name mysql -e MYSQL_ROOT_PASSWORD=secret -e MYSQL_DATABASE=hashiru -d mysql
-  - docker ps -a
-  - mysql -u root -p secret test < ./test/mysql/data.sql
+  - mysql -u root test < ./test/mysql/data.sql
