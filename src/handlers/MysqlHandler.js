@@ -1,5 +1,4 @@
 const mysql = require('mysql');
-const parser = require('../utils/parse');
 
 class MysqlHandler {
   constructor(options) {
