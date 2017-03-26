@@ -13,14 +13,14 @@ class MysqlHandler {
   }
 
   connect() {
-    this.connection.connect();
+    return this.connection.connect();
   }
 
   readTables() {
     return new Promise((resolve, reject) => {
       this.connection.query(
         `SELECT TABLE_NAME FROM TABLES WHERE TABLE_SCHEMA = '${this.options.database}';`,
-        (err, results, fields) => {
+        (err, results) => {
           if (err) {
             return reject(err);
           }
@@ -41,7 +41,7 @@ class MysqlHandler {
         new Promise((resolve, reject) => {
           this.connection.query(
             `SELECT COLUMN_NAME, IS_NULLABLE, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH FROM COLUMNS WHERE TABLE_SCHEMA = '${this.options.database}' AND TABLE_NAME = '${tables[key]}';`,
-            (err, results, fields) => {
+            (err, results) => {
               if (err) {
                 return reject(err);
               }
