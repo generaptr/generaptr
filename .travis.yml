@@ -4,7 +4,7 @@ notifications:
   slack: generaptr:WVInkDTeAegbpm2wBcMmCKv2
   webhooks:
     urls:
-      - https://webhooks.gitter.im/e/992482f9a296f6c9204f
+      - https://webhooks.gitter.im/e/a80c735c20f7603bf06a
     on_success: change  
     on_failure: always  
     on_start: never     
