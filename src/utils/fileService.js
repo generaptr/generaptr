@@ -1,38 +1,30 @@
-const fs = require('fs');
+const utils = require('./utils');
 
 class FileService {
     constructor(filePath) {
-        this.filePath = filePath;
-
         if ((!filePath) || (typeof filePath !== 'string')) {
             throw new Error('FilePath not provided');
         }
+        this.filePath = utils.normalizePath(filePath);
     }
 
     /**
-     * Check if output directory exists
-     * @param filePath
+     * Create directory structure for the application
      * @returns {Promise}
      */
-    checkOutputPath() {
+    createDirectoryStructure() {
         return new Promise((resolve, reject) => {
-            fs.stat(this.filePath, (err, stat) => {
-               if (err) {
-                   reject(err.message);
-               }
-
-               if (!stat) {
-                   // todo: here
-               }
-
-               if (!stat.isDirectory()) {
-                   reject('Invalid folder destination');
-               }
-               resolve();
-            });
+            if (!utils.isDirectory(this.filePath)) {
+                reject('Invalid directory path');
+            } else {
+                utils.createDirectory(this.filePath).then(created => {
+                    resolve();
+                }).catch(exception => {
+                    reject(exception);
+                });
+            }
         });
     }
-
 };
 
 module.exports = FileService;

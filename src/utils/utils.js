@@ -11,7 +11,7 @@ class Utils {
      */
     normalizePath(filePath) {
         return path.isAbsolute(filePath) ? (path.normalize(filePath)) :
-            (__dirname + ((process.platform === 'win32') ? '\\' : '/') + path.normalize(filePath));
+            (process.cwd() + ((process.platform === 'win32') ? '\\' : '/') + path.normalize(filePath));
     };
 
     /**
