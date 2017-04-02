@@ -7,7 +7,7 @@ const FileService = require('../../src/services/fileService');
 const DIRECTORY_STRUCTURE = require('../../src/commons/constants/directoryStructure');
 const RamlContentGenerator = require('../../src/ramlGenerator/ramlContentGenerator');
 
-describe('print', () => {
+describe('File operation service', () => {
     before(() => {
         // table mock
         this.table = {

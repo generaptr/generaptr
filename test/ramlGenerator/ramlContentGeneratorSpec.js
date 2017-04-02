@@ -2,7 +2,7 @@ const assert = require('assert');
 const RamlContentGenerator = require('../../src/ramlGenerator/ramlContentGenerator');
 const before = require('mocha').before;
 
-describe('print', () => {
+describe('Raml content generator', () => {
     before(() => {
 
         // table mock
