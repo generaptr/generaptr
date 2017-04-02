@@ -32,7 +32,7 @@ describe('print', () => {
         port: '3306',
         database: 'test',
         user: 'root',
-        password: 'secret',
+        password: '',
       }).then((schema) => {
         assert.equal(2, schema.length);
         const users = schema.filter(table => table.name  === 'users').pop();
