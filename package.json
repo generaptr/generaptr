@@ -41,6 +41,7 @@
     "inquirer": "^3.0.6",
     "minimist": "^1.2.0",
     "mysql": "^2.13.0",
+    "pluralize": "^4.0.0",
     "preferences": "^0.2.1"
   }
 }
