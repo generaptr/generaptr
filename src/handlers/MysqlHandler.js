@@ -57,33 +57,65 @@ class MysqlHandler {
     const promises = [];
     for (const key in tables) {
       promises.push(
-        new Promise((resolve, reject) => {
-          this.connection.query(
-            `SELECT COLUMN_NAME, IS_NULLABLE, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH FROM COLUMNS WHERE TABLE_SCHEMA = '${this.options.database}' AND TABLE_NAME = '${tables[key]}';`,
-            (err, results) => {
-              if (err) {
-                return reject(err);
-              }
-              const table = {
-                name: tables[key],
-                columns: {},
-              };
-
-              results.forEach((result) => {
-                table.columns[result['COLUMN_NAME']] = {
-                  nullable: result['IS_NULLABLE'],
-                  type: result['DATA_TYPE'],
-                  length: result['CHARACTER_MAXIMUM_LENGTH'],
-                };
-              });
-
-              resolve(table);
-            }
-          );
-        })
+        this.getTableSchema(tables[key])
       );
     }
     return Promise.all(promises);
+  }
+
+  getTableSchema(tableName) {
+    return new Promise((resolve, reject) => {
+      const table = {
+        name: tableName,
+        columns: {},
+      };
+
+      this.connection.query(
+        `SELECT COLUMN_NAME, IS_NULLABLE, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH FROM COLUMNS WHERE TABLE_SCHEMA = '${this.options.database}' AND TABLE_NAME = '${tableName}';`,
+        (err, columns) => {
+          if (err) {
+            return reject(err);
+          }
+          this.getRelationsForTable(tableName).then(relation => {
+            columns.forEach((result) => {
+              const column = {
+                nullable: result['IS_NULLABLE'],
+                type: result['DATA_TYPE'],
+                length: result['CHARACTER_MAXIMUM_LENGTH'],
+              };
+              if (relation[result['COLUMN_NAME']]) {
+                column['references'] = relation[result['COLUMN_NAME']];
+              }
+              table.columns[result['COLUMN_NAME']] = column;
+            });
+
+            resolve(table);
+          });
+        }
+      );
+    });
+  }
+
+  getRelationsForTable(table) {
+    return new Promise((resolve, reject) => {
+      const references = {};
+      this.connection.query(
+        `SELECT FOR_NAME, FOR_COL_NAME, REF_NAME, REF_COL_NAME FROM INNODB_SYS_FOREIGN f JOIN INNODB_SYS_FOREIGN_COLS c ON c.ID = f.ID WHERE f.FOR_NAME LIKE '${this.options.database}/${table}'`,
+        (err, relations) => {
+          if (err) {
+            return reject(err);
+          }
+          relations.forEach(relation => {
+            references[relation['FOR_COL_NAME']] = {
+              table: (relation['REF_NAME'].split('/')).pop(),
+              column: (relation['REF_COL_NAME'].split('/')).pop(),
+            }
+          });
+
+          resolve(references);
+        }
+      );
+    });
   }
 
   /**

@@ -32,12 +32,17 @@ describe('print', () => {
         port: '3306',
         database: 'test',
         user: 'root',
-        password: '',
+        password: 'secret',
       }).then((schema) => {
-        assert.equal(1, schema.length);
-        const table = schema.pop();
-        assert.equal('users', table.name);
-        assert.equal(4, Object.keys(table.columns).length);
+        assert.equal(2, schema.length);
+        const users = schema.filter(table => table.name  === 'users').pop();
+        const accounts = schema.filter(table => table.name === 'accounts').pop();
+
+        assert.equal('users', users.name);
+        assert.equal(4, Object.keys(users.columns).length);
+        assert.equal('accounts', accounts.name);
+        assert.equal(3, Object.keys(accounts.columns).length);
+
         done();
       }).catch(err => {console.log(err); assert.fail(); done()});
     } catch (e) {
@@ -45,5 +50,25 @@ describe('print', () => {
       done();
     }
   });
-  
+
+  it('should detect a foreign key', (done) => {
+    try {
+      mysql.handler({
+        host: '127.0.0.1',
+        port: '3306',
+        database: 'test',
+        user: 'root',
+        password: '',
+      }).then((schema) => {
+        const accounts = schema.filter(table => table.name === 'accounts').pop();
+
+        assert.equal('users', accounts.columns['user_id'].references.table);
+        assert.equal('id', accounts.columns['user_id'].references.column);
+        done();
+      }).catch(err => {console.log(err); assert.fail(); done()});
+    } catch (e) {
+      assert.fail();
+      done();
+    }
+  })
 });
