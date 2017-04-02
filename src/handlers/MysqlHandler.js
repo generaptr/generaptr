@@ -100,15 +100,15 @@ class MysqlHandler {
     return new Promise((resolve, reject) => {
       const references = {};
       this.connection.query(
-        `SELECT FOR_NAME, FOR_COL_NAME, REF_NAME, REF_COL_NAME FROM INNODB_SYS_FOREIGN f JOIN INNODB_SYS_FOREIGN_COLS c ON c.ID = f.ID WHERE f.FOR_NAME LIKE '${this.options.database}/${table}'`,
+        `SELECT COLUMN_NAME, rc.REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME FROM REFERENTIAL_CONSTRAINTS rc JOIN KEY_COLUMN_USAGE cu ON cu.CONSTRAINT_NAME = rc.CONSTRAINT_NAME WHERE rc.CONSTRAINT_SCHEMA = '${this.options.database}' AND rc.TABLE_NAME = '${table}'`,
         (err, relations) => {
           if (err) {
             return reject(err);
           }
           relations.forEach(relation => {
-            references[relation['FOR_COL_NAME']] = {
-              table: (relation['REF_NAME'].split('/')).pop(),
-              column: (relation['REF_COL_NAME'].split('/')).pop(),
+            references[relation['COLUMN_NAME']] = {
+              table: relation['REFERENCED_TABLE_NAME'],
+              column: relation['REFERENCED_COLUMN_NAME'],
             }
           });
 
