@@ -3,7 +3,7 @@
   "scripts": {
     "test": "./node_modules/.bin/mocha test/**/*Spec.js test/**/**/*Spec.js"
   },
-  "version": "0.0.4",
+  "version": "0.1.0",
   "description": "Api generator",
   "license": "MIT",
   "repository": {
@@ -16,7 +16,8 @@
     "url": "https://github.com/cupsadarius/generatr/issues"
   },
   "contributors": [
-    "Boieru Luca <luca.boieru@yahoo.com>"
+    "Boieru Luca <luca.boieru@yahoo.com>",
+    "Balea Stefan <stefan.balea16@gmail.com>"
   ],
   "keywords": [
     "nodejs"

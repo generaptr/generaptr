@@ -98,7 +98,7 @@ class MysqlHandler {
                 column.type = Utils.toTitleCase(column['references'].table);
 
                 // change column name
-                result['COLUMN_NAME'] = result['COLUMN_NAME'].substring(0, result['COLUMN_NAME'].indexOf("_id"));
+                result['COLUMN_NAME'] = Utils.singular(column['references'].table);
               }
               table.columns[result['COLUMN_NAME']] = column;
             });
