@@ -1,10 +1,10 @@
 const assert = require('assert');
-const cli = require('../../lib/cli.js');
+const mysql = require('../../../src/tracks/relational/mysql.js');
 
 describe('print', () => {
   it('should throw an error without a database provided', () => {
     try {
-      cli.handleMysqlConnection({
+      mysql.handler({
         host: '127.0.0.1',
         port: '3306',
       });
@@ -15,7 +15,7 @@ describe('print', () => {
 
   it('should throw an error without a user provided', () => {
     try {
-      cli.handleMysqlConnection({
+      mysql.handler({
         host: '127.0.0.1',
         port: '3306',
         database: 'test'
@@ -27,12 +27,12 @@ describe('print', () => {
 
   it('should return a valid schema', (done) => {
     try {
-      cli.handleMysqlConnection({
-        host: '127.0.0.1',
+      mysql.handler({
+        host: '172.16.140.134',
         port: '3306',
         database: 'test',
         user: 'root',
-        password: '',
+        password: 'secret',
       }).then((schema) => {
         assert.equal(1, schema.length);
         const table = schema.pop();

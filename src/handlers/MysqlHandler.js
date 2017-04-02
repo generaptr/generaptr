@@ -1,6 +1,11 @@
 const mysql = require('mysql');
 
 class MysqlHandler {
+  /**
+   * Constructor for the MySqlHandler.
+   *
+   * @param options Connection parameters.
+   */
   constructor(options) {
     this.options = options;
     this.connection = mysql.createConnection({
@@ -12,10 +17,18 @@ class MysqlHandler {
     });
   }
 
+  /**
+   * Connect to MySql based on the connection data.
+   */
   connect() {
-    return this.connection.connect();
+    this.connection.connect();
   }
 
+  /**
+   * Reads the information schema and returns an array of tables.
+   *
+   * @returns {Promise}
+   */
   readTables() {
     return new Promise((resolve, reject) => {
       this.connection.query(
@@ -34,6 +47,12 @@ class MysqlHandler {
     });
   }
 
+  /**
+   * Reads the schema for each table privided.
+   *
+   * @param tables
+   * @returns {Promise.<*>}
+   */
   readSchema(tables) {
     const promises = [];
     for (const key in tables) {
@@ -67,6 +86,9 @@ class MysqlHandler {
     return Promise.all(promises);
   }
 
+  /**
+   * Closes the MySql connection.
+   */
   close() {
     this.connection.end();
   }
