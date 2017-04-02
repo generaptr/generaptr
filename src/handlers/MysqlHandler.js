@@ -48,7 +48,7 @@ class MysqlHandler {
   }
 
   /**
-   * Reads the schema for each table privided.
+   * Reads the schema for each table provided.
    *
    * @param tables
    * @returns {Promise.<*>}
@@ -63,6 +63,12 @@ class MysqlHandler {
     return Promise.all(promises);
   }
 
+  /**
+   * Reads the schema for a given table.
+   * 
+   * @param tableName
+   * @returns {Promise}
+   */
   getTableSchema(tableName) {
     return new Promise((resolve, reject) => {
       const table = {
@@ -96,6 +102,12 @@ class MysqlHandler {
     });
   }
 
+  /**
+   * Reads all the relations for a given table.
+   *
+   * @param table
+   * @returns {Promise}
+   */
   getRelationsForTable(table) {
     return new Promise((resolve, reject) => {
       const references = {};
