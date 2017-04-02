@@ -33,9 +33,11 @@ describe('print', () => {
         database: 'test',
         user: 'root',
         password: '',
-      }).then((schema) => {
-        assert.equal(1, schema.length);
-        const table = schema.pop();
+      }).then((schemaInformation) => {
+        assert(schemaInformation, 'Schema information should not be undefined');
+        assert.equal('MySql', schemaInformation.databaseEngine, 'Database engine should be MySql');
+        assert.equal(1, schemaInformation.schema.length);
+        const table = schemaInformation.schema.pop();
         assert.equal('users', table.name);
         assert.equal(4, Object.keys(table.columns).length);
         done();
