@@ -2,10 +2,10 @@ const assert = require('assert');
 const MysqlHandler = require('../../../src/handlers/MysqlHandler');
 
 const validConnectionData = {
-  host: '172.16.140.134',
+  host: '127.0.0.1',
   port: 3306,
   user: 'root',
-  password: 'secret',
+  password: '',
   database: 'test'
 };
 
