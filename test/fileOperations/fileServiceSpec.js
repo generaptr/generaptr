@@ -75,8 +75,6 @@ describe('print', () => {
             .then(() => {
                 fs.readFile(
                     path.join(fileService.filePath, DIRECTORY_STRUCTURE.TYPES, (this.table.name + '.raml')), (err, data) => {
-                        console.log('data = ' + data);
-
                         assert.ifError(err);
                         assert(data, 'Content should not be empty');
                         assert.equal(data, RalmContentGenerator.generateTypeContent(this.table), 'Content should be the same');
