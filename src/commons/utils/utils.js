@@ -49,6 +49,15 @@ class Utils {
             });
        });
     }
+
+    /**
+     * Join 2 paths
+     * @param basePath
+     * @param additionalPath
+     */
+    joinPaths(basePath, additionalPath) {
+        return path.join(basePath, additionalPath);
+    };
 };
 
 module.exports = new Utils();
