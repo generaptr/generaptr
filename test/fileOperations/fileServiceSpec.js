@@ -36,15 +36,16 @@ describe('File operation service', () => {
         }
     });
 
-    it('should throw an error if path provided is filePath', () => {
+    it('should throw an error if path provided is filePath', (done) => {
         let fileService = new FileService('test.txt');
 
         fileService.createDirectoryStructure()
             .then(() => {
-
+                done();
             })
             .catch(exception => {
                 assert.equal(exception, 'Invalid directory path');
+                done();
             })
     });
 
@@ -61,12 +62,13 @@ describe('File operation service', () => {
                         assert.equal(stat.isDirectory(), true);
                     });
                 })
-            }).catch(exception => {
-            assert.fail();
-        })
+            })
+            .catch(exception => {
+                assert.fail();
+            })
     });
 
-    it('should create raml type file', () => {
+    it('should create raml type file', (done) => {
         let fileService = new FileService('raml');
 
         fileService.createDirectoryStructure()
@@ -79,10 +81,13 @@ describe('File operation service', () => {
                         assert.ifError(err);
                         assert(data, 'Content should not be empty');
                         assert.equal(data, RamlContentGenerator.generateTypeContent(this.table), 'Content should be the same');
+
+                        done();
                     });
             })
             .catch(exception => {
                 assert.fail();
+                done();
             });
     });
 });
