@@ -39,7 +39,7 @@ describe('print', () => {
         assert.equal('users', table.name);
         assert.equal(4, Object.keys(table.columns).length);
         done();
-      }).catch(err => {console.log(err); assert.fail(), done()});
+      }).catch(err => {console.log(err); assert.fail(); done()});
     } catch (e) {
       assert.fail();
       done();
