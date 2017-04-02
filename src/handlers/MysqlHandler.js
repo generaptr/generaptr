@@ -1,4 +1,5 @@
 const mysql = require('mysql');
+const RamlDataTypeConvertor = require('../commons/utils/ramlDataTypeConvertor');
 
 class MysqlHandler {
   constructor(options) {
@@ -53,7 +54,7 @@ class MysqlHandler {
               results.forEach((result) => {
                 table.columns[result['COLUMN_NAME']] = {
                   nullable: result['IS_NULLABLE'],
-                  type: result['DATA_TYPE'],
+                  type: RamlDataTypeConvertor.convertType('MySql', result['DATA_TYPE']),
                   length: result['CHARACTER_MAXIMUM_LENGTH'],
                 };
               });

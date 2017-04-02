@@ -40,8 +40,9 @@ class FileUtil {
                     fse.ensureDir(filePath, err => {
                         if (err) {
                             reject(err);
+                        } else {
+                            resolve(true);
                         }
-                        resolve(true);
                     });
                 } else {
                     resolve(stat.isDirectory() ? true : false);
@@ -62,12 +63,12 @@ class FileUtil {
     /**
      *
      * @param filePath - destination file
-     * @param information - information to be written
+     * @param content - content to be written
      * @returns {Promise}
      */
-    writeFile(filePath, information) {
+    writeFile(filePath, content) {
         return new Promise((resolve, reject) => {
-            fs.writeFile(filePath, information, 'UTF-8', (err) => {
+            fs.writeFile(filePath, content, 'UTF-8', (err) => {
                 if (err) {
                     reject(err);
                 } else {

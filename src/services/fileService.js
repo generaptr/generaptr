@@ -1,6 +1,6 @@
 const FileUtil = require('../commons/utils/fileUtil');
 const DIRECTORY_STRUCTURE = require('../commons/constants/directoryStructure');
-const RamlDataTypeConvertor = require('../commons/utils/ramlDataTypeConvertor');
+const RalmContentGenerator = require('../ralmGenerator/ralmContentGenerator');
 
 class FileService {
     constructor(filePath) {
@@ -21,48 +21,28 @@ class FileService {
             return Promise.reject('Invalid directory path');
         } else {
             Object.values(DIRECTORY_STRUCTURE).map(directory => {
-                promises.push(new Promise((resolve, reject) => {
-                    FileUtil.createDirectory(FileUtil.joinPaths(this.filePath, directory)).then(created => {
-                        resolve();
-                    }).catch(exception => {
-                        reject(exception);
-                    });
-                }));
+                promises.push(FileUtil.createDirectory(FileUtil.joinPaths(this.filePath, directory)));
             });
+
+            return Promise.all(promises);
         }
-
-        return Promise.all(promises);
-    }
-
-    /**
-     * Create type raml file for table
-     * @param table
-     * @returns {Promise}
-     */
-    createType(databaseEngine, table) {
-        const doubleSpace = '  ';
-
-        let objectInformation = '#%RAML 1.0 DataType\n'
-            + 'type: object\n'
-            + 'properties:';
-
-        Object.keys(table.columns).map(key => {
-            objectInformation += ('\n' + `${doubleSpace}` + key + (table.columns[key].nullable === 'NO' ? '' : '?') + ': ' + RamlDataTypeConvertor.convertType(databaseEngine, table.columns[key].type));
-        });
-
-        return FileUtil.writeFile(FileUtil.joinPaths(this.filePath, DIRECTORY_STRUCTURE.TYPES, (table.name + '.raml')), objectInformation);
     }
 
     /**
      * Create .raml type file for every table inside schema
-     * @param schema - schema
+     * @param schema - schema tables(list of tables)
      * @returns {Promise.<*>}
      */
-    createTypes(schemaInformation) {
+    generateTypeFiles(schema) {
         const promises = [];
 
-        schemaInformation.schema.map(table => {
-            promises.push(this.createType(schemaInformation.databaseEngine, table));
+        schema.map(table => {
+            promises.push(
+                FileUtil.writeFile(
+                    FileUtil.joinPaths(this.filePath, DIRECTORY_STRUCTURE.TYPES, (table.name + '.raml')),
+                    RalmContentGenerator.generateTypeContent(table)
+                )
+            );
         });
 
         return Promise.all(promises);
