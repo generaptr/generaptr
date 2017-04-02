@@ -1,9 +1,9 @@
 {
   "name": "generaptr",
   "scripts": {
-    "test": "./node_modules/.bin/mocha test/**/*.js"
+    "test": "./node_modules/.bin/mocha test/**/*Spec.js test/**/**/*Spec.js"
   },
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Api generator",
   "license": "MIT",
   "repository": {
