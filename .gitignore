@@ -2,5 +2,5 @@ node_modules
 dist
 .idea
 .vscode
-ralm
+raml
 debug-log.json

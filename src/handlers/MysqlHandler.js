@@ -1,5 +1,6 @@
 const mysql = require('mysql');
 const RamlDataTypeConvertor = require('../commons/utils/ramlDataTypeConvertor');
+const Utils = require('../commons/utils/utils');
 
 class MysqlHandler {
   /**
@@ -66,7 +67,7 @@ class MysqlHandler {
 
   /**
    * Reads the schema for a given table.
-   * 
+   *
    * @param tableName
    * @returns {Promise}
    */
@@ -92,9 +93,16 @@ class MysqlHandler {
               };
               if (relation[result['COLUMN_NAME']]) {
                 column['references'] = relation[result['COLUMN_NAME']];
+
+                // change type reference
+                column.type = Utils.toTitleCase(column['references'].table);
+
+                // change column name
+                result['COLUMN_NAME'] = result['COLUMN_NAME'].substring(0, result['COLUMN_NAME'].indexOf("_id"));
               }
               table.columns[result['COLUMN_NAME']] = column;
             });
+
             resolve(table);
           });
         }

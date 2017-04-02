@@ -1,6 +1,6 @@
 const FileUtil = require('../commons/utils/fileUtil');
 const DIRECTORY_STRUCTURE = require('../commons/constants/directoryStructure');
-const RalmContentGenerator = require('../ralmGenerator/ralmContentGenerator');
+const RamlContentGenerator = require('../ramlGenerator/ramlContentGenerator');
 const Utils = require('../commons/utils/utils');
 
 class FileService {
@@ -41,7 +41,7 @@ class FileService {
             promises.push(
                 FileUtil.writeFile(
                     FileUtil.joinPaths(this.filePath, DIRECTORY_STRUCTURE.TYPES, (Utils.toTitleCase(table.name) + '.raml')),
-                    RalmContentGenerator.generateTypeContent(table)
+                    RamlContentGenerator.generateTypeContent(table)
                 )
             );
         });

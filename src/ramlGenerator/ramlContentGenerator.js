@@ -1,4 +1,4 @@
-class RalmContentGenerator {
+class RamlContentGenerator {
 
     constructor() {
         this.DOUBLE_SPACE = '  ';
@@ -22,4 +22,4 @@ class RalmContentGenerator {
     }
 }
 
-module.exports = new RalmContentGenerator();
+module.exports = new RamlContentGenerator();

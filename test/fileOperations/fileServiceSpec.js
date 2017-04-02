@@ -5,7 +5,7 @@ const path = require('path');
 
 const FileService = require('../../src/services/fileService');
 const DIRECTORY_STRUCTURE = require('../../src/commons/constants/directoryStructure');
-const RalmContentGenerator = require('../../src/ralmGenerator/ralmContentGenerator');
+const RamlContentGenerator = require('../../src/ramlGenerator/ramlContentGenerator');
 
 describe('print', () => {
     before(() => {
@@ -65,8 +65,8 @@ describe('print', () => {
         })
     });
 
-    it('should create ralm type file', () => {
-        let fileService = new FileService('ralm');
+    it('should create raml type file', () => {
+        let fileService = new FileService('raml');
 
         fileService.createDirectoryStructure()
             .then(() => {
@@ -77,7 +77,7 @@ describe('print', () => {
                     path.join(fileService.filePath, DIRECTORY_STRUCTURE.TYPES, (this.table.name + '.raml')), (err, data) => {
                         assert.ifError(err);
                         assert(data, 'Content should not be empty');
-                        assert.equal(data, RalmContentGenerator.generateTypeContent(this.table), 'Content should be the same');
+                        assert.equal(data, RamlContentGenerator.generateTypeContent(this.table), 'Content should be the same');
                     });
             })
             .catch(exception => {
