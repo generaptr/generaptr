@@ -2,7 +2,7 @@ const path = require('path');
 const fs = require('fs');
 const fse = require('fs-extra');
 
-class Utils {
+class FileUtil {
 
     /**
      * Normalize folder path
@@ -15,7 +15,7 @@ class Utils {
     };
 
     /**
-     * This method checks if a filePath represents the path for a directory or a file
+     * Check if a filePath represents the path for a directory or a file
      * @param filePath - relative or absolute file path
      * @returns {boolean}
      */
@@ -31,7 +31,7 @@ class Utils {
      * @returns {Promise}
      */
     createDirectory(filePath) {
-       filePath = this.normalizePath(filePath);
+        filePath = this.normalizePath(filePath);
 
         return new Promise((resolve, reject) => {
             fs.stat(filePath, (err, stat) => {
@@ -47,17 +47,35 @@ class Utils {
                     resolve(stat.isDirectory() ? true : false);
                 }
             });
-       });
+        });
     }
 
     /**
-     * Join 2 paths
-     * @param basePath
-     * @param additionalPath
+     * Join list of paths
+     * @param paths
+     * @returns {string}
      */
-    joinPaths(basePath, additionalPath) {
-        return path.join(basePath, additionalPath);
+    joinPaths(...paths) {
+        return path.join(...paths);
     };
-};
 
-module.exports = new Utils();
+    /**
+     *
+     * @param filePath - destination file
+     * @param information - information to be written
+     * @returns {Promise}
+     */
+    writeFile(filePath, information) {
+        return new Promise((resolve, reject) => {
+            fs.writeFile(filePath, information, 'UTF-8', (err) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve();
+                }
+            });
+        });
+    }
+}
+
+module.exports = new FileUtil();
