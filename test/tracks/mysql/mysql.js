@@ -34,6 +34,7 @@ describe('print', () => {
         user: 'root',
         password: '',
       }).then((schema) => {
+        console.log(schema);
         assert.equal(2, schema.length);
         const users = schema.filter(table => table.name  === 'users').pop();
         const accounts = schema.filter(table => table.name === 'accounts').pop();
@@ -60,10 +61,12 @@ describe('print', () => {
         user: 'root',
         password: '',
       }).then((schema) => {
+        console.log(schema);
         const accounts = schema.filter(table => table.name === 'accounts').pop();
 
         assert.equal('users', accounts.columns['user_id'].references.table);
         assert.equal('id', accounts.columns['user_id'].references.column);
+
         done();
       }).catch(err => {console.log(err); assert.fail(); done()});
     } catch (e) {
