@@ -28,11 +28,11 @@ describe('print', () => {
   it('should return a valid schema', (done) => {
     try {
       mysql.handler({
-        host: '172.16.140.134',
+        host: '127.0.0.1',
         port: '3306',
         database: 'test',
         user: 'root',
-        password: 'secret',
+        password: '',
       }).then((schema) => {
         assert.equal(1, schema.length);
         const table = schema.pop();
