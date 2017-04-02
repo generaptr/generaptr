@@ -44,6 +44,10 @@ describe('Mysql database handler', () => {
       handler.readTables().then(tables => {
         assert.equal(2, tables.length);
         done();
+      }).catch(err => {
+        console.log(err);
+        assert.fail();
+        done();
       });
     } catch (e) {
       assert.fail(e);
@@ -59,6 +63,10 @@ describe('Mysql database handler', () => {
         assert.equal(4, Object.keys(schema.columns).length);
 
         done();
+      }).catch(err => {
+        console.log(err);
+        assert.fail();
+        done();
       });
 
     } catch (e) {
@@ -73,6 +81,10 @@ describe('Mysql database handler', () => {
         assert.equal('users', relations['user_id'].table);
         assert.equal('id', relations['user_id'].column);
 
+        done();
+      }).catch(err => {
+        console.log(err);
+        assert.fail();
         done();
       });
     } catch (e) {
@@ -95,6 +107,10 @@ describe('Mysql database handler', () => {
           assert.equal('accounts', accounts.name);
           assert.equal(3, Object.keys(accounts.columns).length);
 
+          done();
+        }).catch(err => {
+          console.log(err);
+          assert.fail();
           done();
         });
       });
