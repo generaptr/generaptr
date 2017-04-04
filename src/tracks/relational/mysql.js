@@ -57,13 +57,8 @@ exports.handler = (data) => {
 
       const handler = new MysqlHandler(data);
       handler.connect();
-      handler.readTables().then((tables) => {
-        handler.readSchema(tables).then((schema) => {
-
-          handler.close();
-
-          resolve(schema);
-        }).catch(err => reject(err));
+      handler.readSchema().then(schema => {
+        resolve(schema);
       }).catch(err => reject(err));
 
     } catch (e) {
