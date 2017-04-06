@@ -37,9 +37,7 @@ class MysqlHandler extends BaseHandler {
         });
 
         Promise.all(schemas).then(schema => {
-          this.normalizeRelations(schema).then(result => {
-            resolve(result);
-          }).catch(err => reject(err));
+          resolve(this.normalizeRelations(schema));
         }).catch(err => reject(err));
       }).catch(err => reject(err));
     });
@@ -76,7 +74,7 @@ class MysqlHandler extends BaseHandler {
     return new Promise((resolve, reject) => {
       const table = {
         name: tableName,
-        columns: {},
+        columns: [],
       };
 
       this.connection.query(

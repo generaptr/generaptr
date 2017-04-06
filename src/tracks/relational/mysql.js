@@ -59,6 +59,7 @@ exports.handler = (data) => {
       handler.connect();
       handler.readSchema().then(schema => {
         resolve(schema);
+        handler.close();
       }).catch(err => reject(err));
 
     } catch (e) {
