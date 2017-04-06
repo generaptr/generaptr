@@ -8,7 +8,7 @@ class TypeConverter {
      * @param type
      * @returns {*}
      */
-    convertType(type) {
+    convertSqlType(type) {
         if ((this.numberTypes.includes(type.toLowerCase())) ||
             (type.toLowerCase() === 'timestamp') ||
             (type.toLowerCase() === 'year')) {
@@ -22,6 +22,10 @@ class TypeConverter {
         } else if (type.toLowerCase() === 'time') {
             return 'time-only';
         }
+    }
+
+    convertNoSqlType(type) {
+        throw new Error('Not yet implemented');
     }
 }
 

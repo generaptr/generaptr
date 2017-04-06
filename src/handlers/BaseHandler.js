@@ -7,10 +7,16 @@ module.exports = class BaseHandler {
     this.driver = driver;
   }
 
+  /**
+   * Normalize table schema.
+   *
+   * @param tableSchema
+   * @returns {{}}
+   */
   normalizeTableSchema(tableSchema) {
     switch (this.driver) {
       case 'mysql': {
-        return (new MysqlSchemaPreprocessor()).convertToStandardTableSchema(tableSchema);
+        return (new MysqlSchemaPreprocessor()).convertToStandardSchema(tableSchema);
       }
       default: {
         logger.warn('Database driver not supported.');
@@ -18,10 +24,16 @@ module.exports = class BaseHandler {
     }
   }
 
+  /**
+   * Normalize relations between tables inside the schema.
+   *
+   * @param schema
+   * @returns {*}
+   */
   normalizeRelations(schema) {
     switch (this.driver) {
       case 'mysql': {
-        return (new MysqlSchemaPreprocessor()).convertToStandard(schema);
+        return (new MysqlSchemaPreprocessor()).normalizeSchemaRelations(schema);
       }
       default: {
         logger.warn('Database driver not supported.');

@@ -4,10 +4,12 @@ const utils = require('../utils/utils');
 module.exports = class MysqlSchemaPreprocessor {
 
   /**
+   * Normalize the table schema.
+   *
    * @param tableSchema
    * @returns {{}}
    */
-  convertToStandardTableSchema(tableSchema) {
+  convertToStandardSchema(tableSchema) {
     const schema = {};
     schema.name = tableSchema['COLUMN_NAME'] ? tableSchema['COLUMN_NAME'] : null;
     schema.primary = !!(tableSchema['COLUMN_KEY'] && tableSchema['COLUMN_KEY'] === 'PRI');
@@ -15,13 +17,19 @@ module.exports = class MysqlSchemaPreprocessor {
     schema.foreignKey = !!(tableSchema['COLUMN_KEY'] && tableSchema['COLUMN_KEY'] === 'MUL');
     schema.allowNull = !!(tableSchema['IS_NULLABLE'] && tableSchema['IS_NULLABLE'] === 'YES');
     schema.dataType = {
-      type: typeConverter.convertType(tableSchema['DATA_TYPE']),
+      type: typeConverter.convertSqlType(tableSchema['DATA_TYPE']),
       size: tableSchema['CHARACTER_MAXIMUM_LENGTH'] ? parseInt(tableSchema['CHARACTER_MAXIMUM_LENGTH']) : null,
     };
     return schema;
   }
 
-  convertToStandard(schema) {
+  /**
+   * Normalizes all foreign key relations, by creating the respective columns in the target tables.
+   *
+   * @param schema
+   * @returns {*}
+   */
+  normalizeSchemaRelations(schema) {
     schema = this.normalizeOneToOneRelations(schema);
     schema = this.normalizeOneToManyRelations(schema);
     schema = this.normalizeManyToManyRelations(schema);
@@ -30,6 +38,15 @@ module.exports = class MysqlSchemaPreprocessor {
     return schema;
   }
 
+  /**
+   * Normalizes one to one relations.
+   * Parses the table list and checks for tables
+   * which have unique foreign keys, are not CrossReferenceTables(many to many)
+   * and adds the foreign column on both sides of the relation.
+   *
+   * @param schema
+   * @returns {*}
+   */
   normalizeOneToOneRelations(schema) {
     let updatedSchema = schema;
     schema.forEach(table => {
@@ -56,8 +73,8 @@ module.exports = class MysqlSchemaPreprocessor {
               isArray: false
             }
           };
-          updatedSchema = this.addForeignColumnToTable(updatedSchema, column.dataType.references.table, targetColumn);
-          updatedSchema = this.addForeignColumnToTable(updatedSchema, table.name, sourceColumn);
+          updatedSchema = this.addColumnToTable(updatedSchema, column.dataType.references.table, targetColumn);
+          updatedSchema = this.addColumnToTable(updatedSchema, table.name, sourceColumn);
         }
       });
     });
@@ -65,6 +82,15 @@ module.exports = class MysqlSchemaPreprocessor {
     return updatedSchema;
   }
 
+  /**
+   * Normalizes one to many relations.
+   * Parses the table list and checks for tables
+   * which have foreign keys, are not CrossReferenceTables(many to many)
+   * and adds the foreign column on the holder.
+   *
+   * @param schema
+   * @returns {*}
+   */
   normalizeOneToManyRelations(schema) {
     let updatedSchema = schema;
     schema.forEach(table => {
@@ -83,7 +109,7 @@ module.exports = class MysqlSchemaPreprocessor {
               isArray: true
             }
           };
-          updatedSchema = this.addForeignColumnToTable(updatedSchema, column.dataType.references.table, targetColumn);
+          updatedSchema = this.addColumnToTable(updatedSchema, column.dataType.references.table, targetColumn);
           updatedSchema = this.removeColumnFromTable(updatedSchema, table.name, column.name);
         }
       });
@@ -91,6 +117,16 @@ module.exports = class MysqlSchemaPreprocessor {
 
     return updatedSchema;
   }
+
+  /**
+   * Normalizes many to many relations.
+   * Parses the table list and checks for tables
+   * which are CrossReferenceTables(many to many)
+   * and adds the foreign columns to the source and target tables.
+   *
+   * @param schema
+   * @returns {*}
+   */
   normalizeManyToManyRelations(schema) {
     let updatedSchema = schema;
     schema.forEach(table => {
@@ -122,8 +158,8 @@ module.exports = class MysqlSchemaPreprocessor {
         }
       };
 
-      updatedSchema = this.addForeignColumnToTable(updatedSchema, source.dataType.references.table, targetColumn);
-      updatedSchema = this.addForeignColumnToTable(updatedSchema, target.dataType.references.table, sourceColumn);
+      updatedSchema = this.addColumnToTable(updatedSchema, source.dataType.references.table, targetColumn);
+      updatedSchema = this.addColumnToTable(updatedSchema, target.dataType.references.table, sourceColumn);
       updatedSchema = this.removeColumnFromTable(updatedSchema, table.name, source.name);
       updatedSchema = this.removeColumnFromTable(updatedSchema, table.name, target.name);
 
@@ -132,19 +168,45 @@ module.exports = class MysqlSchemaPreprocessor {
     return updatedSchema;
   }
 
+  /**
+   * Strips tables with no columns from schema.
+   *
+   * @param schema
+   * @returns {Array<*>}
+   */
   stripEmptyTables(schema) {
     return schema.filter(table => !!Object.keys(table.columns).length);
   }
 
+  /**
+   * Checks if the table has any foreign key columns.
+   *
+   * @param table
+   * @returns {boolean}
+   */
   tableHasForeignKeys(table) {
     return !!table.columns.filter(column => column.foreignKey).length;
   }
 
+  /**
+   * Checks if the table is a cross reference map(association table for many to many relations).
+   *
+   * @param table
+   * @returns {boolean}
+   */
   tableIsCrossReferenceTable(table) {
     return table.columns.filter(column => column.foreignKey).length === table.columns.length;
   }
 
-  addForeignColumnToTable(schema, tableName, column) {
+  /**
+   * Adds a column to a table in the schema.
+   *
+   * @param schema
+   * @param tableName
+   * @param column
+   * @returns {Array|*}
+   */
+  addColumnToTable(schema, tableName, column) {
     return this.removeColumnFromTable(schema, tableName, column.name).map(table => {
       if (table.name !== tableName) {
         return table;
@@ -155,6 +217,14 @@ module.exports = class MysqlSchemaPreprocessor {
     });
   }
 
+  /**
+   * Removes a column from a table in the schema.
+   *
+   * @param schema
+   * @param tableName
+   * @param columnName
+   * @returns {Array|*}
+   */
   removeColumnFromTable(schema, tableName, columnName) {
     return schema.map(table => {
       if (table.name !== tableName) {

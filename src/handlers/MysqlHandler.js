@@ -28,6 +28,11 @@ class MysqlHandler extends BaseHandler {
     this.connection.connect();
   }
 
+  /**
+   * Reads the database schema, processes it and returns a normalized version of it.
+   * 
+   * @returns {Promise}
+   */
   readSchema() {
     return new Promise((resolve, reject) => {
       this.getTables().then(tables => {
