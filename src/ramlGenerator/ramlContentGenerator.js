@@ -14,11 +14,11 @@ class RamlContentGenerator {
             + 'type: object\n'
             + 'properties:';
 
-        Object.keys(table.columns).map(key => {
-            objectContent += ('\n' + `${this.DOUBLE_SPACE}` + key + (table.columns[key].nullable === 'NO' ? '' : '?') + ': ' + table.columns[key].type);
+        table.columns.forEach(column => {
+            objectContent += `\n${this.DOUBLE_SPACE}${column.name}${column.allowNull ? '?' : ''}: ${column.dataType.type}${column.dataType.isArray ? '[]' : ''}`;
         });
 
-        return objectContent;
+        return `${objectContent}\n`;
     }
 }
 

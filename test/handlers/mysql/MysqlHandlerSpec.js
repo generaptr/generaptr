@@ -41,8 +41,8 @@ describe('Mysql database handler', () => {
 
   it('should return an array with the table names', (done) => {
     try {
-      handler.readTables().then(tables => {
-        assert.equal(2, tables.length);
+      handler.getTables().then(tables => {
+        assert.equal(5, tables.length);
         done();
       }).catch(err => {
         console.log(err);
@@ -78,8 +78,10 @@ describe('Mysql database handler', () => {
   it('should detect a table relation', (done) => {
     try {
       handler.getRelationsForTable('accounts').then(relations => {
-        assert.equal('users', relations['user_id'].table);
-        assert.equal('id', relations['user_id'].column);
+        const relation = relations.pop();
+        assert.equal('users', relation.table);
+        assert.equal('id', relation.column);
+        assert.equal('user_id', relation.name);
 
         done();
       }).catch(err => {
@@ -95,24 +97,22 @@ describe('Mysql database handler', () => {
 
   it('should return a valid database schema', (done) => {
     try {
-      handler.readTables().then(tables => {
-        handler.readSchema(tables).then(schema => {
-          assert.equal(2, schema.length);
+      handler.readSchema().then(schema => {
+        assert.equal(4, schema.length);
 
-          const users = schema.filter(table => table.name  === 'users').pop();
-          const accounts = schema.filter(table => table.name === 'accounts').pop();
+        const users = schema.filter(table => table.name === 'users').pop();
+        const accounts = schema.filter(table => table.name === 'accounts').pop();
 
-          assert.equal('users', users.name);
-          assert.equal(4, Object.keys(users.columns).length);
-          assert.equal('accounts', accounts.name);
-          assert.equal(3, Object.keys(accounts.columns).length);
+        assert.equal('users', users.name);
+        assert.equal(6, Object.keys(users.columns).length);
+        assert.equal('accounts', accounts.name);
+        assert.equal(4, Object.keys(accounts.columns).length);
 
-          done();
-        }).catch(err => {
-          console.log(err);
-          assert.fail();
-          done();
-        });
+        done();
+      }).catch(err => {
+        console.log(err);
+        assert.fail();
+        done();
       });
     } catch (e) {
       assert.fail();
