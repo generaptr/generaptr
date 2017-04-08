@@ -1,5 +1,6 @@
 const typeConverter = require('../utils/typeConverter');
 const utils = require('../utils/utils');
+const logger = require('../logger');
 
 module.exports = class MysqlSchemaPreprocessor {
 
@@ -30,11 +31,14 @@ module.exports = class MysqlSchemaPreprocessor {
    * @returns {*}
    */
   normalizeSchemaRelations(schema) {
+    schema = this.sortSchema(schema);
     schema = this.normalizeOneToOneRelations(schema);
     schema = this.normalizeOneToManyRelations(schema);
     schema = this.normalizeManyToManyRelations(schema);
+    schema = this.cleanupUnusedPropertiesFromColumns(schema);
     schema = this.stripEmptyTables(schema);
-
+    logger.info(JSON.stringify(schema));
+    console.log(JSON.stringify(schema));
     return schema;
   }
 
@@ -57,6 +61,7 @@ module.exports = class MysqlSchemaPreprocessor {
         if (column.foreignKey && column.unique) {
           const targetColumn = {
             name: utils.singular(table.name),
+            primary: column.primary,
             unique: true,
             allowNull: false,
             dataType: {
@@ -235,6 +240,34 @@ module.exports = class MysqlSchemaPreprocessor {
       });
 
       return table;
+    });
+  }
+
+  /**
+   * Remove unused properties from schema.
+   *
+   * @param schema
+   * @returns {Array|*}
+   */
+  cleanupUnusedPropertiesFromColumns(schema) {
+    return schema.map(table => {
+      table.columns.map(column => {
+        delete column.foreignKey;
+        return column;
+      });
+      return table;
+    });
+  }
+
+  /**
+   * Sort schema so tables without foreign keys are first.
+   *
+   * @param schema
+   * @returns {Array|*}
+   */
+  sortSchema(schema) {
+    return schema.sort((a, b) => {
+      return  Number(this.tableHasForeignKeys(b)) - Number(this.tableHasForeignKeys(a));
     });
   }
 };
