@@ -1,6 +1,7 @@
 const FileUtil = require('../commons/utils/fileUtil');
 const DIRECTORY_STRUCTURE = require('../commons/constants/directoryStructure');
 const RamlContentGenerator = require('../ramlGenerator/ramlContentGenerator');
+const ExamplesContentGenerator = require('../ramlGenerator/examplesContentGenerator');
 const Utils = require('../commons/utils/utils');
 
 class FileService {
@@ -47,6 +48,42 @@ class FileService {
         });
 
         return Promise.all(promises);
+    }
+
+    /**
+     * Generate .json entity for every table from schema.
+     * File will be saved on path: ./raml/types/entityName.json
+     * @param schema - schema containing tables.
+     * Table structure: {
+     *  name: 'tableName',
+     *  columns: [
+     *   {
+     *      name: 'id',
+     *      ...
+     *   }
+     *  ]
+     * }
+     * @return {Promise.<*>}
+     */
+    generateTypeExampleFiles(schema) {
+        const promises = [];
+
+        schema.map(table => {
+            const typeExampleGenerated = ExamplesContentGenerator.generateTypeExampleContent(table);
+
+            promises.push(
+                FileUtil.writeFile(
+                    FileUtil.joinPaths(this.filePath, DIRECTORY_STRUCTURE.EXAMPLES, (typeExampleGenerated.type + '.json')),
+                    Utils.convertToJSON(typeExampleGenerated.data)
+                )
+            )
+        });
+
+        return Promise.all(promises);
+    }
+
+    generateTypeExamples(schema) {
+
     }
 }
 

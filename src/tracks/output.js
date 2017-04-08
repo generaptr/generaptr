@@ -16,16 +16,24 @@ exports.questions = [
 
 exports.handler = (data) => {
     let fileService = new FileService(data.output);
+    let schemaInfo;
 
     fileService.createDirectoryStructure()
         .then(() => {
             return inquirer.prompt(databaseTypeTrack.questions).then(databaseTypeTrack.handler);
         })
-        .then(data => {
-            return fileService.generateTypeFiles(data);
+        .then(schema => {
+            // get reference of current schema information
+            schemaInfo = schema;
+
+            return fileService.generateTypeFiles(schema);
         })
         .then(() => {
             console.log(chalk.green('Type files created'));
+            return fileService.generateTypeExampleFiles(schemaInfo);
+        })
+        .then(() => {
+            console.log(chalk.green('Example type files created'));
             return Promise.resolve();
         })
         .catch(exception => {
