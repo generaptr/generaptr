@@ -69,17 +69,9 @@ module.exports = class MysqlSchemaPreprocessor {
               isArray: false
             }
           };
-          const sourceColumn = {
-            name: column.name,
-            primary: column.primary,
-            unique: true,
-            dataType: {
-              type: column.dataType.type,
-              isArray: false
-            }
-          };
+
           updatedSchema = this.addColumnToTable(updatedSchema, column.dataType.references.table, targetColumn);
-          updatedSchema = this.addColumnToTable(updatedSchema, table.name, sourceColumn);
+          updatedSchema = this.removeColumnFromTable(updatedSchema, table.name, column.name);
         }
       });
     });
