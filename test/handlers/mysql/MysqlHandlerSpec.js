@@ -106,7 +106,7 @@ describe('Mysql database handler', () => {
         assert.equal('users', users.name);
         assert.equal(6, Object.keys(users.columns).length);
         assert.equal('accounts', accounts.name);
-        assert.equal(4, Object.keys(accounts.columns).length);
+        assert.equal(3, Object.keys(accounts.columns).length);
 
         done();
       }).catch(err => {
