@@ -26,11 +26,15 @@ exports.handler = (data) => {
             // get reference of current schema information
             schemaInfo = schema;
 
-            return fileService.generateTypeFiles(schema);
+            return fileService.generateTypeFiles(schemaInfo);
         })
         .then(() => {
             console.log(chalk.green('Type files created'));
+
             return fileService.generateTypeExampleFiles(schemaInfo);
+        })
+        .then(() => {
+            return fileService.generateTypeExamplesFiles();
         })
         .then(() => {
             console.log(chalk.green('Example type files created'));

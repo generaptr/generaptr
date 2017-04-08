@@ -1,13 +1,14 @@
 const Utils = require('../commons/utils/utils');
+const RamlUtil = require('../commons/utils/ramlUtil');
+const CacheUtil = require('../commons/utils/cacheUtil');
 
 class ExamplesContentGenerator {
     constructor() {
-        // cached types for using later if the same type is generated multiple times
-        this.cachedTypes = {};
         this.defaultRamlTypes = [
             'number', 'boolean', 'string', 'date-only', 'datetime',
             'time-only', 'datetime-only', 'file', 'nil', 'union'
         ];
+        this.PRIME_KEY = 'raml';
     }
 
     /**
@@ -26,8 +27,9 @@ class ExamplesContentGenerator {
             object.data[column.name] = this.generateColumnObject(column);
         });
 
-        // save object in cache
-        this.cachedTypes[object.type] = object.data;
+        // save object and object[] in cache
+        CacheUtil.add(this.PRIME_KEY, object.type, object.data);
+        CacheUtil.add(this.PRIME_KEY, (object.type + '[]'), Utils.fillArray(object.data, 2));
 
         return object;
     }
@@ -38,22 +40,16 @@ class ExamplesContentGenerator {
      * @return {{type: *}}
      */
     generateColumnObject(column) {
-        // get object from cache
-        let object = this.cachedTypes[Utils.toTitleCase(column.dataType.type)];
-
-        if (object) {
-            return object.data;
-        }
-
-        if (this.defaultRamlTypes.indexOf(column.dataType.type)) {
+        if (this.defaultRamlTypes.indexOf(column.dataType.type) >= 0) {
             // default raml type
-            return Utils.generateFakeData(column.name, column.dataType.type);
+            return RamlUtil.generateFakeData(column.name, column.dataType.type);
         } else {
-            // aggregate type
-            //todo: to be implemented: general objects {name: "asd", surname: "asd"}
+            // get object from cache
+            let object = CacheUtil.get(this.PRIME_KEY, Utils.toTitleCase(column.dataType.type + column.dataType.isArray ? '[]' : ''));
 
-            //save in cache
-            this.cachedTypes[Utils.toTitleCase(column.dataType.type)] = object;
+            if (!object) {
+                throw new Error('Custom object could not be found in cache.');
+            }
 
             return object;
         }

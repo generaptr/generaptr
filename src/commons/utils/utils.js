@@ -1,12 +1,6 @@
 const pluralize = require('pluralize');
-const faker = require('faker');
-const PROPERTIES_NAME = require('../constants/propertiesName');
 
 class Utils {
-
-    constructor() {
-        this.DEFAULT_WORD_TYPE = 'noun';
-    }
 
     /**
      * Convert data type name to 'Object' naming
@@ -26,58 +20,13 @@ class Utils {
     }
 
     /**
-     * Generate fake data for a field name
-     * @param field - field name
-     * @param type - data raml type: can be number / string / Boolean / date etc
-     * @return - fake data
+     * Pluralise a word that contains [] at the end
+     * @param word - string object
+     * @return {*} - Example: input: User[]; output: Users
      */
-    generateFakeData(field, type) {
-        for (let key of Object.keys(PROPERTIES_NAME)) {
-            if (PROPERTIES_NAME[key].indexOf(field) >= 0) {
-                return this.parseRamlValue(faker[key][field](), type);
-            }
-
-            // special case
-            if (key === field) {
-                // get first option for this category provided by faker api
-                return this.parseRamlValue(faker[key][PROPERTIES_NAME[key][0]](), type);
-            }
-        }
-
-        // special case for id / _id
-        if (field === 'id' || field === '_id') {
-            switch(type) {
-                case 'number':
-                    return faker.random.number(Number.MAX_SAFE_INTEGER);
-                case 'string':
-                    return faker.random.uuid();
-            }
-        }
-
-        // generate random word using lipsum
-        return this.parseRamlValue(faker.lorem.word(this.DEFAULT_WORD_TYPE), type);
-    }
-
-    /**
-     * Parse object value to a custom raml type
-     * @param value - value to be parsed
-     * @param type - raml type
-     * @return {*}
-     */
-    parseRamlValue(value, type) {
-        try {
-            switch(type) {
-                case 'number':
-                    return parseInt(value);
-                case 'string':
-                    return value.toString();
-                case 'boolean':
-                    return Boolean(value);
-                default:
-                    return value;
-            }
-        } catch (exception) {
-            return value;
+    pluraliseWordArray(word) {
+        if (word.includes('[]')) {
+            return pluralize.plural(word.substring(0, word.indexOf('[]')));
         }
     }
 
@@ -88,6 +37,30 @@ class Utils {
      */
     convertToJSON(object) {
         return JSON.stringify(object, null, '\t');
+    }
+
+    /**
+     * IndexOf implementation with ignore case
+     * @param array - array of strings
+     * @param query - query string
+     * @return {number}
+     */
+    indexOfIgnoreCase(array, query) {
+        if (typeof query !== 'string') {
+            throw new Error('Index of ignore case works only for string query');
+        }
+
+        return array.findIndex(item => query.toLowerCase() === item.toLowerCase());
+    }
+
+    /**
+     * Returns an array of a certain length with same object
+     * @param object - js plain object
+     * @param length - length of returned array
+     * @return {Array.<*>}
+     */
+    fillArray(object, length) {
+        return new Array(length).fill(object, 0, length);
     }
 }
 

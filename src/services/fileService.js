@@ -3,6 +3,7 @@ const DIRECTORY_STRUCTURE = require('../commons/constants/directoryStructure');
 const RamlContentGenerator = require('../ramlGenerator/ramlContentGenerator');
 const ExamplesContentGenerator = require('../ramlGenerator/examplesContentGenerator');
 const Utils = require('../commons/utils/utils');
+const CacheUtil = require('../commons/utils/cacheUtil');
 
 class FileService {
     constructor(filePath) {
@@ -82,8 +83,24 @@ class FileService {
         return Promise.all(promises);
     }
 
-    generateTypeExamples(schema) {
+    /**
+     * Generate .json Array entity for every array of objects saved in cache
+     * @return {Promise.<*>}
+     */
+    generateTypeExamplesFiles() {
+        const promises = [];
 
+        Object.keys(CacheUtil.getByPrimeKey(ExamplesContentGenerator.PRIME_KEY))
+            .filter(key => key.includes('[]'))
+            .map(key => {
+                promises.push(
+                    FileUtil.writeFile(
+                        FileUtil.joinPaths(this.filePath, DIRECTORY_STRUCTURE.EXAMPLES, (Utils.pluraliseWordArray(key) + '.json')),
+                        Utils.convertToJSON(CacheUtil.get(ExamplesContentGenerator.PRIME_KEY, key))
+                    ));
+            });
+
+        return Promise.all(promises);
     }
 }
 
