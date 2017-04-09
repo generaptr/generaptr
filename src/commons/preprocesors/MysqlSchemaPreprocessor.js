@@ -31,12 +31,12 @@ module.exports = class MysqlSchemaPreprocessor {
    * @returns {*}
    */
   normalizeSchemaRelations(schema) {
-    //schema = this.sortSchema(schema);
     schema = this.normalizeOneToOneRelations(schema);
     schema = this.normalizeOneToManyRelations(schema);
     schema = this.normalizeManyToManyRelations(schema);
     schema = this.cleanupUnusedPropertiesFromColumns(schema);
     schema = this.stripEmptyTables(schema);
+
     logger.info(JSON.stringify(schema));
     return schema;
   }
@@ -250,15 +250,25 @@ module.exports = class MysqlSchemaPreprocessor {
     });
   }
 
-  /**
-   * Sort schema so tables without foreign keys are first.
-   *
-   * @param schema
-   * @returns {Array|*}
-   */
-  sortSchema(schema) {
-    return schema.sort((a, b) => {
-      return  Number(this.tableHasForeignKeys(b)) - Number(this.tableHasForeignKeys(a));
-    });
-  }
+  // /**
+  //  * Sort schema so tables without foreign keys are first.
+  //  *
+  //  * @param schema
+  //  * @returns {Array|*}
+  //  */
+  // sortSchema(schema) {
+  //   return schema.sort((a, b) => {
+  //
+  //     return  Number(
+  //       Boolean(
+  //         b.columns.filter((column) => {
+  //           column.dataType.hasOwnProperty('isArray')
+  //         }).length)
+  //       ) - Number(
+  //         Boolean(a.columns.filter((column) => {
+  //           column.dataType.hasOwnProperty('isArray')
+  //         }).length)
+  //       );
+  //   });
+  // }
 };
