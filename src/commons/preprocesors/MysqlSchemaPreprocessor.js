@@ -31,14 +31,13 @@ module.exports = class MysqlSchemaPreprocessor {
    * @returns {*}
    */
   normalizeSchemaRelations(schema) {
-    schema = this.sortSchema(schema);
+    //schema = this.sortSchema(schema);
     schema = this.normalizeOneToOneRelations(schema);
     schema = this.normalizeOneToManyRelations(schema);
     schema = this.normalizeManyToManyRelations(schema);
     schema = this.cleanupUnusedPropertiesFromColumns(schema);
     schema = this.stripEmptyTables(schema);
     logger.info(JSON.stringify(schema));
-    console.log(JSON.stringify(schema));
     return schema;
   }
 

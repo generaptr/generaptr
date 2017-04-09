@@ -1,6 +1,7 @@
 const Utils = require('../commons/utils/utils');
 const RamlUtil = require('../commons/utils/ramlUtil');
 const CacheUtil = require('../commons/utils/cacheUtil');
+const SchemaUtil = require('../commons/utils/schemaUtil');
 
 class ExamplesContentGenerator {
     constructor() {
@@ -13,18 +14,48 @@ class ExamplesContentGenerator {
 
     /**
      * Generate type example for a certain table
+     * @param schema - entire collection of tables
      * @param table - table information
+     * @param depthLevel - columns depth level to be computed
      * @return {{type: *}} object containing - type name(with titleCase)
      *                                       - table content object to be stringified
      */
-    generateTypeExampleContent(table) {
+    generateTypeExampleContent(schema, table, depthLevel) {
         let object = {
-            type: Utils.toTitleCase(table.name),
-            data: {}
+            type: Utils.toTitleCase(table.name)
         };
 
+        // get table from cache
+        object.data = CacheUtil.get(this.PRIME_KEY, object.type);
+
+        if (object.data) {
+            return object;
+        } else {
+            object.data = {};
+        }
+
         table.columns.map(column => {
-            object.data[column.name] = this.generateColumnObject(column);
+            if (this.defaultRamlTypes.includes(column.dataType.type)) {
+                // default raml type
+                object.data[column.name] = RamlUtil.generateFakeData(column.name, column.dataType.type);
+            } else {
+                // get object from cache
+                let cachedObject = CacheUtil.get(this.PRIME_KEY, (column.dataType.type + (column.dataType.isArray ? '[]' : '')));
+
+                if (cachedObject) {
+                    object.data[column.name] = cachedObject;
+                } else {
+                    if (depthLevel >= 2) {
+                        // depth level exceeded
+                        object.data[column.name] = {};
+                    } else {
+                        // generate recursively
+                        object.data[column.name] = column.dataType.isArray ?
+                            (Utils.fillArray(this.generateTypeExampleContent(schema, SchemaUtil.getNormalizedTableByType(schema, column.dataType.type), (depthLevel + 1)).data, 2)) :
+                            (this.generateTypeExampleContent(schema, SchemaUtil.getNormalizedTableByType(schema, column.dataType.type), (depthLevel + 1)).data, 2);
+                    }
+                }
+            }
         });
 
         // save object and object[] in cache
@@ -32,27 +63,6 @@ class ExamplesContentGenerator {
         CacheUtil.add(this.PRIME_KEY, (object.type + '[]'), Utils.fillArray(object.data, 2));
 
         return object;
-    }
-
-    /**
-     * Generate random content for a column
-     * @param column
-     * @return {{type: *}}
-     */
-    generateColumnObject(column) {
-        if (this.defaultRamlTypes.indexOf(column.dataType.type) >= 0) {
-            // default raml type
-            return RamlUtil.generateFakeData(column.name, column.dataType.type);
-        } else {
-            // get object from cache
-            let object = CacheUtil.get(this.PRIME_KEY, Utils.toTitleCase(column.dataType.type + column.dataType.isArray ? '[]' : ''));
-
-            if (!object) {
-                throw new Error('Custom object could not be found in cache.');
-            }
-
-            return object;
-        }
     }
 }
 

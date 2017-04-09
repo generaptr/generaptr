@@ -10,7 +10,6 @@ class CacheUtil {
      * @param value - value object to be added in cache
      */
     add(primeKey, key, value) {
-        console.log(`Add new key:${key} and value: ${JSON.stringify(value)}`);
         if (!this.cache[primeKey]) {
             this.cache[primeKey] = {[key]: value};
         } else {

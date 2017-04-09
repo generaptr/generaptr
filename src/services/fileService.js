@@ -70,7 +70,7 @@ class FileService {
         const promises = [];
 
         schema.map(table => {
-            const typeExampleGenerated = ExamplesContentGenerator.generateTypeExampleContent(table);
+            const typeExampleGenerated = ExamplesContentGenerator.generateTypeExampleContent(schema, table, 0);
 
             promises.push(
                 FileUtil.writeFile(
