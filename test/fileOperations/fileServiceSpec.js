@@ -3,10 +3,9 @@ const before = require('mocha').before;
 const fs = require('fs');
 const path = require('path');
 
-const FileService = require('../../src/services/fileService');
+const FileService = require('../../src/fileOperations/fileService');
 const DIRECTORY_STRUCTURE = require('../../src/commons/constants/directoryStructure');
 const RamlContentGenerator = require('../../src/ramlGenerator/ramlContentGenerator');
-const Utils = require('../../src/commons/utils/utils');
 
 describe('File operation service', () => {
   before(() => {

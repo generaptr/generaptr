@@ -2,6 +2,7 @@ const Utils = require('../commons/utils/utils');
 const RamlUtil = require('../commons/utils/ramlUtil');
 const CacheUtil = require('../commons/utils/cacheUtil');
 const SchemaUtil = require('../commons/utils/schemaUtil');
+const Config = require('../configs/config');
 
 class ExamplesContentGenerator {
     constructor() {
@@ -45,7 +46,7 @@ class ExamplesContentGenerator {
                 if (cachedObject) {
                     object.data[column.name] = cachedObject;
                 } else {
-                    if (depthLevel >= 2) {
+                    if (depthLevel >= Config.DEFAULT_DEPTH_LEVEL) {
                         // depth level exceeded
                         object.data[column.name] = {};
                     } else {

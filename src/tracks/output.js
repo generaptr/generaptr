@@ -3,7 +3,7 @@ const chalk = require('chalk');
 const inquirer = require('inquirer');
 
 const databaseTypeTrack = require('./databaseType');
-const FileService = require('../services/fileService');
+const FileService = require('../fileOperations/fileService');
 
 exports.questions = [
     {
