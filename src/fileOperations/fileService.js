@@ -20,7 +20,7 @@ class FileService {
    */
   createDirectoryStructure() {
     const promises = [];
-
+    /* istanbul ignore next */
     if (!fileUtil.isDirectory(this.filePath)) {
       return Promise.reject('Invalid directory path');
     }

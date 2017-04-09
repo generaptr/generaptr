@@ -13,23 +13,23 @@ describe('mysql preprocesor test', () => {
       'CHARACTER_MAXIMUM_LENGTH': '255'
     };
     const processed = preProcessor.convertToStandardSchema(colSchema);
-    assert.equal('test', processed.name);
-    assert.equal(true, processed.primary);
-    assert.equal(false, processed.allowNull);
-    assert.equal(false, processed.foreignKey);
-    assert.equal(true, processed.unique);
-    assert.equal('string', processed.dataType.type);
-    assert.equal(255, processed.dataType.size);
+    assert.equal(processed.name, 'test');
+    assert.equal(processed.primary, true);
+    assert.equal(processed.allowNull, false);
+    assert.equal(processed.foreignKey, false);
+    assert.equal(processed.unique, true);
+    assert.equal(processed.dataType.type, 'string');
+    assert.equal(processed.dataType.size, 255);
 
     colSchema.COLUMN_NAME = null;
-    assert.equal(null, preProcessor.convertToStandardSchema(colSchema).name);
+    assert.equal(preProcessor.convertToStandardSchema(colSchema).name, null);
   });
 
   it('should clean up table schema', () => {
     const valid = mocks.PROCESSED_SCHEMA_ONE_TABLE[0];
     const processed = preProcessor.normalizeSchemaRelations(mocks.SCHEMA_ONE_TABLE).pop();
-    assert.equal(valid.name, processed.name);
-    assert.equal(valid.columns.length, processed.columns.length);
+    assert.equal(processed.name, valid.name);
+    assert.equal(processed.columns.length, valid.columns.length);
   });
 
   it('should normalize one to one relations', () => {
@@ -39,10 +39,10 @@ describe('mysql preprocesor test', () => {
     const processedAccounts = processed[0];
     const processedUsers = processed[1];
 
-    assert.equal(validAccounts.name, processedAccounts.name);
-    assert.equal(validAccounts.columns.length, processedAccounts.columns.length);
-    assert.equal(validUsers.name, processedUsers.name);
-    assert.equal(validUsers.columns.length, processedUsers.columns.length);
+    assert.equal(processedAccounts.name, validAccounts.name);
+    assert.equal(processedAccounts.columns.length, validAccounts.columns.length);
+    assert.equal(processedUsers.name, validUsers.name);
+    assert.equal(processedUsers.columns.length, validUsers.columns.length);
   });
 
   it('should normalize many to one relations', () => {
@@ -52,10 +52,10 @@ describe('mysql preprocesor test', () => {
     const processedAccounts = processed[0];
     const processedApplications = processed[1];
 
-    assert.equal(validAccounts.name, processedAccounts.name);
-    assert.equal(validAccounts.columns.length, processedAccounts.columns.length);
-    assert.equal(validApplications.name, processedApplications.name);
-    assert.equal(validApplications.columns.length, processedApplications.columns.length);
+    assert.equal(processedAccounts.name, validAccounts.name);
+    assert.equal(processedAccounts.columns.length, validAccounts.columns.length);
+    assert.equal(processedApplications.name, validApplications.name);
+    assert.equal(processedApplications.columns.length, validApplications.columns.length);
   });
 
   it('should normalize many to many relations', () => {
@@ -65,10 +65,10 @@ describe('mysql preprocesor test', () => {
     const processedGroups = processed[0];
     const processedUsers = processed[1];
 
-    assert.equal(validGroups.name, processedGroups.name);
-    assert.equal(validGroups.columns.length, processedGroups.columns.length);
-    assert.equal(validUsers.name, processedUsers.name);
-    assert.equal(validUsers.columns.length, processedUsers.columns.length);
+    assert.equal(processedGroups.name, validGroups.name);
+    assert.equal(processedGroups.columns.length, validGroups.columns.length);
+    assert.equal(processedUsers.name, validUsers.name);
+    assert.equal(processedUsers.columns.length, validUsers.columns.length);
   });
   
 });

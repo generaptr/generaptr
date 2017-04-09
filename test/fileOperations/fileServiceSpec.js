@@ -40,7 +40,7 @@ describe('File operation service', () => {
     try {
       new FileService();
     } catch (exception) {
-      assert.equal('FilePath not provided', exception.message);
+      assert.equal(exception.message, 'FilePath not provided');
     }
   });
 

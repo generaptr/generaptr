@@ -4,34 +4,34 @@ const assert = require('assert');
 describe('utils should work as expected', () => {
 
   it('should convert to title case', () => {
-    assert.equal('User', utils.toTitleCase('users'));
+    assert.equal(utils.toTitleCase('users'), 'User');
   });
 
   it('should convert to singular', () => {
-    assert.equal('user', utils.singular('users'));
+    assert.equal(utils.singular('users'), 'user');
   });
 
   it('should convert from array notation to pluralized', () => {
-    assert.equal('Users', utils.pluraliseWordArray('User[]'));
+    assert.equal(utils.pluraliseWordArray('User[]'), 'Users');
   });
 
   it('should convert to json', () => {
-    assert.equal('{\n\t"user": "test"\n}', utils.convertToJSON({user: 'test'}));
+    assert.equal(utils.convertToJSON({user: 'test'}), '{\n\t"user": "test"\n}');
   });
 
   it('should throw an error when trying to pass different query', () => {
     try {
       utils.indexOfIgnoreCase([], 2);
     } catch (e) {
-      assert.equal('Index of ignore case works only for string query', e.message);
+      assert.equal(e.message, 'Index of ignore case works only for string query');
     }
   });
 
   it('should find the index with the right query', () => {
-    assert.equal(0, utils.indexOfIgnoreCase(['abc'], 'abc'));
+    assert.equal(utils.indexOfIgnoreCase(['abc'], 'abc'), 0);
   });
 
   it('should fill the array', () => {
-    assert.equal(2, utils.fillArray({name: 'test'}, 2).length);
+    assert.equal(utils.fillArray({name: 'test'}, 2).length, 2);
   });
 });

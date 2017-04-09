@@ -1,4 +1,3 @@
-const logger = require('../commons/logger');
 const MysqlSchemaPreprocessor = require('../commons/preprocesors/MysqlSchemaPreprocessor');
 
 module.exports = class BaseHandler {
@@ -13,16 +12,14 @@ module.exports = class BaseHandler {
    * @param {*} columnSchema sql column schema
    * @returns {*} normalized column schema
    */
-  normalizeTableSchema(columnSchema) {
+  normalizeColumnSchema(columnSchema) {
     switch (this.driver) {
       case 'mysql': {
         return (new MysqlSchemaPreprocessor()).convertToStandardSchema(columnSchema);
       }
       default: {
-        logger.warn('Database driver not supported.');
+        throw new Error('Database driver not supported.');
       }
-
-        return false;
     }
   }
 
@@ -38,10 +35,8 @@ module.exports = class BaseHandler {
         return (new MysqlSchemaPreprocessor()).normalizeSchemaRelations(schema);
       }
       default: {
-        logger.warn('Database driver not supported.');
+        throw new Error('Database driver not supported.');
       }
-
-        return false;
     }
   }
 };

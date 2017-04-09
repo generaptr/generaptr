@@ -43,8 +43,14 @@ class MysqlHandler extends BaseHandler {
 
         Promise.all(schemas).then(schema => {
           resolve(this.normalizeRelations(schema));
-        }).catch(err => reject(err));
-      }).catch(err => reject(err));
+        }).catch(err => {
+          /* istanbul ignore next */
+          return reject(err);
+        });
+      }).catch(err => {
+        /* istanbul ignore next */
+        return reject(err);
+      });
     });
   }
   /**
@@ -57,6 +63,7 @@ class MysqlHandler extends BaseHandler {
       this.connection.query(
         `SELECT TABLE_NAME FROM TABLES WHERE TABLE_SCHEMA = '${this.options.database}';`,
         (err, results) => {
+          /* istanbul ignore next */
           if (err) {
             return reject(err);
           }
@@ -85,12 +92,13 @@ class MysqlHandler extends BaseHandler {
       this.connection.query(
         `SELECT COLUMN_NAME, IS_NULLABLE, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, COLUMN_KEY FROM COLUMNS WHERE TABLE_SCHEMA = '${this.options.database}' AND TABLE_NAME = '${tableName}';`,
         (err, columns) => {
+          /* istanbul ignore next */
           if (err) {
             return reject(err);
           }
           return this.getRelationsForTable(tableName).then(relations => {
             columns.forEach((result) => {
-              const column = this.normalizeTableSchema(result);
+              const column = this.normalizeColumnSchema(result);
               let relation = relations.filter(rel => rel.name === column.name).pop();
               if (relation) {
                 column.foreignKey = true;
@@ -118,6 +126,7 @@ class MysqlHandler extends BaseHandler {
       this.connection.query(
         `SELECT COLUMN_NAME, rc.REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME FROM REFERENTIAL_CONSTRAINTS rc JOIN KEY_COLUMN_USAGE cu ON cu.CONSTRAINT_NAME = rc.CONSTRAINT_NAME WHERE rc.CONSTRAINT_SCHEMA = '${this.options.database}' AND rc.TABLE_NAME = '${table}'`,
         (err, relations) => {
+          /* istanbul ignore next */
           if (err) {
             return reject(err);
           }
