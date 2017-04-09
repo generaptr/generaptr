@@ -39,7 +39,6 @@ module.exports = class MysqlSchemaPreprocessor {
     schema = this.sortSchema(schema);
 
     logger.info(JSON.stringify(schema));
-    console.log(JSON.stringify(schema));
     return schema;
   }
 
