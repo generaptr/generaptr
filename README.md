@@ -1,7 +1,7 @@
 ![](http://i.imgur.com/yCRAubA.png)
 ========
 
-[![Build Status](https://travis-ci.org/cupsadarius/generaptr.svg)](http://travis-ci.org/cupsadarius/generaptr) [![Join the chat at https://gitter.im/generaptr/proposals](https://badges.gitter.im/generaptr/proposals.svg)](https://gitter.im/generaptr/proposals?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Build Status](https://travis-ci.org/cupsadarius/generaptr.svg)](http://travis-ci.org/cupsadarius/generaptr) [![Join the chat at https://gitter.im/generaptr/proposals](https://badges.gitter.im/generaptr/proposals.svg)](https://gitter.im/generaptr/proposals?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Coverage Status](https://coveralls.io​/repos/cupsadarius/generaptr/badge.svg?branch=master)](https://coveralls.io/r/cupsadarius/generaptr?branch=master)
 
 -------
 ### Generaptr is a node cli package that:

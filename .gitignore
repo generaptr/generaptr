@@ -3,4 +3,5 @@ dist
 .idea
 .vscode
 raml
+coverage
 debug-log.json

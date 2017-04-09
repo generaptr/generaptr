@@ -1,7 +1,9 @@
 {
   "name": "generaptr",
   "scripts": {
-    "test": "./node_modules/.bin/mocha test/**/*Spec.js test/**/**/*Spec.js"
+    "test": "./node_modules/.bin/mocha test/**/*Spec.js test/**/**/*Spec.js",
+    "test:coverage": "node --harmony ./node_modules/istanbul-harmony/lib/cli.js cover --hook-run-in-context ./node_modules/mocha/bin/_mocha -- --R spec --U exports test/**/*Spec.js test/**/**/*Spec.js",
+    "coveralls": "cat ./coverage/lcov.info | ./node_modules/.bin/coveralls"
   },
   "version": "0.1.0",
   "description": "Api generator",
@@ -30,6 +32,8 @@
   },
   "devDependencies": {
     "assert": "^1.4.1",
+    "coveralls": "^2.13.0",
+    "istanbul-harmony": "^0.3.16",
     "mocha": "^3.2.0"
   },
   "dependencies": {

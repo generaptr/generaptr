@@ -18,3 +18,9 @@ services:
 before_install:
   - mysql -e 'CREATE DATABASE test;'
   - mysql -u root test < ./test/handlers/mysql/data.sql
+
+script:
+  - npm run test:coverages
+
+after_success:
+  - npm run coveralls
