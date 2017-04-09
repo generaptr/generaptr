@@ -2,24 +2,28 @@ const typeConverter = require('../utils/typeConverter');
 const utils = require('../utils/utils');
 const logger = require('../logger');
 
+const CROSS_REFERENCE_COL_LENGTH = 2;
+const FIRST_INDEX = 0;
+const SECOND_INDEX = 1;
+
 module.exports = class MysqlSchemaPreprocessor {
 
   /**
    * Normalize the table schema.
    *
-   * @param tableSchema
-   * @returns {{}}
+   * @param {*} columnSchema column schema to be normalized
+   * @returns {{}} normalized column schema
    */
-  convertToStandardSchema(tableSchema) {
+  convertToStandardSchema(columnSchema) {
     const schema = {};
-    schema.name = tableSchema['COLUMN_NAME'] ? tableSchema['COLUMN_NAME'] : null;
-    schema.primary = !!(tableSchema['COLUMN_KEY'] && tableSchema['COLUMN_KEY'] === 'PRI');
-    schema.unique = !!(tableSchema['COLUMN_KEY'] && (tableSchema['COLUMN_KEY'] === 'PRI' || tableSchema['COLUMN_KEY'] === 'UNI'));
-    schema.foreignKey = !!(tableSchema['COLUMN_KEY'] && tableSchema['COLUMN_KEY'] === 'MUL');
-    schema.allowNull = !!(tableSchema['IS_NULLABLE'] && tableSchema['IS_NULLABLE'] === 'YES');
+    schema.name = columnSchema.COLUMN_NAME ? columnSchema.COLUMN_NAME : null;
+    schema.primary = Boolean(columnSchema.COLUMN_KEY && columnSchema.COLUMN_KEY === 'PRI');
+    schema.unique = Boolean(columnSchema.COLUMN_KEY && (columnSchema.COLUMN_KEY === 'PRI' || columnSchema.COLUMN_KEY === 'UNI'));
+    schema.foreignKey = Boolean(columnSchema.COLUMN_KEY && columnSchema.COLUMN_KEY === 'MUL');
+    schema.allowNull = Boolean(columnSchema.IS_NULLABLE && columnSchema.IS_NULLABLE === 'YES');
     schema.dataType = {
-      type: typeConverter.convertSqlType(tableSchema['DATA_TYPE']),
-      size: tableSchema['CHARACTER_MAXIMUM_LENGTH'] ? parseInt(tableSchema['CHARACTER_MAXIMUM_LENGTH']) : null,
+      type: typeConverter.convertSqlType(columnSchema.DATA_TYPE),
+      size: columnSchema.CHARACTER_MAXIMUM_LENGTH ? parseInt(columnSchema.CHARACTER_MAXIMUM_LENGTH) : null,
     };
     return schema;
   }
@@ -27,18 +31,19 @@ module.exports = class MysqlSchemaPreprocessor {
   /**
    * Normalizes all foreign key relations, by creating the respective columns in the target tables.
    *
-   * @param schema
-   * @returns {*}
+   * @param {*} schema db schema
+   * @returns {*} normalized db schema
    */
   normalizeSchemaRelations(schema) {
-    schema = this.normalizeOneToOneRelations(schema);
-    schema = this.normalizeOneToManyRelations(schema);
-    schema = this.normalizeManyToManyRelations(schema);
-    schema = this.cleanupUnusedPropertiesFromColumns(schema);
-    schema = this.stripEmptyTables(schema);
+    let normalizedSchema = schema;
+    normalizedSchema = this.normalizeOneToOneRelations(normalizedSchema);
+    normalizedSchema = this.normalizeOneToManyRelations(normalizedSchema);
+    normalizedSchema = this.normalizeManyToManyRelations(normalizedSchema);
+    normalizedSchema = this.cleanupUnusedPropertiesFromColumns(normalizedSchema);
+    normalizedSchema = this.stripEmptyTables(normalizedSchema);
 
-    logger.info(JSON.stringify(schema));
-    return schema;
+    logger.info(JSON.stringify(normalizedSchema));
+    return normalizedSchema;
   }
 
   /**
@@ -47,8 +52,8 @@ module.exports = class MysqlSchemaPreprocessor {
    * which have unique foreign keys, are not CrossReferenceTables(many to many)
    * and adds the foreign column on both sides of the relation.
    *
-   * @param schema
-   * @returns {*}
+   * @param {*} schema db schema
+   * @returns {*} normalized db schema
    */
   normalizeOneToOneRelations(schema) {
     let updatedSchema = schema;
@@ -65,8 +70,8 @@ module.exports = class MysqlSchemaPreprocessor {
             allowNull: false,
             dataType: {
               type: utils.toTitleCase(table.name),
-              isArray: false
-            }
+              isArray: false,
+            },
           };
 
           updatedSchema = this.addColumnToTable(updatedSchema, column.dataType.references.table, targetColumn);
@@ -84,8 +89,8 @@ module.exports = class MysqlSchemaPreprocessor {
    * which have foreign keys, are not CrossReferenceTables(many to many)
    * and adds the foreign column on the holder.
    *
-   * @param schema
-   * @returns {*}
+   * @param {*} schema db schema
+   * @returns {*} normalized db schema
    */
   normalizeOneToManyRelations(schema) {
     let updatedSchema = schema;
@@ -102,8 +107,8 @@ module.exports = class MysqlSchemaPreprocessor {
             allowNull: true,
             dataType: {
               type: utils.toTitleCase(table.name),
-              isArray: true
-            }
+              isArray: true,
+            },
           };
           updatedSchema = this.addColumnToTable(updatedSchema, column.dataType.references.table, targetColumn);
           updatedSchema = this.removeColumnFromTable(updatedSchema, table.name, column.name);
@@ -120,17 +125,17 @@ module.exports = class MysqlSchemaPreprocessor {
    * which are CrossReferenceTables(many to many)
    * and adds the foreign columns to the source and target tables.
    *
-   * @param schema
-   * @returns {*}
+   * @param {*} schema db schema
+   * @returns {*} normalized db schema
    */
   normalizeManyToManyRelations(schema) {
     let updatedSchema = schema;
     schema.forEach(table => {
-      if (!this.tableIsCrossReferenceTable(table) || table.columns.length !== 2) {
+      if (!this.tableIsCrossReferenceTable(table) || table.columns.length !== CROSS_REFERENCE_COL_LENGTH) {
         return table;
       }
-      const source = table.columns[0];
-      const target = table.columns[1];
+      const source = table.columns[FIRST_INDEX];
+      const target = table.columns[SECOND_INDEX];
 
       const sourceColumn = {
         name: source.dataType.references.table,
@@ -139,8 +144,8 @@ module.exports = class MysqlSchemaPreprocessor {
         allowNull: true,
         dataType: {
           type: utils.toTitleCase(source.dataType.type),
-          isArray: true
-        }
+          isArray: true,
+        },
       };
 
       const targetColumn = {
@@ -150,15 +155,14 @@ module.exports = class MysqlSchemaPreprocessor {
         allowNull: true,
         dataType: {
           type: utils.toTitleCase(target.dataType.type),
-          isArray: true
-        }
+          isArray: true,
+        },
       };
 
       updatedSchema = this.addColumnToTable(updatedSchema, source.dataType.references.table, targetColumn);
       updatedSchema = this.addColumnToTable(updatedSchema, target.dataType.references.table, sourceColumn);
       updatedSchema = this.removeColumnFromTable(updatedSchema, table.name, source.name);
       updatedSchema = this.removeColumnFromTable(updatedSchema, table.name, target.name);
-
     });
 
     return updatedSchema;
@@ -167,28 +171,28 @@ module.exports = class MysqlSchemaPreprocessor {
   /**
    * Strips tables with no columns from schema.
    *
-   * @param schema
-   * @returns {Array<*>}
+   * @param {*} schema db schema
+   * @returns {Array<*>} cleaned up schema
    */
   stripEmptyTables(schema) {
-    return schema.filter(table => !!Object.keys(table.columns).length);
+    return schema.filter(table => Boolean(Object.keys(table.columns).length));
   }
 
   /**
    * Checks if the table has any foreign key columns.
    *
-   * @param table
-   * @returns {boolean}
+   * @param {*} table db table
+   * @returns {boolean} checked if it contains foreign keys.
    */
   tableHasForeignKeys(table) {
-    return !!table.columns.filter(column => column.foreignKey).length;
+    return Boolean(table.columns.filter(column => column.foreignKey).length);
   }
 
   /**
    * Checks if the table is a cross reference map(association table for many to many relations).
    *
-   * @param table
-   * @returns {boolean}
+   * @param {*} table table schema
+   * @returns {boolean} checked if cross reference table.
    */
   tableIsCrossReferenceTable(table) {
     return table.columns.filter(column => column.foreignKey).length === table.columns.length;
@@ -197,10 +201,10 @@ module.exports = class MysqlSchemaPreprocessor {
   /**
    * Adds a column to a table in the schema.
    *
-   * @param schema
-   * @param tableName
-   * @param column
-   * @returns {Array|*}
+   * @param {*} schema db schema
+   * @param {string} tableName table in which to add column
+   * @param {*} column column to be added
+   * @returns {Array|*} updated schema
    */
   addColumnToTable(schema, tableName, column) {
     return this.removeColumnFromTable(schema, tableName, column.name).map(table => {
@@ -216,10 +220,10 @@ module.exports = class MysqlSchemaPreprocessor {
   /**
    * Removes a column from a table in the schema.
    *
-   * @param schema
-   * @param tableName
-   * @param columnName
-   * @returns {Array|*}
+   * @param {*} schema db schema
+   * @param {string} tableName table from which we need to remove
+   * @param {string} columnName column to be removed
+   * @returns {Array|*} schema with removed column
    */
   removeColumnFromTable(schema, tableName, columnName) {
     return schema.map(table => {
@@ -237,8 +241,8 @@ module.exports = class MysqlSchemaPreprocessor {
   /**
    * Remove unused properties from schema.
    *
-   * @param schema
-   * @returns {Array|*}
+   * @param {*} schema db schema
+   * @returns {Array|*} cleaned up db schema
    */
   cleanupUnusedPropertiesFromColumns(schema) {
     return schema.map(table => {
@@ -250,25 +254,4 @@ module.exports = class MysqlSchemaPreprocessor {
     });
   }
 
-  // /**
-  //  * Sort schema so tables without foreign keys are first.
-  //  *
-  //  * @param schema
-  //  * @returns {Array|*}
-  //  */
-  // sortSchema(schema) {
-  //   return schema.sort((a, b) => {
-  //
-  //     return  Number(
-  //       Boolean(
-  //         b.columns.filter((column) => {
-  //           column.dataType.hasOwnProperty('isArray')
-  //         }).length)
-  //       ) - Number(
-  //         Boolean(a.columns.filter((column) => {
-  //           column.dataType.hasOwnProperty('isArray')
-  //         }).length)
-  //       );
-  //   });
-  // }
 };

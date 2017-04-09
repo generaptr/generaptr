@@ -6,7 +6,7 @@ class MysqlHandler extends BaseHandler {
   /**
    * Constructor for the MySqlHandler.
    *
-   * @param options Connection parameters.
+   * @param {*} options Connection parameters.
    */
   constructor(options) {
     super('mysql');
@@ -30,8 +30,8 @@ class MysqlHandler extends BaseHandler {
 
   /**
    * Reads the database schema, processes it and returns a normalized version of it.
-   * 
-   * @returns {Promise}
+   *
+   * @returns {Promise} database schema
    */
   readSchema() {
     return new Promise((resolve, reject) => {
@@ -50,7 +50,7 @@ class MysqlHandler extends BaseHandler {
   /**
    * Reads the information schema and returns an array of tables.
    *
-   * @returns {Promise}
+   * @returns {Promise} array of table names.
    */
   getTables() {
     return new Promise((resolve, reject) => {
@@ -61,9 +61,9 @@ class MysqlHandler extends BaseHandler {
             return reject(err);
           }
           const tables = results.map((result) => {
-            return result['TABLE_NAME'];
+            return result.TABLE_NAME;
           });
-          resolve(tables);
+          return resolve(tables);
         }
       );
     });
@@ -72,8 +72,8 @@ class MysqlHandler extends BaseHandler {
   /**
    * Reads the schema for a given table.
    *
-   * @param tableName
-   * @returns {Promise}
+   * @param {string} tableName table name
+   * @returns {Promise} table schema
    */
   getTableSchema(tableName) {
     return new Promise((resolve, reject) => {
@@ -88,10 +88,10 @@ class MysqlHandler extends BaseHandler {
           if (err) {
             return reject(err);
           }
-          this.getRelationsForTable(tableName).then(relations => {
+          return this.getRelationsForTable(tableName).then(relations => {
             columns.forEach((result) => {
               const column = this.normalizeTableSchema(result);
-              let relation = relations.filter(relation => relation.name === column.name).pop();
+              let relation = relations.filter(rel => rel.name === column.name).pop();
               if (relation) {
                 column.foreignKey = true;
                 column.dataType.references = relation;
@@ -100,7 +100,7 @@ class MysqlHandler extends BaseHandler {
               }
               table.columns.push(column);
             });
-            resolve(table);
+            return resolve(table);
           });
         }
       );
@@ -110,8 +110,8 @@ class MysqlHandler extends BaseHandler {
   /**
    * Reads all the relations for a given table.
    *
-   * @param table
-   * @returns {Promise}
+   * @param {string} table table name
+   * @return {Promise} foreign key relations
    */
   getRelationsForTable(table) {
     return new Promise((resolve, reject) => {
@@ -121,13 +121,13 @@ class MysqlHandler extends BaseHandler {
           if (err) {
             return reject(err);
           }
-          resolve(relations.map(
+          return resolve(relations.map(
             relation => {
               return {
-                name: relation['COLUMN_NAME'],
-                table: relation['REFERENCED_TABLE_NAME'],
-                column: relation['REFERENCED_COLUMN_NAME'],
-              }
+                name: relation.COLUMN_NAME,
+                table: relation.REFERENCED_TABLE_NAME,
+                column: relation.REFERENCED_COLUMN_NAME,
+              };
             }
           ));
         }

@@ -7,7 +7,7 @@ describe('Raml content generator', () => {
 
     // table mock
     this.table = {
-      name: 'User',
+      name: 'users',
       columns: [
         {
           name: 'id',
@@ -24,6 +24,14 @@ describe('Raml content generator', () => {
             type: 'string',
             size: 45
           },
+        },
+        {
+          name: 'roles',
+          allowNull: true,
+          dataType: {
+            type: 'Role',
+            isArray: true
+          },
         }
       ]
     };
@@ -34,7 +42,8 @@ describe('Raml content generator', () => {
       + 'type: object\n'
       + 'properties:'
       + '\n  id: number'
-      + '\n  firstName?: string\n';
+      + '\n  firstName?: string'
+      + '\n  roles?: Role[]\n';
 
     const typeContent = RamlContentGenerator.generateTypeContent(this.table);
     assert.equal(typeContent, expectedResponse);

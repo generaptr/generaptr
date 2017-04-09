@@ -15,12 +15,12 @@ exports.questions = [
     message: 'Port:',
     default: '3306',
     validate: (value) => {
-      if (!isNaN( parseInt(value))) {
+      if (!isNaN(parseInt(value))) {
         return true;
       }
 
       return chalk.red('Port must be a number');
-    }
+    },
   },
   {
     name: 'database',
@@ -32,19 +32,19 @@ exports.questions = [
       }
 
       return chalk.red('Database not provided');
-    }
+    },
   },
   {
     name: 'user',
     type: 'input',
     message: 'User (needs read access to information_schema):',
-    default: 'root'
+    default: 'root',
   },
   {
     name: 'password',
     type: 'password',
     message: 'Password:',
-    default: ''
+    default: '',
   },
 ];
 
@@ -52,7 +52,7 @@ exports.handler = (data) => {
   return new Promise((resolve, reject) => {
     try {
       if (!mysqlConnectionValidator.isValid(data)) {
-        reject(`Invalid connection data.`);
+        reject('Invalid connection data.');
       }
 
       const handler = new MysqlHandler(data);
@@ -61,9 +61,8 @@ exports.handler = (data) => {
         resolve(schema);
         handler.close();
       }).catch(err => reject(err));
-
     } catch (e) {
       reject(e);
     }
-  })
+  });
 };

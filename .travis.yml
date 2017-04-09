@@ -20,6 +20,7 @@ before_install:
   - mysql -u root test < ./test/handlers/mysql/data.sql
 
 script:
+  - npm run lint
   - npm run test:coverage
 
 after_success:

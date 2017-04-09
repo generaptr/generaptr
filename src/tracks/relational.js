@@ -10,7 +10,7 @@ exports.questions = [
     message: 'Database engine:',
     choices: ['MySql', 'Postgresql', 'Sqlite'],
     default: ['Mysql'],
-  }
+  },
 ];
 
 exports.handler = (data) => {
@@ -22,5 +22,7 @@ exports.handler = (data) => {
       logger.warn(`${data.databaseEngine} not yet supported.`);
       console.log(chalk.yellow(`${data.databaseEngine} not yet supported.`));
     }
+
+      return Promise.reject();
   }
 };
