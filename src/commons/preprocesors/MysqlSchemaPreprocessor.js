@@ -36,7 +36,6 @@ module.exports = class MysqlSchemaPreprocessor {
     schema = this.normalizeManyToManyRelations(schema);
     schema = this.cleanupUnusedPropertiesFromColumns(schema);
     schema = this.stripEmptyTables(schema);
-    schema = this.sortSchema(schema);
 
     logger.info(JSON.stringify(schema));
     return schema;
@@ -251,25 +250,25 @@ module.exports = class MysqlSchemaPreprocessor {
     });
   }
 
-  /**
-   * Sort schema so tables without foreign keys are first.
-   *
-   * @param schema
-   * @returns {Array|*}
-   */
-  sortSchema(schema) {
-    return schema.sort((a, b) => {
-
-      return  Number(
-        Boolean(
-          b.columns.filter((column) => {
-            column.dataType.hasOwnProperty('isArray')
-          }).length)
-        ) - Number(
-          Boolean(a.columns.filter((column) => {
-            column.dataType.hasOwnProperty('isArray')
-          }).length)
-        );
-    });
-  }
+  // /**
+  //  * Sort schema so tables without foreign keys are first.
+  //  *
+  //  * @param schema
+  //  * @returns {Array|*}
+  //  */
+  // sortSchema(schema) {
+  //   return schema.sort((a, b) => {
+  //
+  //     return  Number(
+  //       Boolean(
+  //         b.columns.filter((column) => {
+  //           column.dataType.hasOwnProperty('isArray')
+  //         }).length)
+  //       ) - Number(
+  //         Boolean(a.columns.filter((column) => {
+  //           column.dataType.hasOwnProperty('isArray')
+  //         }).length)
+  //       );
+  //   });
+  // }
 };
