@@ -31,12 +31,13 @@ module.exports = class MysqlSchemaPreprocessor {
    * @returns {*}
    */
   normalizeSchemaRelations(schema) {
-    schema = this.sortSchema(schema);
     schema = this.normalizeOneToOneRelations(schema);
     schema = this.normalizeOneToManyRelations(schema);
     schema = this.normalizeManyToManyRelations(schema);
     schema = this.cleanupUnusedPropertiesFromColumns(schema);
     schema = this.stripEmptyTables(schema);
+    schema = this.sortSchema(schema);
+
     logger.info(JSON.stringify(schema));
     console.log(JSON.stringify(schema));
     return schema;
@@ -259,7 +260,17 @@ module.exports = class MysqlSchemaPreprocessor {
    */
   sortSchema(schema) {
     return schema.sort((a, b) => {
-      return  Number(this.tableHasForeignKeys(b)) - Number(this.tableHasForeignKeys(a));
+
+      return  Number(
+        Boolean(
+          b.columns.filter((column) => {
+            column.dataType.hasOwnProperty('isArray')
+          }).length)
+        ) - Number(
+          Boolean(a.columns.filter((column) => {
+            column.dataType.hasOwnProperty('isArray')
+          }).length)
+        );
     });
   }
 };
