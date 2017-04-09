@@ -42,7 +42,7 @@ class FileService {
         schema.map(table => {
             promises.push(
                 FileUtil.writeFile(
-                    FileUtil.joinPaths(this.filePath, DIRECTORY_STRUCTURE.TYPES, (Utils.toTitleCase(table.name) + '.raml')),
+                    FileUtil.joinPaths(this.filePath, DIRECTORY_STRUCTURE.TYPES, `${Utils.toTitleCase(table.name)}.raml`),
                     RamlContentGenerator.generateTypeContent(table)
                 )
             );
@@ -74,7 +74,7 @@ class FileService {
 
             promises.push(
                 FileUtil.writeFile(
-                    FileUtil.joinPaths(this.filePath, DIRECTORY_STRUCTURE.EXAMPLES, (typeExampleGenerated.type + '.json')),
+                    FileUtil.joinPaths(this.filePath, DIRECTORY_STRUCTURE.EXAMPLES, `${typeExampleGenerated.type}.json`),
                     Utils.convertToJSON(typeExampleGenerated.data)
                 )
             )
@@ -95,7 +95,7 @@ class FileService {
             .map(key => {
                 promises.push(
                     FileUtil.writeFile(
-                        FileUtil.joinPaths(this.filePath, DIRECTORY_STRUCTURE.EXAMPLES, (Utils.pluraliseWordArray(key) + '.json')),
+                        FileUtil.joinPaths(this.filePath, DIRECTORY_STRUCTURE.EXAMPLES, `${Utils.pluraliseWordArray(key)}.json}`),
                         Utils.convertToJSON(CacheUtil.get(ExamplesContentGenerator.PRIME_KEY, key))
                     ));
             });

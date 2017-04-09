@@ -41,14 +41,14 @@ class ExamplesContentGenerator {
                 object.data[column.name] = RamlUtil.generateFakeData(column.name, column.dataType.type);
             } else {
                 // get object from cache
-                let cachedObject = CacheUtil.get(this.PRIME_KEY, (column.dataType.type + (column.dataType.isArray ? '[]' : '')));
+                let cachedObject = CacheUtil.get(this.PRIME_KEY, `${column.dataType.type}${column.dataType.isArray ? '[]' : ''}`);
 
                 if (cachedObject) {
                     object.data[column.name] = cachedObject;
                 } else {
                     if (depthLevel >= Config.DEFAULT_DEPTH_LEVEL) {
                         // depth level exceeded
-                        object.data[column.name] = {};
+                        object.data[column.name] = column.dataType.isArray ? [] : {};
                     } else {
                         // generate recursively
                         object.data[column.name] = column.dataType.isArray ?
@@ -61,7 +61,7 @@ class ExamplesContentGenerator {
 
         // save object and object[] in cache
         CacheUtil.add(this.PRIME_KEY, object.type, object.data);
-        CacheUtil.add(this.PRIME_KEY, (object.type + '[]'), Utils.fillArray(object.data, 2));
+        CacheUtil.add(this.PRIME_KEY, `${object.type}[]`, Utils.fillArray(object.data, 2));
 
         return object;
     }
