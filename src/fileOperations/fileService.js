@@ -95,7 +95,7 @@ class FileService {
       .map(key => {
         promises.push(
           fileUtil.writeFile(
-            fileUtil.joinPaths(this.filePath, DIRECTORY_STRUCTURE.EXAMPLES, `${utils.pluraliseWordArray(key)}.json}`),
+            fileUtil.joinPaths(this.filePath, DIRECTORY_STRUCTURE.EXAMPLES, `${utils.pluraliseWordArray(key)}.json`),
             utils.convertToJSON(cacheUtil.get(examplesContentGenerator.PRIME_KEY, key))
           ));
       });
