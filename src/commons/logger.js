@@ -14,6 +14,7 @@ const log = logger.createLogger({
 
 // make sure that uncaught exceptions are logged before exiting
 process.on('uncaughtException', (err) => {
+  /* istanbul ignore next */
   log.fatal(err, 'Uncaught exception');
 });
 

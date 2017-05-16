@@ -3,7 +3,7 @@ const assert = require('assert');
 const mocks = require('../../testUtils/mocks');
 const examplesGenerator = require('../../../src/generators/spec/examples');
 
-describe('.json entity examples generator', () => {
+describe('Raml example response generator', () => {
 
   it('should return js entity object for a simple table', () => {
     const groupExample = examplesGenerator.generateTypeExampleContent(mocks.PROCESSED_SCHEMA_MANY_TO_MANY, mocks.PROCESSED_SCHEMA_MANY_TO_MANY[0], 0);

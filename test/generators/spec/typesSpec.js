@@ -2,7 +2,7 @@ const assert = require('assert');
 const typesGenerator = require('../../../src/generators/spec/types');
 const before = require('mocha').before;
 
-describe('Raml content generator', () => {
+describe('Raml data types generator', () => {
   before(() => {
 
     // table mock
