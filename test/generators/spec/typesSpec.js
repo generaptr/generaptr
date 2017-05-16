@@ -1,5 +1,5 @@
 const assert = require('assert');
-const RamlContentGenerator = require('../../src/ramlGenerator/ramlContentGenerator');
+const typesGenerator = require('../../../src/generators/spec/types');
 const before = require('mocha').before;
 
 describe('Raml content generator', () => {
@@ -45,7 +45,7 @@ describe('Raml content generator', () => {
       + '\n  firstName?: string'
       + '\n  roles?: Role[]\n';
 
-    const typeContent = RamlContentGenerator.generateTypeContent(this.table);
+    const typeContent = typesGenerator.generateTypeContent(this.table);
     assert.equal(typeContent, expectedResponse);
   });
 });

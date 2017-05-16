@@ -2,10 +2,9 @@ const assert = require('assert');
 const before = require('mocha').before;
 const fs = require('fs');
 const path = require('path');
-
 const FileService = require('../../src/fileOperations/fileService');
 const DIRECTORY_STRUCTURE = require('../../src/commons/constants/directoryStructure');
-const RamlContentGenerator = require('../../src/ramlGenerator/ramlContentGenerator');
+const typesGenerator = require('../../src/generators/spec/types');
 const Utils = require('../../src/commons/utils/utils');
 const mocks = require('../testUtils/mocks');
 
@@ -81,14 +80,14 @@ describe('File operation service', () => {
 
     fileService.createDirectoryStructure()
       .then(() => {
-        return fileService.generateTypeFiles([this.table]);
+        return fileService.generateSchemaTypeFiles([this.table]);
       })
       .then(() => {
         fs.readFile(
           path.join(fileService.filePath, DIRECTORY_STRUCTURE.TYPES, (this.table.name + '.raml')), (err, data) => {
             assert.ifError(err);
             assert(data, 'Content should not be empty');
-            assert.equal(data, RamlContentGenerator.generateTypeContent(this.table), 'Content should be the same');
+            assert.equal(data, typesGenerator.generateTypeContent(this.table), 'Content should be the same');
 
             done();
           });
@@ -104,7 +103,7 @@ describe('File operation service', () => {
 
     fileService.createDirectoryStructure()
       .then(() => {
-        return fileService.generateTypeExampleFiles(this.schema);
+        return fileService.generateSchemaExampleFiles(this.schema);
       })
       .then(() => {
         fs.readFile(
@@ -128,10 +127,10 @@ describe('File operation service', () => {
 
     fileService.createDirectoryStructure()
       .then(() => {
-        return fileService.generateTypeExampleFiles(this.schema);
+        return fileService.generateSchemaExampleFiles(this.schema);
       })
       .then(() => {
-        return fileService.generateTypeExamplesFiles();
+        return fileService.generateSchemaExamplesFilesFromCache();
       })
       .then(() => {
         fs.readFile(

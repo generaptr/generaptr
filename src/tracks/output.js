@@ -26,17 +26,22 @@ exports.handler = (data) => {
       // get reference of current schema information
       schemaInfo = schema;
 
-      return fileService.generateTypeFiles(schemaInfo);
+      return fileService.generateSchemaTypeFiles(schemaInfo);
     })
     .then(() => {
-      console.log(chalk.green('Type files created'));
-      return fileService.generateTypeExampleFiles(schemaInfo);
+      console.log(chalk.green('DataType files were created for the api spec.'));
+      return fileService.generateSchemaTypeFiles(schemaInfo);
     })
     .then(() => {
-      return fileService.generateTypeExamplesFiles();
+      return fileService.generateSchemaExampleFiles(schemaInfo);
     })
     .then(() => {
-      console.log(chalk.green('Example type files created'));
+      console.log(chalk.green('Example response were created for the api spec.'));
+    }).then(() => {
+      return fileService.generateSchemaApiFiles(schemaInfo);
+    })
+    .then(() => {
+      console.log(chalk.green('Api spec has been created.'));
       return Promise.resolve();
     })
     .catch(exception => {

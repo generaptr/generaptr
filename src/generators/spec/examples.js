@@ -1,10 +1,10 @@
-const utils = require('../commons/utils/utils');
-const ramlUtil = require('../commons/utils/ramlUtil');
-const cacheUtil = require('../commons/utils/cacheUtil');
-const schemaUtil = require('../commons/utils/schemaUtil');
-const config = require('../configs/config');
+const utils = require('../../commons/utils/utils');
+const ramlUtil = require('../../commons/utils/ramlUtil');
+const cacheUtil = require('../../commons/utils/cacheUtil');
+const schemaUtil = require('../../commons/utils/schemaUtil');
+const config = require('../../configs/config');
 
-class ExamplesContentGenerator {
+class ExamplesGenerator {
   constructor() {
     this.defaultRamlTypes = [
       'number', 'boolean', 'string', 'date-only', 'datetime',
@@ -81,5 +81,5 @@ class ExamplesContentGenerator {
   }
 }
 
-module.exports = new ExamplesContentGenerator();
+module.exports = new ExamplesGenerator();
 
