@@ -1,18 +1,12 @@
 const assert = require('assert');
-const before = require('mocha').before;
 
-const mocks = require('../testUtils/mocks');
+const mocks = require('../../testUtils/mocks');
 const examplesGenerator = require('../../../src/generators/spec/examples');
 
 describe('.json entity examples generator', () => {
-  before(() => {
-
-    // table mock
-    this.schema = mocks.PROCESSED_SCHEMA_MANY_TO_MANY;
-  });
 
   it('should return js entity object for a simple table', () => {
-    const groupExample = examplesGenerator.generateTypeExampleContent(this.schema, this.schema[0], 0);
+    const groupExample = examplesGenerator.generateTypeExampleContent(mocks.PROCESSED_SCHEMA_MANY_TO_MANY, mocks.PROCESSED_SCHEMA_MANY_TO_MANY[0], 0);
 
     assert(groupExample, 'Object should not be null');
     assert(groupExample.type, 'Type should not be null');
@@ -20,7 +14,7 @@ describe('.json entity examples generator', () => {
     assert(groupExample.data, 'Data object should not be null');
     assert.equal(Object.keys(groupExample.data).length, 3, 'Number of data generated should be 3');
 
-    const userExample = examplesGenerator.generateTypeExampleContent(this.schema, this.schema[1], 0);
+    const userExample = examplesGenerator.generateTypeExampleContent(mocks.PROCESSED_SCHEMA_MANY_TO_MANY, mocks.PROCESSED_SCHEMA_MANY_TO_MANY[1], 0);
 
     assert(userExample, 'Object should not be null');
     assert(userExample.type, 'Type should not be null');

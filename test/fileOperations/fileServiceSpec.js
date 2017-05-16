@@ -1,5 +1,4 @@
 const assert = require('assert');
-const before = require('mocha').before;
 const fs = require('fs');
 const path = require('path');
 const FileService = require('../../src/fileOperations/fileService');
@@ -9,7 +8,7 @@ const Utils = require('../../src/commons/utils/utils');
 const mocks = require('../testUtils/mocks');
 
 describe('File operation service', () => {
-  before(() => {
+  beforeEach(() => {
     // table mock
     this.table = {
       name: 'User',
