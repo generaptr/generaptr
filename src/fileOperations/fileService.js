@@ -52,10 +52,10 @@ class FileService {
     return Promise.all(promises);
   }
 
-  generateSchemaApiFiles(schema) {
+  generateSchemaApiFiles(schema, options) {
     return fileUtil.writeFile(
       fileUtil.joinPaths(this.filePath, 'api.raml'),
-      specGenerator.generateContent(schema)
+      specGenerator.generateContent(schema, options)
     );
   }
 

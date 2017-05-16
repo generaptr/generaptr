@@ -12,6 +12,21 @@ exports.questions = [
     message: 'Raml output directory:',
     default: 'raml',
   },
+  {
+    name: 'name',
+    type: 'input',
+    message: 'Application name:',
+  },
+  {
+    name: 'version',
+    type: 'input',
+    message: 'Version:',
+  },
+  {
+    name: 'url',
+    type: 'input',
+    message: 'Base URL:',
+  },
 ];
 
 exports.handler = (data) => {
@@ -36,9 +51,12 @@ exports.handler = (data) => {
       return fileService.generateSchemaExampleFiles(schemaInfo);
     })
     .then(() => {
+      return fileService.generateSchemaExamplesFilesFromCache();
+    })
+    .then(() => {
       console.log(chalk.green('Example response were created for the api spec.'));
     }).then(() => {
-      return fileService.generateSchemaApiFiles(schemaInfo);
+      return fileService.generateSchemaApiFiles(schemaInfo, data);
     })
     .then(() => {
       console.log(chalk.green('Api spec has been created.'));
