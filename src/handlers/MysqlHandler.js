@@ -6,7 +6,7 @@ class MysqlHandler extends BaseHandler {
   /**
    * Constructor for the MySqlHandler.
    *
-   * @param options Connection parameters.
+   * @param {*} options Connection parameters.
    */
   constructor(options) {
     super('mysql');
@@ -30,8 +30,8 @@ class MysqlHandler extends BaseHandler {
 
   /**
    * Reads the database schema, processes it and returns a normalized version of it.
-   * 
-   * @returns {Promise}
+   *
+   * @returns {Promise} database schema
    */
   readSchema() {
     return new Promise((resolve, reject) => {
@@ -43,27 +43,34 @@ class MysqlHandler extends BaseHandler {
 
         Promise.all(schemas).then(schema => {
           resolve(this.normalizeRelations(schema));
-        }).catch(err => reject(err));
-      }).catch(err => reject(err));
+        }).catch(err => {
+          /* istanbul ignore next */
+          return reject(err);
+        });
+      }).catch(err => {
+        /* istanbul ignore next */
+        return reject(err);
+      });
     });
   }
   /**
    * Reads the information schema and returns an array of tables.
    *
-   * @returns {Promise}
+   * @returns {Promise} array of table names.
    */
   getTables() {
     return new Promise((resolve, reject) => {
       this.connection.query(
         `SELECT TABLE_NAME FROM TABLES WHERE TABLE_SCHEMA = '${this.options.database}';`,
         (err, results) => {
+          /* istanbul ignore next */
           if (err) {
             return reject(err);
           }
           const tables = results.map((result) => {
-            return result['TABLE_NAME'];
+            return result.TABLE_NAME;
           });
-          resolve(tables);
+          return resolve(tables);
         }
       );
     });
@@ -72,8 +79,8 @@ class MysqlHandler extends BaseHandler {
   /**
    * Reads the schema for a given table.
    *
-   * @param tableName
-   * @returns {Promise}
+   * @param {string} tableName table name
+   * @returns {Promise} table schema
    */
   getTableSchema(tableName) {
     return new Promise((resolve, reject) => {
@@ -85,13 +92,14 @@ class MysqlHandler extends BaseHandler {
       this.connection.query(
         `SELECT COLUMN_NAME, IS_NULLABLE, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, COLUMN_KEY FROM COLUMNS WHERE TABLE_SCHEMA = '${this.options.database}' AND TABLE_NAME = '${tableName}';`,
         (err, columns) => {
+          /* istanbul ignore next */
           if (err) {
             return reject(err);
           }
-          this.getRelationsForTable(tableName).then(relations => {
+          return this.getRelationsForTable(tableName).then(relations => {
             columns.forEach((result) => {
-              const column = this.normalizeTableSchema(result);
-              let relation = relations.filter(relation => relation.name === column.name).pop();
+              const column = this.normalizeColumnSchema(result);
+              let relation = relations.filter(rel => rel.name === column.name).pop();
               if (relation) {
                 column.foreignKey = true;
                 column.dataType.references = relation;
@@ -100,7 +108,7 @@ class MysqlHandler extends BaseHandler {
               }
               table.columns.push(column);
             });
-            resolve(table);
+            return resolve(table);
           });
         }
       );
@@ -110,24 +118,25 @@ class MysqlHandler extends BaseHandler {
   /**
    * Reads all the relations for a given table.
    *
-   * @param table
-   * @returns {Promise}
+   * @param {string} table table name
+   * @return {Promise} foreign key relations
    */
   getRelationsForTable(table) {
     return new Promise((resolve, reject) => {
       this.connection.query(
         `SELECT COLUMN_NAME, rc.REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME FROM REFERENTIAL_CONSTRAINTS rc JOIN KEY_COLUMN_USAGE cu ON cu.CONSTRAINT_NAME = rc.CONSTRAINT_NAME WHERE rc.CONSTRAINT_SCHEMA = '${this.options.database}' AND rc.TABLE_NAME = '${table}'`,
         (err, relations) => {
+          /* istanbul ignore next */
           if (err) {
             return reject(err);
           }
-          resolve(relations.map(
+          return resolve(relations.map(
             relation => {
               return {
-                name: relation['COLUMN_NAME'],
-                table: relation['REFERENCED_TABLE_NAME'],
-                column: relation['REFERENCED_COLUMN_NAME'],
-              }
+                name: relation.COLUMN_NAME,
+                table: relation.REFERENCED_TABLE_NAME,
+                column: relation.REFERENCED_COLUMN_NAME,
+              };
             }
           ));
         }

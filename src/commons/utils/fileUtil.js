@@ -4,79 +4,79 @@ const fse = require('fs-extra');
 
 class FileUtil {
 
-    /**
-     * Normalize folder path
-     * @param filePath
-     * @returns {*}
-     */
-    normalizePath(filePath) {
-        return path.isAbsolute(filePath) ? (path.normalize(filePath)) :
-            (process.cwd() + ((process.platform === 'win32') ? '\\' : '/') + path.normalize(filePath));
-    };
+  /**
+   * Normalize folder path
+   * @param {string} filePath path to be normalized
+   * @returns {*} normalized path
+   */
+  normalizePath(filePath) {
+    return path.isAbsolute(filePath) ? (path.normalize(filePath)) :
+      (process.cwd() + ((process.platform === 'win32') ? '\\' : '/') + path.normalize(filePath));
+  }
 
-    /**
-     * Check if a filePath represents the path for a directory or a file
-     * @param filePath - relative or absolute file path
-     * @returns {boolean}
-     */
-    isDirectory(filePath) {
-        filePath = this.normalizePath(filePath);
+  /**
+   * Check if a filePath represents the path for a directory or a file
+   * @param {string} filePath - relative or absolute file path
+   * @returns {boolean} check if path is dir
+   */
+  isDirectory(filePath) {
+    const normalizedFilePath = this.normalizePath(filePath);
 
-        return filePath.substring(filePath.lastIndexOf('/'), filePath.length).indexOf('.') < 0 ? true : false;
-    }
+    return Boolean(normalizedFilePath.substring(normalizedFilePath.lastIndexOf('/'), normalizedFilePath.length).indexOf('.'));
+  }
 
-    /**
-     * Create directory if not exist
-     * @param filePath
-     * @returns {Promise}
-     */
-    createDirectory(filePath) {
-        filePath = this.normalizePath(filePath);
+  /**
+   * Create directory if not exist
+   * @param {string} filePath path where the directory should be created.
+   * @returns {Promise} directory created
+   */
+  createDirectory(filePath) {
+    const normalizedFilePath = this.normalizePath(filePath);
 
-        return new Promise((resolve, reject) => {
-            fs.stat(filePath, (err, stat) => {
-                if (err) {
-                    // create directory structure
-                    fse.ensureDir(filePath, err => {
-                        if (err) {
-                            reject(err);
-                        } else {
-                            resolve(true);
-                        }
-                    });
-                } else {
-                    resolve(stat.isDirectory() ? true : false);
-                }
-            });
-        });
-    }
+    return new Promise((resolve, reject) => {
+      fs.stat(normalizedFilePath, (err, stat) => {
+        if (err) {
+          // create directory structure
+          fse.ensureDir(normalizedFilePath, ensureDirErr => {
+            if (ensureDirErr) {
+              reject(ensureDirErr);
+            } else {
+              resolve(true);
+            }
+          });
+        } else {
+          resolve(Boolean(stat.isDirectory()));
+        }
+      });
+    });
+  }
 
-    /**
-     * Join list of paths
-     * @param paths
-     * @returns {string}
-     */
-    joinPaths(...paths) {
-        return path.join(...paths);
-    };
+  /**
+   * Join list of paths
+   * @param {Array<string>} paths array of paths that need to be merged
+   * @returns {string} merged path
+   */
+  joinPaths(...paths) {
+    return path.join(...paths);
+  }
 
-    /**
-     *
-     * @param filePath - destination file
-     * @param content - content to be written
-     * @returns {Promise}
-     */
-    writeFile(filePath, content) {
-        return new Promise((resolve, reject) => {
-            fs.writeFile(filePath, content, 'UTF-8', (err) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve();
-                }
-            });
-        });
-    }
+  /**
+   *
+   * @param {string} filePath - destination file
+   * @param {string} content - content to be written
+   * @returns {Promise} file written
+   */
+  writeFile(filePath, content) {
+    return new Promise((resolve, reject) => {
+      fs.writeFile(filePath, content, 'UTF-8', (err) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
+    });
+  }
 }
 
 module.exports = new FileUtil();

@@ -6,7 +6,7 @@ describe('Mysql connection validator', () => {
     try {
       mysqlConnectionValidator.isValid({});
     } catch (e) {
-      assert.equal('Host not provided.', e.message);
+      assert.equal(e.message, 'Host not provided.');
     }
   });
 
@@ -14,10 +14,10 @@ describe('Mysql connection validator', () => {
     try {
       mysqlConnectionValidator.isValid({
         host: '127.0.0.1',
-        port: null
+        port: null,
       });
     } catch (e) {
-      assert.equal('Valid port not provided.', e.message);
+      assert.equal(e.message, 'Valid port not provided.');
     }
   });
 
@@ -25,10 +25,10 @@ describe('Mysql connection validator', () => {
     try {
       mysqlConnectionValidator.isValid({
         host: '127.0.0.1',
-        port: 3306
+        port: 3306,
       });
     } catch (e) {
-      assert.equal('Database not provided.', e.message);
+      assert.equal(e.message, 'Database not provided.');
     }
   });
 
@@ -37,10 +37,10 @@ describe('Mysql connection validator', () => {
       mysqlConnectionValidator.isValid({
         host: '127.0.0.1',
         port: 3306,
-        database: 'test'
+        database: 'test',
       });
     } catch (e) {
-      assert.equal('User not provided.', e.message);
+      assert.equal(e.message, 'User not provided.');
     }
   });
 
@@ -51,7 +51,7 @@ describe('Mysql connection validator', () => {
         port: 3306,
         database: 'test',
         user: 'root',
-        password: ''
+        password: '',
       }));
     } catch (e) {
       assert.fail();
