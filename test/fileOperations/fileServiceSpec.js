@@ -150,4 +150,24 @@ describe('File operation service', () => {
         done();
       });
   });
+
+  it('should create api.raml files', (done) => {
+    let fileService = new FileService('raml');
+
+    fileService.generateSchemaApiFiles([{name: 'users'}], {name: 'Test Test', version: 'v1', url: '/'})
+      .then(() => {
+        fs.readFile(
+          path.join(fileService.filePath, 'api.raml'), (err, data) => {
+            assert.ifError(err);
+            assert(data, 'Content should not be empty');
+            done();
+          }
+        )
+      })
+      .catch(exception => {
+        assert.fail();
+        done();
+      })
+  });
+
 });

@@ -44,6 +44,7 @@ class ExamplesGenerator {
         if (cachedObject) {
           object.data[column.name] = cachedObject;
         } else {
+          /* istanbul ignore next */
           if (depthLevel >= config.DEFAULT_MAX_DEPTH_LEVEL) {
             // depth level exceeded
             object.data[column.name] = column.dataType.isArray ? [] : {};

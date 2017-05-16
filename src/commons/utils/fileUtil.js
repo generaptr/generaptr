@@ -11,7 +11,14 @@ class FileUtil {
    */
   normalizePath(filePath) {
     return path.isAbsolute(filePath) ? (path.normalize(filePath)) :
-      (process.cwd() + ((process.platform === 'win32') ? '\\' : '/') + path.normalize(filePath));
+      (
+        process.cwd() +
+        (
+          /* istanbul ignore else */
+          process.platform !== 'win32' ? '/' : '\\'
+        ) +
+        path.normalize(filePath)
+      );
   }
 
   /**
@@ -37,6 +44,7 @@ class FileUtil {
       fs.stat(normalizedFilePath, (err, stat) => {
         if (err) {
           // create directory structure
+          /* istanbul ignore next */
           fse.ensureDir(normalizedFilePath, ensureDirErr => {
             if (ensureDirErr) {
               reject(ensureDirErr);
@@ -70,6 +78,7 @@ class FileUtil {
     return new Promise((resolve, reject) => {
       fs.writeFile(filePath, content, 'UTF-8', (err) => {
         if (err) {
+          /* istanbul ignore next */
           reject(err);
         } else {
           resolve();
