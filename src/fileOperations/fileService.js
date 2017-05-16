@@ -1,7 +1,8 @@
 const fileUtil = require('../commons/utils/fileUtil');
 const DIRECTORY_STRUCTURE = require('../commons/constants/directoryStructure');
-const ramlContentGenerator = require('../ramlGenerator/ramlContentGenerator');
-const examplesContentGenerator = require('../ramlGenerator/examplesContentGenerator');
+const typesGenerator = require('../generators/spec/types');
+const examplesGenerator = require('../generators/spec/examples');
+const specGenerator = require('../generators/spec/spec');
 const utils = require('../commons/utils/utils');
 const cacheUtil = require('../commons/utils/cacheUtil');
 const config = require('../configs/config');
@@ -36,19 +37,26 @@ class FileService {
    * @param {*} schema - schema tables(list of tables)
    * @returns {Promise.<*>} generated type files.
    */
-  generateTypeFiles(schema) {
+  generateSchemaTypeFiles(schema) {
     const promises = [];
 
     schema.map(table => {
       promises.push(
         fileUtil.writeFile(
           fileUtil.joinPaths(this.filePath, DIRECTORY_STRUCTURE.TYPES, `${utils.toTitleCase(table.name)}.raml`),
-          ramlContentGenerator.generateTypeContent(table)
+          typesGenerator.generateTypeContent(table)
         )
       );
     });
 
     return Promise.all(promises);
+  }
+
+  generateSchemaApiFiles(schema, options) {
+    return fileUtil.writeFile(
+      fileUtil.joinPaths(this.filePath, 'api.raml'),
+      specGenerator.generateContent(schema, options)
+    );
   }
 
   /**
@@ -66,11 +74,11 @@ class FileService {
      * }
    * @return {Promise.<*>} generated examle files.
    */
-  generateTypeExampleFiles(schema) {
+  generateSchemaExampleFiles(schema) {
     const promises = [];
 
     schema.map(table => {
-      const typeExampleGenerated = examplesContentGenerator.generateTypeExampleContent(schema, table, config.INITIAL_DEPTH_LEVEL);
+      const typeExampleGenerated = examplesGenerator.generateTypeExampleContent(schema, table, config.INITIAL_DEPTH_LEVEL);
 
       promises.push(
         fileUtil.writeFile(
@@ -87,16 +95,16 @@ class FileService {
    * Generate .json Array entity for every array of objects saved in cache
    * @return {Promise.<*>} generated example files.
    */
-  generateTypeExamplesFiles() {
+  generateSchemaExamplesFilesFromCache() {
     const promises = [];
 
-    Object.keys(cacheUtil.getByPrimeKey(examplesContentGenerator.PRIME_KEY))
+    Object.keys(cacheUtil.getByPrimeKey(examplesGenerator.PRIME_KEY))
       .filter(key => key.includes('[]'))
       .map(key => {
         promises.push(
           fileUtil.writeFile(
             fileUtil.joinPaths(this.filePath, DIRECTORY_STRUCTURE.EXAMPLES, `${utils.pluraliseWordArray(key)}.json`),
-            utils.convertToJSON(cacheUtil.get(examplesContentGenerator.PRIME_KEY, key))
+            utils.convertToJSON(cacheUtil.get(examplesGenerator.PRIME_KEY, key))
           ));
       });
 

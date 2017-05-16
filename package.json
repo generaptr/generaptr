@@ -3,20 +3,20 @@
   "scripts": {
     "lint": "./node_modules/.bin/eslint src",
     "test": "./node_modules/.bin/mocha test/**/*Spec.js test/**/**/*Spec.js",
-    "test:coverage": "node --harmony ./node_modules/istanbul-harmony/lib/cli.js cover --hook-run-in-context ./node_modules/mocha/bin/_mocha -- --R spec --U exports test/**/*Spec.js test/**/**/*Spec.js",
+    "test:coverage": "node --harmony ./node_modules/istanbul/lib/cli.js cover --hook-run-in-context ./node_modules/mocha/bin/_mocha -- --R spec --U exports test/**/*Spec.js test/**/**/*Spec.js",
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/.bin/coveralls"
   },
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Api generator",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git@github.com:cupsadarius/generatr.git"
+    "url": "git@github.com:cupsadarius/generaptr.git"
   },
   "author": "Darius Cupsa <cupsadarius@gmail.com>",
   "main": "index.js",
   "bugs": {
-    "url": "https://github.com/cupsadarius/generatr/issues"
+    "url": "https://github.com/cupsadarius/generaptr/issues"
   },
   "contributors": [
     "Boieru Luca <luca.boieru@yahoo.com>",
@@ -35,8 +35,8 @@
     "assert": "^1.4.1",
     "coveralls": "^2.13.0",
     "eslint": "^3.19.0",
-    "istanbul-harmony": "^0.3.16",
-    "mocha": "^3.2.0"
+    "istanbul": "^0.4",
+    "mocha": "^3.4.0"
   },
   "dependencies": {
     "bunyan": "^1.8.9",

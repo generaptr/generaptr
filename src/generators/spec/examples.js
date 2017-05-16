@@ -1,10 +1,10 @@
-const utils = require('../commons/utils/utils');
-const ramlUtil = require('../commons/utils/ramlUtil');
-const cacheUtil = require('../commons/utils/cacheUtil');
-const schemaUtil = require('../commons/utils/schemaUtil');
-const config = require('../configs/config');
+const utils = require('../../commons/utils/utils');
+const ramlUtil = require('../../commons/utils/ramlUtil');
+const cacheUtil = require('../../commons/utils/cacheUtil');
+const schemaUtil = require('../../commons/utils/schemaUtil');
+const config = require('../../configs/config');
 
-class ExamplesContentGenerator {
+class ExamplesGenerator {
   constructor() {
     this.defaultRamlTypes = [
       'number', 'boolean', 'string', 'date-only', 'datetime',
@@ -44,6 +44,7 @@ class ExamplesContentGenerator {
         if (cachedObject) {
           object.data[column.name] = cachedObject;
         } else {
+          /* istanbul ignore next */
           if (depthLevel >= config.DEFAULT_MAX_DEPTH_LEVEL) {
             // depth level exceeded
             object.data[column.name] = column.dataType.isArray ? [] : {};
@@ -81,5 +82,5 @@ class ExamplesContentGenerator {
   }
 }
 
-module.exports = new ExamplesContentGenerator();
+module.exports = new ExamplesGenerator();
 

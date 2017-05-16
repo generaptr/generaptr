@@ -14,6 +14,14 @@ class Utils {
   }
 
   /**
+   * @param word
+   * @return {*}
+   */
+  pluralize(word) {
+    return pluralize.plural(word);
+  }
+
+  /**
    * Convert plural word into singular
    * @param {string} word - word to be singularized
    * @returns {*} - singularized word
