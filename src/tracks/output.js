@@ -1,4 +1,4 @@
-const logger = require('../configs/logger');
+const logger = require('../commons/logger');
 const chalk = require('chalk');
 const inquirer = require('inquirer');
 
@@ -35,12 +35,13 @@ exports.handler = (data) => {
 
   return fileService.createDirectoryStructure()
     .then(() => {
+      logger.info('reading database schema');
       return inquirer.prompt(databaseTypeTrack.questions).then(databaseTypeTrack.handler);
     })
     .then(schema => {
       // get reference of current schema information
       schemaInfo = schema;
-
+      logger.info('generating raml data types');
       return fileService.generateSchemaTypeFiles(schemaInfo);
     })
     .then(() => {
@@ -51,6 +52,7 @@ exports.handler = (data) => {
       return fileService.generateSchemaExampleFiles(schemaInfo);
     })
     .then(() => {
+      logger.info('generating example files');
       return fileService.generateSchemaExamplesFilesFromCache();
     })
     .then(() => {
@@ -59,11 +61,12 @@ exports.handler = (data) => {
       return fileService.generateSchemaApiFiles(schemaInfo, data);
     })
     .then(() => {
+      logger.info('generating the api spec');
       console.log(chalk.green('Api spec has been created.'));
       return Promise.resolve();
     })
     .catch(exception => {
-      logger.error(exception);
+      logger.error(exception.message);
       return Promise.reject(exception);
     });
 };
