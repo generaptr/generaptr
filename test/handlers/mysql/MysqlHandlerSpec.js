@@ -1,13 +1,8 @@
 const assert = require('assert');
 const MysqlHandler = require('../../../src/handlers/MysqlHandler');
+const config = require('../../../src/configs/config');
 
-const validConnectionData = {
-  host: '127.0.0.1',
-  port: 3306,
-  user: 'root',
-  password: '',
-  database: 'test'
-};
+const validConnectionData = config.CONNECTION_INFO.MYSQL[config.ENV];
 
 describe('Mysql database handler', () => {
   let handler = null;
