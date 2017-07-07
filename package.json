@@ -46,6 +46,7 @@
     "faker": "^4.1.0",
     "figlet": "^1.2.0",
     "fs-extra": "^2.1.2",
+    "get-env": "^0.5.10",
     "inquirer": "^3.0.6",
     "minimist": "^1.2.0",
     "mysql": "^2.13.0",
