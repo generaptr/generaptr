@@ -1,6 +1,6 @@
-const typeConverter = require('../utils/typeConverter');
-const utils = require('../utils/utils');
-const logger = require('../logger');
+const typeConverter = require('../commons/utils/typeConverter');
+const utils = require('../commons/utils/utils');
+const logger = require('../configs/logger');
 
 const CROSS_REFERENCE_COL_LENGTH = 2;
 const FIRST_INDEX = 0;

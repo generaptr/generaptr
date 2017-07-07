@@ -1,4 +1,4 @@
-const logger = require('../commons/logger');
+const logger = require('../configs/logger');
 
 module.exports = class BaseValidator {
 

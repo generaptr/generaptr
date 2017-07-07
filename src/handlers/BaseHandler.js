@@ -1,4 +1,4 @@
-const MysqlSchemaPreprocessor = require('../commons/preprocesors/MysqlSchemaPreprocessor');
+const MysqlSchemaPreprocessor = require('../preprocesors/MysqlSchemaPreprocessor');
 
 module.exports = class BaseHandler {
 

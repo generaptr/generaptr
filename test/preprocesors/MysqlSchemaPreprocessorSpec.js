@@ -1,4 +1,4 @@
-const MysqlSchemaPreprocessor = require('../../src/commons/preprocesors/MysqlSchemaPreprocessor');
+const MysqlSchemaPreprocessor = require('../../src/preprocesors/MysqlSchemaPreprocessor');
 const assert = require('assert');
 const mocks = require('../testUtils/mocks');
 const preProcessor = new MysqlSchemaPreprocessor();
