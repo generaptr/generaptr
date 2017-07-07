@@ -7,7 +7,7 @@ class Logger {
    * @param {string} message - message to be logged
    */
   info(message) {
-    if (config.ENV === 'developing') {
+    if (config.ENV === 'dev' || config.ENV === 'test') {
       logger.info(message);
     }
   }
@@ -16,7 +16,7 @@ class Logger {
    * @param {string} message - message to be logged
    */
   warn(message) {
-    if (config.ENV === 'developing') {
+    if (config.ENV === 'dev' || config.ENV === 'test') {
       logger.warn(message);
     }
   }
@@ -25,7 +25,7 @@ class Logger {
    * @param {string} message - message to be logged
    */
   error(message) {
-    if (config.ENV === 'developing') {
+    if (config.ENV === 'dev') {
       logger.error(message);
     }
   }
