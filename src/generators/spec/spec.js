@@ -10,7 +10,7 @@ class SpecGenerator {
    *
    * @param {*} schema - entire collection of tables
    * @param {*} options - holds the title of the app, the version and the base url
-   * @return {*}
+   * @return {*} - returns the api spec
    */
   generateContent(schema, options) {
     let spec = this.addHeaderContent(options) + this.addDataTypes(schema);

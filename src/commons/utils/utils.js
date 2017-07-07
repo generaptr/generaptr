@@ -14,8 +14,8 @@ class Utils {
   }
 
   /**
-   * @param word
-   * @return {*}
+   * @param {string} word - eg: user
+   * @return {*} eg: users
    */
   pluralize(word) {
     return pluralize.plural(word);
