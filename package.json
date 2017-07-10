@@ -3,7 +3,7 @@
   "scripts": {
     "lint": "./node_modules/.bin/eslint src",
     "test": "./node_modules/.bin/mocha test/**/*Spec.js test/**/**/*Spec.js",
-    "test:coverage": "node --harmony ./node_modules/istanbul/lib/cli.js cover --hook-run-in-context ./node_modules/mocha/bin/_mocha -- --R spec --U exports test/**/*Spec.js test/**/**/*Spec.js",
+    "test:coverage": "export NODE_ENV='test' && node --harmony ./node_modules/istanbul/lib/cli.js cover --hook-run-in-context ./node_modules/mocha/bin/_mocha -- --R spec --U exports test/**/*Spec.js test/**/**/*Spec.js",
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/.bin/coveralls"
   },
   "version": "0.1.1",
@@ -46,6 +46,7 @@
     "faker": "^4.1.0",
     "figlet": "^1.2.0",
     "fs-extra": "^2.1.2",
+    "get-env": "^0.5.10",
     "inquirer": "^3.0.6",
     "minimist": "^1.2.0",
     "mysql": "^2.13.0",

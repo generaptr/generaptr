@@ -1,6 +1,6 @@
 const inquirer = require('inquirer');
 const chalk = require('chalk');
-const logger = require('../configs/logger');
+const logger = require('../commons/logger');
 const mysql = require('./relational/mysql');
 
 exports.questions = [
