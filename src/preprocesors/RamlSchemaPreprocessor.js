@@ -1,8 +1,6 @@
-
 module.exports = class RamlSchemaPreprocessor {
 
-
-// {
+  // {
 //   "name": "firstName",
 //   "primary": false,
 //   "unique": false,
@@ -36,16 +34,12 @@ module.exports = class RamlSchemaPreprocessor {
    * @returns {{}} normalized column schema
    */
   convertToStandardSchema(columnSchema) {
-    const schema = {
+    return {
       name: columnSchema.name,
       primary: columnSchema.name === 'id',
       unique: columnSchema.name === 'id',
       allowNull: columnSchema.required,
-      dataType: {
-
-      }
-
+      dataType: {},
     };
-    return columnSchema;
   }
 };

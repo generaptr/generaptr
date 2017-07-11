@@ -1,4 +1,3 @@
-const logger = require('../../../commons/logger');
 const chalk = require('chalk');
 const RamlHandler = require('../../../handlers/RamlHandler');
 exports.questions = [
