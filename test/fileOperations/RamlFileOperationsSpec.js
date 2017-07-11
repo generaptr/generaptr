@@ -1,13 +1,13 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-const FileService = require('../../src/fileOperations/fileService');
+const RamlFileOperations = require('../../src/fileOperations/RamlFileOperations');
 const DIRECTORY_STRUCTURE = require('../../src/commons/constants/directoryStructure');
 const typesGenerator = require('../../src/generators/spec/types');
 const Utils = require('../../src/commons/utils/utils');
 const mocks = require('../testUtils/mocks');
 
-describe('File operation service', () => {
+describe('raml file operations', () => {
   beforeEach(() => {
     // table mock
     this.table = {
@@ -36,16 +36,16 @@ describe('File operation service', () => {
 
   it('should throw an error if path is not provided', () => {
     try {
-      new FileService();
+      new RamlFileOperations();
     } catch (exception) {
       assert.equal(exception.message, 'FilePath not provided');
     }
   });
 
   it('should throw an error if path provided is filePath', (done) => {
-    let fileService = new FileService('raml.test');
+    let ramlFileOperations = new RamlFileOperations('raml.test');
 
-    fileService.createDirectoryStructure()
+    ramlFileOperations.createDirectoryStructure()
       .then(() => {
         done();
       })
@@ -56,12 +56,12 @@ describe('File operation service', () => {
   });
 
   it('should create directory structure', () => {
-    let fileService = new FileService('raml');
+    let ramlFileOperations = new RamlFileOperations('raml');
 
-    fileService.createDirectoryStructure()
+    ramlFileOperations.createDirectoryStructure()
       .then(() => {
-        Object.values(DIRECTORY_STRUCTURE).map(key => {
-          fs.stat(path.join(fileService.filePath, key), (err, stat) => {
+        Object.values(DIRECTORY_STRUCTURE.RAML_STRUCTURE).map(key => {
+          fs.stat(path.join(ramlFileOperations.filePath, key), (err, stat) => {
             if (err) {
               assert.fail();
             }
@@ -75,15 +75,15 @@ describe('File operation service', () => {
   });
 
   it('should create raml type file', (done) => {
-    let fileService = new FileService('raml');
+    let ramlFileOperations = new RamlFileOperations('raml');
 
-    fileService.createDirectoryStructure()
+    ramlFileOperations.createDirectoryStructure()
       .then(() => {
-        return fileService.generateSchemaTypeFiles([this.table]);
+        return ramlFileOperations.generateSchemaTypeFiles([this.table]);
       })
       .then(() => {
         fs.readFile(
-          path.join(fileService.filePath, DIRECTORY_STRUCTURE.TYPES, (this.table.name + '.raml')), (err, data) => {
+          path.join(ramlFileOperations.filePath, DIRECTORY_STRUCTURE.RAML_STRUCTURE.TYPES, (this.table.name + '.raml')), (err, data) => {
             assert.ifError(err);
             assert(data, 'Content should not be empty');
             assert.equal(data, typesGenerator.generateTypeContent(this.table), 'Content should be the same');
@@ -98,15 +98,15 @@ describe('File operation service', () => {
   });
 
   it('should create entity.json files', (done) => {
-    let fileService = new FileService('raml');
+    let ramlFileOperations = new RamlFileOperations('raml');
 
-    fileService.createDirectoryStructure()
+    ramlFileOperations.createDirectoryStructure()
       .then(() => {
-        return fileService.generateSchemaExampleFiles(this.schema);
+        return ramlFileOperations.generateSchemaExampleFiles(this.schema);
       })
       .then(() => {
         fs.readFile(
-          path.join(fileService.filePath, DIRECTORY_STRUCTURE.EXAMPLES, (Utils.toTitleCase(this.schema[0].name) + '.json')), (err, data) => {
+          path.join(ramlFileOperations.filePath, DIRECTORY_STRUCTURE.RAML_STRUCTURE.EXAMPLES, (Utils.toTitleCase(this.schema[0].name) + '.json')), (err, data) => {
             assert.ifError(err);
             assert(data, 'Content should not be empty');
             assert.equal(Object.keys(JSON.parse(data)).length, this.schema[0].columns.length, 'Number of attributes should be the same');
@@ -122,18 +122,18 @@ describe('File operation service', () => {
   });
 
   it('should create entity[s].json files', (done) => {
-    let fileService = new FileService('raml');
+    let ramlFileOperations = new RamlFileOperations('raml');
 
-    fileService.createDirectoryStructure()
+    ramlFileOperations.createDirectoryStructure()
       .then(() => {
-        return fileService.generateSchemaExampleFiles(this.schema);
+        return ramlFileOperations.generateSchemaExampleFiles(this.schema);
       })
       .then(() => {
-        return fileService.generateSchemaExamplesFilesFromCache();
+        return ramlFileOperations.generateSchemaExamplesFilesFromCache();
       })
       .then(() => {
         fs.readFile(
-          path.join(fileService.filePath, DIRECTORY_STRUCTURE.EXAMPLES, (Utils.pluraliseWordArray(this.schema[0].name) + '.json')), (err, data) => {
+          path.join(ramlFileOperations.filePath, DIRECTORY_STRUCTURE.RAML_STRUCTURE.EXAMPLES, (Utils.pluraliseWordArray(this.schema[0].name) + '.json')), (err, data) => {
             assert.ifError(err);
             assert(data, 'Countent should not be empty');
             assert.equal(JSON.parse(data).length, 2, 'Number of entities should be 2');
@@ -152,12 +152,12 @@ describe('File operation service', () => {
   });
 
   it('should create api.raml files', (done) => {
-    let fileService = new FileService('raml');
+    let ramlFileOperations = new RamlFileOperations('raml');
 
-    fileService.generateSchemaApiFiles([{name: 'users'}], {name: 'Test Test', version: 'v1', url: '/'})
+    ramlFileOperations.generateSchemaApiFiles([{name: 'users'}], {name: 'Test Test', version: 'v1', url: '/'})
       .then(() => {
         fs.readFile(
-          path.join(fileService.filePath, 'api.raml'), (err, data) => {
+          path.join(ramlFileOperations.filePath, 'api.raml'), (err, data) => {
             assert.ifError(err);
             assert(data, 'Content should not be empty');
             done();

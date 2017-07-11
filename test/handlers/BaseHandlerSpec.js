@@ -8,7 +8,7 @@ describe('base handler', () => {
     try {
       handler.normalizeColumnSchema({});
     } catch (e) {
-      assert.equal(e.message, 'Database driver not supported.');
+      assert.equal(e.message, 'Input source not not supported.');
     }
   });
 
@@ -16,7 +16,7 @@ describe('base handler', () => {
     try {
       handler.normalizeRelations([{}]);
     } catch (e) {
-      assert.equal(e.message, 'Database driver not supported.');
+      assert.equal(e.message, 'Input source not not supported.');
     }
   });
 });

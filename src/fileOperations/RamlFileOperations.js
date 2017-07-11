@@ -7,7 +7,7 @@ const utils = require('../commons/utils/utils');
 const cacheUtil = require('../commons/utils/cacheUtil');
 const config = require('../configs/config');
 
-class FileService {
+class RamlFileOperations {
   constructor(filePath) {
     if ((!filePath) || (typeof filePath !== 'string')) {
       throw new Error('FilePath not provided');
@@ -25,7 +25,7 @@ class FileService {
     if (!fileUtil.isDirectory(this.filePath)) {
       return Promise.reject('Invalid directory path');
     }
-    Object.values(DIRECTORY_STRUCTURE).map(directory => {
+    Object.values(DIRECTORY_STRUCTURE.RAML_STRUCTURE).map(directory => {
       promises.push(fileUtil.createDirectory(fileUtil.joinPaths(this.filePath, directory)));
     });
 
@@ -43,7 +43,7 @@ class FileService {
     schema.map(table => {
       promises.push(
         fileUtil.writeFile(
-          fileUtil.joinPaths(this.filePath, DIRECTORY_STRUCTURE.TYPES, `${utils.toTitleCase(table.name)}.raml`),
+          fileUtil.joinPaths(this.filePath, DIRECTORY_STRUCTURE.RAML_STRUCTURE.TYPES, `${utils.toTitleCase(table.name)}.raml`),
           typesGenerator.generateTypeContent(table)
         )
       );
@@ -82,7 +82,7 @@ class FileService {
 
       promises.push(
         fileUtil.writeFile(
-          fileUtil.joinPaths(this.filePath, DIRECTORY_STRUCTURE.EXAMPLES, `${typeExampleGenerated.type}.json`),
+          fileUtil.joinPaths(this.filePath, DIRECTORY_STRUCTURE.RAML_STRUCTURE.EXAMPLES, `${typeExampleGenerated.type}.json`),
           utils.convertToJSON(typeExampleGenerated.data)
         )
       );
@@ -103,7 +103,7 @@ class FileService {
       .map(key => {
         promises.push(
           fileUtil.writeFile(
-            fileUtil.joinPaths(this.filePath, DIRECTORY_STRUCTURE.EXAMPLES, `${utils.pluraliseWordArray(key)}.json`),
+            fileUtil.joinPaths(this.filePath, DIRECTORY_STRUCTURE.RAML_STRUCTURE.EXAMPLES, `${utils.pluraliseWordArray(key)}.json`),
             utils.convertToJSON(cacheUtil.get(examplesGenerator.PRIME_KEY, key))
           ));
       });
@@ -112,4 +112,4 @@ class FileService {
   }
 }
 
-module.exports = FileService;
+module.exports = RamlFileOperations;

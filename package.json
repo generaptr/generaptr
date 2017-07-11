@@ -8,7 +8,7 @@
   },
   "version": "0.2.1",
   "description": "Api generator",
-  "license": "GNU v3",
+  "license": "GPL-3.0",
   "repository": {
     "type": "git",
     "url": "git@github.com:cupsadarius/generaptr.git"
@@ -51,6 +51,7 @@
     "minimist": "^1.2.0",
     "mysql": "^2.13.0",
     "pluralize": "^4.0.0",
-    "preferences": "^0.2.1"
+    "preferences": "^0.2.1",
+    "raml-1-parser": "^1.1.26"
   }
 }

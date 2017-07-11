@@ -1,4 +1,5 @@
 const MysqlSchemaPreprocessor = require('../preprocesors/MysqlSchemaPreprocessor');
+const RamlSchemaPreprocessor = require('../preprocesors/RamlSchemaPreprocessor');
 
 module.exports = class BaseHandler {
 
@@ -17,8 +18,11 @@ module.exports = class BaseHandler {
       case 'mysql': {
         return (new MysqlSchemaPreprocessor()).convertToStandardSchema(columnSchema);
       }
+      case 'raml': {
+        return (new RamlSchemaPreprocessor()).convertToStandardSchema(columnSchema);
+      }
       default: {
-        throw new Error('Database driver not supported.');
+        throw new Error('Input source not not supported.');
       }
     }
   }
@@ -35,7 +39,7 @@ module.exports = class BaseHandler {
         return (new MysqlSchemaPreprocessor()).normalizeSchemaRelations(schema);
       }
       default: {
-        throw new Error('Database driver not supported.');
+        throw new Error('Input source not not supported.');
       }
     }
   }
