@@ -8,7 +8,7 @@ class ExamplesGenerator {
   constructor() {
     this.defaultRamlTypes = [
       'number', 'boolean', 'string', 'date-only', 'datetime',
-      'time-only', 'datetime-only', 'file', 'nil', 'union', 'enum'
+      'time-only', 'datetime-only', 'file', 'nil', 'union', 'enum',
     ];
     this.PRIME_KEY = 'raml';
   }

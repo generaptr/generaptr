@@ -11,7 +11,7 @@ class RamlUtil {
    * Generate fake data for a field name
    * @param {string} field - field name
    * @param {string} type - data raml type: can be number / string / Boolean / date etc
-   * @param values - default values for attributes (eg. enum: 'Yes' | 'No')
+   * @param {Array} values - default values for attributes (eg. enum: 'Yes' | 'No')
    * @return {*} fake data
    */
   generateFakeData(field, type, values) {

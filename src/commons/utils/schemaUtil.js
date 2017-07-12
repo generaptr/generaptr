@@ -33,7 +33,7 @@ class SchemaUtil {
 
   /**
    * Convert values from COLUMN_TYPE column
-   * @param schema - schema eg.
+   * @param {*} schema - schema eg.
    * {...
    *  dataType: {
    *    type: enum,
@@ -58,7 +58,7 @@ class SchemaUtil {
 
   /**
    * Convert array of values to raml values
-   * @param values - ['Yes', 'No']
+   * @param {Array} values - ['Yes', 'No']
    * @return {*} - 'Yes | No'
    */
   valuesToRamlDataType(values) {

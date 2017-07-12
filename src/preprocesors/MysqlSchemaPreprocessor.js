@@ -25,7 +25,7 @@ module.exports = class MysqlSchemaPreprocessor {
     schema.dataType = {
       type: typeConverter.convertSqlType(columnSchema.DATA_TYPE),
       size: columnSchema.CHARACTER_MAXIMUM_LENGTH ? parseInt(columnSchema.CHARACTER_MAXIMUM_LENGTH) : null,
-      values: columnSchema.COLUMN_TYPE
+      values: columnSchema.COLUMN_TYPE,
     };
 
     SchemaUtil.convertValues(schema);
