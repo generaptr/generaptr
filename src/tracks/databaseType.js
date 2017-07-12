@@ -1,4 +1,4 @@
-const logger = require('../configs/logger');
+const logger = require('../commons/logger');
 const chalk = require('chalk');
 const relational = require('./relational');
 const inquirer = require('inquirer');
