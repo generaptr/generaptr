@@ -34,4 +34,8 @@ describe('utils should work as expected', () => {
   it('should fill the array', () => {
     assert.equal(utils.fillArray({name: 'test'}, 2).length, 2);
   });
+
+  it('should know how to format a line', () => {
+    assert.equal(utils.formatLine('  ', 2, 'test'), '      test\n');
+  });
 });

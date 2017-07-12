@@ -613,4 +613,12 @@ module.exports = {
       ]
     }
   ],
+  RAW_ENUM_DATA: {
+    "COLUMN_NAME": "enum_fld",
+    "IS_NULLABLE": "YES",
+    "DATA_TYPE": "enum",
+    "CHARACTER_MAXIMUM_LENGTH": 3,
+    "COLUMN_KEY": "",
+    "COLUMN_TYPE": "enum('No', 'Yes')"
+  }
 };

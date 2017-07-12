@@ -1,7 +1,10 @@
+const utils = require('../../commons/utils/utils');
+const config = require('../../configs/config');
+const schemaUtil = require('../../commons/utils/schemaUtil');
+
 class RamlContentGenerator {
 
   constructor() {
-    this.DOUBLE_SPACE = '  ';
   }
 
   /**
@@ -13,13 +16,19 @@ class RamlContentGenerator {
   generateTypeContent(table) {
     let objectContent = '#%RAML 1.0 DataType\n'
       + 'type: object\n'
-      + 'properties:';
+      + 'properties:'
+      + config.END_OF_LINE;
 
     table.columns.forEach(column => {
-      objectContent += `\n${this.DOUBLE_SPACE}${column.name}${column.allowNull ? '?' : ''}: ${column.dataType.type}${column.dataType.isArray ? '[]' : ''}`;
-    });
+      objectContent += utils.formatLine(config.DEFAULT_INDENTATION, 0, `${column.name}:`);
+      objectContent += utils.formatLine(config.DEFAULT_INDENTATION, 1, `required: ${column.allowNull ? 'false' : 'true'}`);
 
-    return `${objectContent}\n`;
+      const typeLine = column.dataType.values ? schemaUtil.valuesToRamlDataType(column.dataType.values) :
+        `${column.dataType.type}${(column.dataType.isArray ? '[]' : '')}`;
+
+      objectContent += utils.formatLine(config.DEFAULT_INDENTATION, 1, `type: ${typeLine}`);
+    });
+    return `${objectContent}`;
   }
 }
 

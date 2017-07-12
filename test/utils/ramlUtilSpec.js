@@ -24,4 +24,9 @@ describe('it should help with raml opertions', () => {
     assert.equal(ramlUtil.parseRamlValue('asd', 'not-a-type'), 'asd');
   });
 
+  it('should retrieve random enum values', () => {
+    const randomEnumValue = ramlUtil.generateFakeData('active', 'enum', ['Yes', 'No']);
+    assert(randomEnumValue);
+    assert.equal(randomEnumValue === 'Yes' || randomEnumValue === 'No', true);
+  })
 });

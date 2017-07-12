@@ -1,7 +1,5 @@
 const utils = require('../../commons/utils/utils');
-
-const END_OF_LINE = '\n';
-const DEFAULT_INDENTATION = '  ';
+const config = require('../../configs/config');
 
 class SpecGenerator {
 
@@ -28,11 +26,11 @@ class SpecGenerator {
    * @return {string} returns the formatted header
    */
   addHeaderContent(options) {
-    return this.formatLine('', 0, '#%RAML 1.0') +
-      this.formatLine('', 0, `title: ${options.name}`) +
-      this.formatLine('', 0, `version: ${options.version}`) +
-      this.formatLine('', 0, `baseUri: ${options.url}{version}`) +
-      this.formatLine('', 0, 'protocols: [HTTP, HTTPS]');
+    return utils.formatLine('', 0, '#%RAML 1.0') +
+      utils.formatLine('', 0, `title: ${options.name}`) +
+      utils.formatLine('', 0, `version: ${options.version}`) +
+      utils.formatLine('', 0, `baseUri: ${options.url}{version}`) +
+      utils.formatLine('', 0, 'protocols: [HTTP, HTTPS]');
   }
 
   /**
@@ -42,11 +40,11 @@ class SpecGenerator {
    * @return {string} returns the formatted data types
    */
   addDataTypes(schema) {
-    let types = `types:${END_OF_LINE}`;
+    let types = `types:${config.END_OF_LINE}`;
 
     schema.forEach(entity => {
-      types += this.formatLine(
-        DEFAULT_INDENTATION,
+      types += utils.formatLine(
+        config.DEFAULT_INDENTATION,
         0,
         `${utils.toTitleCase(entity.name)}: !include types/${utils.toTitleCase(entity.name)}.raml`
       );
@@ -62,13 +60,13 @@ class SpecGenerator {
    * @return {string} - returns the formatted spec for the entity
    */
   addSpecForEntity(entity) {
-    let spec = `/${entity.name}:${END_OF_LINE}`;
-    spec += this.addGetAllSpec(DEFAULT_INDENTATION, entity);
-    spec += this.addCreateSpec(DEFAULT_INDENTATION, entity);
-    spec += this.formatLine(DEFAULT_INDENTATION, 0, `/{${utils.singular(entity.name)}Id}:`);
-    spec += this.addGetOneSpec(DEFAULT_INDENTATION, entity);
-    spec += this.addUpdateSpec(DEFAULT_INDENTATION, entity);
-    spec += this.addDeleteSpec(DEFAULT_INDENTATION, entity);
+    let spec = `/${entity.name}:${config.END_OF_LINE}`;
+    spec += this.addGetAllSpec(config.DEFAULT_INDENTATION, entity);
+    spec += this.addCreateSpec(config.DEFAULT_INDENTATION, entity);
+    spec += utils.formatLine(config.DEFAULT_INDENTATION, 0, `/{${utils.singular(entity.name)}Id}:`);
+    spec += this.addGetOneSpec(config.DEFAULT_INDENTATION, entity);
+    spec += this.addUpdateSpec(config.DEFAULT_INDENTATION, entity);
+    spec += this.addDeleteSpec(config.DEFAULT_INDENTATION, entity);
 
     return spec;
   }
@@ -81,14 +79,14 @@ class SpecGenerator {
    * @return {string} - returns the formatted get all spec
    */
   addGetAllSpec(initialIndentation, entity) {
-    return this.formatLine(initialIndentation, 0, 'get:') +
-      this.formatLine(initialIndentation, 1, `description: Get a list of all ${entity.name}`) +
-      this.formatLine(initialIndentation, 1, 'responses:') +
-      this.formatLine(initialIndentation, 2, '200:') +
-      this.formatLine(initialIndentation, 3, 'body:') +
-      this.formatLine(initialIndentation, 4, 'application/json:') +
-      this.formatLine(initialIndentation, 5, `type: ${utils.toTitleCase(entity.name)}[]`) +
-      this.formatLine(initialIndentation, 5, `example: !include examples/${utils.pluralize(utils.toTitleCase(entity.name))}.json`);
+    return utils.formatLine(initialIndentation, 0, 'get:') +
+      utils.formatLine(initialIndentation, 1, `description: Get a list of all ${entity.name}`) +
+      utils.formatLine(initialIndentation, 1, 'responses:') +
+      utils.formatLine(initialIndentation, 2, '200:') +
+      utils.formatLine(initialIndentation, 3, 'body:') +
+      utils.formatLine(initialIndentation, 4, 'application/json:') +
+      utils.formatLine(initialIndentation, 5, `type: ${utils.toTitleCase(entity.name)}[]`) +
+      utils.formatLine(initialIndentation, 5, `example: !include examples/${utils.pluralize(utils.toTitleCase(entity.name))}.json`);
   }
 
   /**
@@ -99,17 +97,17 @@ class SpecGenerator {
    * @return {string} - returns the formatted create spec
    */
   addCreateSpec(initialIndentation, entity) {
-    return this.formatLine(initialIndentation, 0, 'post:') +
-      this.formatLine(initialIndentation, 1, `description: Create a ${utils.singular(entity.name)}`) +
-      this.formatLine(initialIndentation, 1, 'body:') +
-      this.formatLine(initialIndentation, 2, 'application/json:') +
-      this.formatLine(initialIndentation, 3, `type: ${utils.toTitleCase(entity.name)}`) +
-      this.formatLine(initialIndentation, 1, 'responses:') +
-      this.formatLine(initialIndentation, 2, '201:') +
-      this.formatLine(initialIndentation, 3, 'body:') +
-      this.formatLine(initialIndentation, 4, 'application/json:') +
-      this.formatLine(initialIndentation, 5, `type: ${utils.toTitleCase(entity.name)}`) +
-      this.formatLine(initialIndentation, 5, `example: !include examples/${utils.toTitleCase(entity.name)}.json`);
+    return utils.formatLine(initialIndentation, 0, 'post:') +
+      utils.formatLine(initialIndentation, 1, `description: Create a ${utils.singular(entity.name)}`) +
+      utils.formatLine(initialIndentation, 1, 'body:') +
+      utils.formatLine(initialIndentation, 2, 'application/json:') +
+      utils.formatLine(initialIndentation, 3, `type: ${utils.toTitleCase(entity.name)}`) +
+      utils.formatLine(initialIndentation, 1, 'responses:') +
+      utils.formatLine(initialIndentation, 2, '201:') +
+      utils.formatLine(initialIndentation, 3, 'body:') +
+      utils.formatLine(initialIndentation, 4, 'application/json:') +
+      utils.formatLine(initialIndentation, 5, `type: ${utils.toTitleCase(entity.name)}`) +
+      utils.formatLine(initialIndentation, 5, `example: !include examples/${utils.toTitleCase(entity.name)}.json`);
   }
 
   /**
@@ -120,14 +118,14 @@ class SpecGenerator {
    * @return {string} - returns the formatted get one spec
    */
   addGetOneSpec(initialIndentation, entity) {
-    return this.formatLine(initialIndentation, 1, 'get:') +
-      this.formatLine(initialIndentation, 2, `description: Get an instance of ${utils.singular(entity.name)} based on it's id.`) +
-      this.formatLine(initialIndentation, 2, 'responses:') +
-      this.formatLine(initialIndentation, 3, '200:') +
-      this.formatLine(initialIndentation, 4, 'body:') +
-      this.formatLine(initialIndentation, 5, 'application/json:') +
-      this.formatLine(initialIndentation, 6, `type: ${utils.toTitleCase(entity.name)}`) +
-      this.formatLine(initialIndentation, 6, `example: !include examples/${utils.toTitleCase(entity.name)}.json`);
+    return utils.formatLine(initialIndentation, 1, 'get:') +
+      utils.formatLine(initialIndentation, 2, `description: Get an instance of ${utils.singular(entity.name)} based on it's id.`) +
+      utils.formatLine(initialIndentation, 2, 'responses:') +
+      utils.formatLine(initialIndentation, 3, '200:') +
+      utils.formatLine(initialIndentation, 4, 'body:') +
+      utils.formatLine(initialIndentation, 5, 'application/json:') +
+      utils.formatLine(initialIndentation, 6, `type: ${utils.toTitleCase(entity.name)}`) +
+      utils.formatLine(initialIndentation, 6, `example: !include examples/${utils.toTitleCase(entity.name)}.json`);
   }
 
   /**
@@ -138,17 +136,17 @@ class SpecGenerator {
    * @return {string} - returns the formatted update spec
    */
   addUpdateSpec(initialIndentation, entity) {
-    return this.formatLine(initialIndentation, 1, 'put:') +
-      this.formatLine(initialIndentation, 2, `description: Update an instance of ${utils.singular(entity.name)}.`) +
-      this.formatLine(initialIndentation, 2, 'body:') +
-      this.formatLine(initialIndentation, 3, 'application/json:') +
-      this.formatLine(initialIndentation, 4, `type: ${utils.toTitleCase(entity.name)}`) +
-      this.formatLine(initialIndentation, 2, 'responses:') +
-      this.formatLine(initialIndentation, 3, '200:') +
-      this.formatLine(initialIndentation, 4, 'body:') +
-      this.formatLine(initialIndentation, 5, 'application/json:') +
-      this.formatLine(initialIndentation, 6, `type: ${utils.toTitleCase(entity.name)}`) +
-      this.formatLine(initialIndentation, 6, `example: !include examples/${utils.toTitleCase(entity.name)}.json`);
+    return utils.formatLine(initialIndentation, 1, 'put:') +
+      utils.formatLine(initialIndentation, 2, `description: Update an instance of ${utils.singular(entity.name)}.`) +
+      utils.formatLine(initialIndentation, 2, 'body:') +
+      utils.formatLine(initialIndentation, 3, 'application/json:') +
+      utils.formatLine(initialIndentation, 4, `type: ${utils.toTitleCase(entity.name)}`) +
+      utils.formatLine(initialIndentation, 2, 'responses:') +
+      utils.formatLine(initialIndentation, 3, '200:') +
+      utils.formatLine(initialIndentation, 4, 'body:') +
+      utils.formatLine(initialIndentation, 5, 'application/json:') +
+      utils.formatLine(initialIndentation, 6, `type: ${utils.toTitleCase(entity.name)}`) +
+      utils.formatLine(initialIndentation, 6, `example: !include examples/${utils.toTitleCase(entity.name)}.json`);
   }
 
   /**
@@ -159,28 +157,10 @@ class SpecGenerator {
    * @return {string} - returns the formatted delete spec
    */
   addDeleteSpec(initialIndentation, entity) {
-    return this.formatLine(initialIndentation, 1, 'delete:') +
-      this.formatLine(initialIndentation, 2, `description: Delete an instance of ${utils.singular(entity.name)} based on it's id.`) +
-      this.formatLine(initialIndentation, 2, 'responses:') +
-      this.formatLine(initialIndentation, 3, '204:');
-  }
-
-  /**
-   * Formats the line for spec.
-   *
-   * @param {string} initialIndentation - holds the initial indentation
-   * @param {number} tabs - holds how many tabs should prepend to the line
-   * @param {string} message - holds the actual content of the line
-   * @return {string} - returns the formatted line
-   */
-  formatLine(initialIndentation, tabs, message) {
-    let line = `${initialIndentation}`;
-    for (let i = 0; i < tabs; i++) {
-      line += `${DEFAULT_INDENTATION}`;
-    }
-    line += `${message}${END_OF_LINE}`;
-
-    return line;
+    return utils.formatLine(initialIndentation, 1, 'delete:') +
+      utils.formatLine(initialIndentation, 2, `description: Delete an instance of ${utils.singular(entity.name)} based on it's id.`) +
+      utils.formatLine(initialIndentation, 2, 'responses:') +
+      utils.formatLine(initialIndentation, 3, '204:');
   }
 }
 

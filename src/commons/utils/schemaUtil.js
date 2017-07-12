@@ -30,6 +30,40 @@ class SchemaUtil {
 
     return false;
   }
+
+  /**
+   * Convert values from COLUMN_TYPE column
+   * @param schema - schema eg.
+   * {...
+   *  dataType: {
+   *    type: enum,
+   *    isArray: false,
+   *    values: enum('Yes', 'No')
+   *  }
+   * }
+   */
+  convertValues(schema) {
+    if (schema && schema.dataType) {
+      const columnType = schema.dataType.values;
+
+      switch (schema.dataType.type) {
+        case 'enum':
+          schema.dataType.values = columnType ? (columnType.substring(4).replace(/["'()]/g,'').replace(' ', '').split(',')) : [];
+          break;
+        default:
+          delete schema.dataType.values; // no values to be processed for now
+      }
+    }
+  }
+
+  /**
+   * Convert array of values to raml values
+   * @param values - ['Yes', 'No']
+   * @return {*} - 'Yes | No'
+   */
+  valuesToRamlDataType(values) {
+    return (values && values.length > 0) ? values.join(' | ') : [];
+  }
 }
 
 module.exports = new SchemaUtil();

@@ -8,7 +8,7 @@ class ExamplesGenerator {
   constructor() {
     this.defaultRamlTypes = [
       'number', 'boolean', 'string', 'date-only', 'datetime',
-      'time-only', 'datetime-only', 'file', 'nil', 'union',
+      'time-only', 'datetime-only', 'file', 'nil', 'union', 'enum'
     ];
     this.PRIME_KEY = 'raml';
   }
@@ -36,7 +36,7 @@ class ExamplesGenerator {
     table.columns.map(column => {
       if (this.defaultRamlTypes.includes(column.dataType.type)) {
         // default raml type
-        object.data[column.name] = ramlUtil.generateFakeData(column.name, column.dataType.type);
+        object.data[column.name] = ramlUtil.generateFakeData(column.name, column.dataType.type, column.dataType.values);
       } else {
         // get object from cache
         let cachedObject = cacheUtil.get(this.PRIME_KEY, `${column.dataType.type}${column.dataType.isArray ? '[]' : ''}`);
@@ -49,26 +49,14 @@ class ExamplesGenerator {
             // depth level exceeded
             object.data[column.name] = column.dataType.isArray ? [] : {};
           } else {
+            const normalizedTable = schemaUtil.getNormalizedTableByType(schema, column.dataType.type);
+
             object.data[column.name] = column.dataType.isArray ?
               utils.fillArray(
-                this.generateTypeExampleContent(
-                  schema,
-                  schemaUtil.getNormalizedTableByType(
-                    schema,
-                    column.dataType.type
-                  ),
-                  depthLevel + config.DEPTH_INCREMENT
-                ).data,
+                this.generateTypeExampleContent(schema, normalizedTable, depthLevel + config.DEPTH_INCREMENT).data,
                 config.DEFAULT_ARRAY_LENGTH
               ) :
-              this.generateTypeExampleContent(
-                schema,
-                schemaUtil.getNormalizedTableByType(
-                  schema,
-                  column.dataType.type
-                ),
-                depthLevel + config.DEPTH_INCREMENT
-              ).data;
+              this.generateTypeExampleContent(schema, normalizedTable, depthLevel + config.DEPTH_INCREMENT).data;
           }
         }
       }

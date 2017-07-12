@@ -1,6 +1,6 @@
 /**
  * Application configurations
- * @type {{DEFAULT_DEPTH_LEVEL: number}}
+ * @type {{INITIAL_DEPTH_LEVEL: number, DEFAULT_MAX_DEPTH_LEVEL: number, DEFAULT_ARRAY_LENGTH: number, DEPTH_INCREMENT: number}}
  */
 module.exports = {
   /**
@@ -10,4 +10,6 @@ module.exports = {
   DEFAULT_MAX_DEPTH_LEVEL: 2,
   DEFAULT_ARRAY_LENGTH: 2,
   DEPTH_INCREMENT: 1,
+  END_OF_LINE: '\n',
+  DEFAULT_INDENTATION: '  '
 };
