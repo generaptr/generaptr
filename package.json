@@ -6,7 +6,7 @@
     "test:coverage": "export NODE_ENV='test' && node --harmony ./node_modules/istanbul/lib/cli.js cover --hook-run-in-context ./node_modules/mocha/bin/_mocha -- --R spec --U exports test/**/*Spec.js test/**/**/*Spec.js",
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/.bin/coveralls"
   },
-  "version": "0.2.1",
+  "version": "0.7.0",
   "description": "Api generator",
   "license": "GNU v3",
   "repository": {
