@@ -35,17 +35,51 @@ describe('Raml data types generator', () => {
         }
       ]
     };
+
+    this.enumTable = {
+      name: 'users',
+      columns: [
+        {
+          name: 'isActive',
+          allowNull: false,
+          dataType: {
+            type: 'enum',
+            isArray: false,
+            values: ['No', 'Yes']
+          }
+        }
+      ]
+    }
   });
 
   it('should create raml type content', () => {
     const expectedResponse = '#%RAML 1.0 DataType\n'
       + 'type: object\n'
       + 'properties:'
-      + '\n  id: number'
-      + '\n  firstName?: string'
-      + '\n  roles?: Role[]\n';
+      + '\n  id:'
+      + '\n    required: true'
+      + '\n    type: number'
+      + '\n  firstName:'
+      + '\n    required: false'
+      + '\n    type: string'
+      + '\n  roles:'
+      + '\n    required: false'
+      + `\n    type: Role[]\n`;
 
     const typeContent = typesGenerator.generateTypeContent(this.table);
+
+    assert.equal(typeContent, expectedResponse);
+  });
+
+  it ('should create raml type content for enum', () => {
+    const expectedResponse = '#%RAML 1.0 DataType\n'
+    + 'type: object\n'
+    + 'properties:'
+    + '\n  isActive:'
+    + '\n    required: true'
+    + '\n    type: No | Yes\n'
+
+    const typeContent = typesGenerator.generateTypeContent(this.enumTable);
     assert.equal(typeContent, expectedResponse);
   });
 });

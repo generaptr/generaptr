@@ -1,5 +1,6 @@
 const typeConverter = require('../commons/utils/typeConverter');
 const utils = require('../commons/utils/utils');
+const SchemaUtil = require('../commons/utils/schemaUtil');
 const logger = require('../commons/logger');
 
 const CROSS_REFERENCE_COL_LENGTH = 2;
@@ -24,7 +25,10 @@ module.exports = class MysqlSchemaPreprocessor {
     schema.dataType = {
       type: typeConverter.convertSqlType(columnSchema.DATA_TYPE),
       size: columnSchema.CHARACTER_MAXIMUM_LENGTH ? parseInt(columnSchema.CHARACTER_MAXIMUM_LENGTH) : null,
+      values: columnSchema.COLUMN_TYPE,
     };
+
+    SchemaUtil.convertValues(schema);
     return schema;
   }
 

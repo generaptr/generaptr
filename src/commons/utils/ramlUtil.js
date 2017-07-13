@@ -11,9 +11,13 @@ class RamlUtil {
    * Generate fake data for a field name
    * @param {string} field - field name
    * @param {string} type - data raml type: can be number / string / Boolean / date etc
+   * @param {Array} values - default values for attributes (eg. enum: 'Yes' | 'No')
    * @return {*} fake data
    */
-  generateFakeData(field, type) {
+  generateFakeData(field, type, values) {
+    if (values && values.length) { // enum or other default values
+      return values[Math.floor(Math.random() * values.length)];
+    }
     for (let key of Object.keys(PROPERTIES_NAME)) {
       // ignore camel case for attributes
       const index = Utils.indexOfIgnoreCase(PROPERTIES_NAME[key], field.toString());

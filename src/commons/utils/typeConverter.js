@@ -1,7 +1,7 @@
 class TypeConverter {
   constructor() {
     this.numberTypes = ['int', 'tinyint', 'smallint', 'mediumint', 'bigint', 'decimal', 'float', 'double'];
-    this.stringTypes = ['char', 'varchar', 'blob', 'text', 'tinyblob', 'tinytext', 'mediumblob', 'mediumtext', 'longblob', 'longtext', 'enum'];
+    this.stringTypes = ['char', 'varchar', 'blob', 'text', 'tinyblob', 'tinytext', 'mediumblob', 'mediumtext', 'longblob', 'longtext'];
   }
 
   /**
@@ -21,6 +21,8 @@ class TypeConverter {
       return 'datetime';
     } else if (type.toLowerCase() === 'time') {
       return 'time-only';
+    } else if (type.toLowerCase() === 'enum') {
+      return 'enum';
     }
     throw new Error('Type not found');
   }

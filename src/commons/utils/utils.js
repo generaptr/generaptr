@@ -1,4 +1,5 @@
 const pluralize = require('pluralize');
+const config = require('../../configs/config');
 
 class Utils {
 
@@ -72,6 +73,24 @@ class Utils {
   fillArray(object, length) {
     const start = 0;
     return new Array(length).fill(object, start, length);
+  }
+
+  /**
+   * Formats the line for spec.
+   *
+   * @param {string} initialIndentation - holds the initial indentation
+   * @param {number} tabs - holds how many tabs should prepend to the line
+   * @param {string} message - holds the actual content of the line
+   * @return {string} - returns the formatted line
+   */
+  formatLine(initialIndentation, tabs, message) {
+    let line = `${initialIndentation}`;
+    for (let i = 0; i < tabs; i++) {
+      line += `${config.DEFAULT_INDENTATION}`;
+    }
+    line += `${message}${config.END_OF_LINE}`;
+
+    return line;
   }
 }
 

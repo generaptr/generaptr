@@ -48,10 +48,6 @@ const VALID_DELETE = '    delete:\n' +
 
 describe('Raml api spec generator', () => {
 
-  it('should know how to format a line', () => {
-    assert.equal(specGenerator.formatLine('  ', 2, 'test'), '      test\n');
-  });
-
   it('should generate a valid get all spec', () => {
     assert.equal(specGenerator.addGetAllSpec('  ', {name: 'users'}), VALID_GET_ALL);
   });

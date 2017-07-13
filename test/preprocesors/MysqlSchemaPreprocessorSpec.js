@@ -70,5 +70,15 @@ describe('mysql preprocesor test', () => {
     assert.equal(processedUsers.name, validUsers.name);
     assert.equal(processedUsers.columns.length, validUsers.columns.length);
   });
-  
+
+  it('should process values for enum data type', () => {
+    const processedSchema = preProcessor.convertToStandardSchema(mocks.RAW_ENUM_DATA);
+
+    assert.ok(processedSchema.dataType);
+    assert.equal(processedSchema.dataType.type, "enum");
+    assert.ok(processedSchema.dataType.values);
+    assert(processedSchema.dataType.values);
+    assert.deepEqual(processedSchema.dataType.values, ['No', 'Yes']);
+  });
+
 });

@@ -53,6 +53,7 @@ class MysqlHandler extends BaseHandler {
       });
     });
   }
+
   /**
    * Reads the information schema and returns an array of tables.
    *
@@ -90,7 +91,7 @@ class MysqlHandler extends BaseHandler {
       };
 
       this.connection.query(
-        `SELECT COLUMN_NAME, IS_NULLABLE, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, COLUMN_KEY FROM COLUMNS WHERE TABLE_SCHEMA = '${this.options.database}' AND TABLE_NAME = '${tableName}';`,
+        `SELECT COLUMN_NAME, IS_NULLABLE, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, COLUMN_KEY, COLUMN_TYPE FROM COLUMNS WHERE TABLE_SCHEMA = '${this.options.database}' AND TABLE_NAME = '${tableName}';`,
         (err, columns) => {
           /* istanbul ignore next */
           if (err) {
