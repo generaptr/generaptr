@@ -12,4 +12,13 @@ describe('it should help handling the schema', () => {
     const table = schemaUtil.getNormalizedTableByType([{name: 'users'}], 'Account');
     assert.equal(table, false);
   });
+
+  it('should convert raml values', () => {
+    const values = ['Yes', 'No'];
+
+    const ramlValues = schemaUtil.valuesToRamlDataType(values);
+    assert(ramlValues);
+    assert.equal(ramlValues.length, 8);
+    assert.equal(ramlValues, 'Yes | No');
+  })
 });

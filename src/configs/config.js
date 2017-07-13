@@ -3,17 +3,42 @@ const env = require('get-env')({
 });
 /**
  * Application configurations
- * @type {{DEFAULT_DEPTH_LEVEL: number}}
+ * @type {{INITIAL_DEPTH_LEVEL: number, DEFAULT_MAX_DEPTH_LEVEL: number, DEFAULT_ARRAY_LENGTH: number, DEPTH_INCREMENT: number}}
  */
 module.exports = {
   /**
    * Default depth level used by recursive function for generating type example
    */
   INITIAL_DEPTH_LEVEL: 0,
+  /**
+   * Default max depth level used for generating fake json data
+   */
   DEFAULT_MAX_DEPTH_LEVEL: 2,
+  /**
+   * Default number of sub documents generated for a schema table
+   */
   DEFAULT_ARRAY_LENGTH: 2,
+
+  /**
+   * Depth increment value
+   */
   DEPTH_INCREMENT: 1,
+
+  /**
+   * Default end line terminator
+   */
+  END_OF_LINE: '\n',
+
+  /**
+   * Default indentation used for generating ram content
+   */
+  DEFAULT_INDENTATION: '  ',
+
   ENV: env,
+
+  /**
+   * Connection default information
+   */
   CONNECTION_INFO: {
     MYSQL: {
       dev: {
