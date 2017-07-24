@@ -6,3 +6,5 @@ raml
 !src/tracks/inputs/raml
 coverage
 debug-log.json
+raml.test
+!test/handlers/raml
