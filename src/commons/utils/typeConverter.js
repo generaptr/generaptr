@@ -27,8 +27,36 @@ class TypeConverter {
     throw new Error('Type not found');
   }
 
+  /**
+   * Converts no sql types to standard schema
+   * @param {string} type - type to be converted
+   */
   convertNoSqlType(type) {
     throw new Error('Not yet implemented');
+  }
+
+  /**
+   * Converts raml types to standard schema
+   * @param {*} type - type to be converted
+   * @returns {*} - converted type
+   */
+  convertRamlTypes(type) {
+    if (type.type.indexOf('|') > -1) {
+      return {
+        type: 'enum',
+        isArray: false,
+        values: type.type.split(' | '),
+      };
+    } else if (type.type === 'array') {
+      return {
+        type: type.items,
+        isArray: true,
+      };
+    }
+    return {
+      type: type.type,
+      isArray: false,
+    };
   }
 }
 

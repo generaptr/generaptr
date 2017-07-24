@@ -56,7 +56,7 @@ describe('raml file operations', () => {
   });
 
   it('should create directory structure', () => {
-    let ramlFileOperations = new RamlFileOperations('raml');
+    let ramlFileOperations = new RamlFileOperations('raml.test');
 
     ramlFileOperations.createDirectoryStructure()
       .then(() => {
@@ -75,7 +75,7 @@ describe('raml file operations', () => {
   });
 
   it('should create raml type file', (done) => {
-    let ramlFileOperations = new RamlFileOperations('raml');
+    let ramlFileOperations = new RamlFileOperations('raml.test');
 
     ramlFileOperations.createDirectoryStructure()
       .then(() => {
@@ -98,8 +98,7 @@ describe('raml file operations', () => {
   });
 
   it('should create entity.json files', (done) => {
-    let ramlFileOperations = new RamlFileOperations('raml');
-
+    let ramlFileOperations = new RamlFileOperations('raml.test');
     ramlFileOperations.createDirectoryStructure()
       .then(() => {
         return ramlFileOperations.generateSchemaExampleFiles(this.schema);
@@ -122,7 +121,7 @@ describe('raml file operations', () => {
   });
 
   it('should create entity[s].json files', (done) => {
-    let ramlFileOperations = new RamlFileOperations('raml');
+    let ramlFileOperations = new RamlFileOperations('raml.test');
 
     ramlFileOperations.createDirectoryStructure()
       .then(() => {
@@ -133,7 +132,7 @@ describe('raml file operations', () => {
       })
       .then(() => {
         fs.readFile(
-          path.join(ramlFileOperations.filePath, DIRECTORY_STRUCTURE.RAML_STRUCTURE.EXAMPLES, (Utils.pluraliseWordArray(this.schema[0].name) + '.json')), (err, data) => {
+          path.join(ramlFileOperations.filePath, DIRECTORY_STRUCTURE.RAML_STRUCTURE.EXAMPLES, (Utils.pluralize(Utils.toTitleCase(this.schema[0].name)) + '.json')), (err, data) => {
             assert.ifError(err);
             assert(data, 'Countent should not be empty');
             assert.equal(JSON.parse(data).length, 2, 'Number of entities should be 2');
@@ -152,7 +151,7 @@ describe('raml file operations', () => {
   });
 
   it('should create api.raml files', (done) => {
-    let ramlFileOperations = new RamlFileOperations('raml');
+    let ramlFileOperations = new RamlFileOperations('raml.test');
 
     ramlFileOperations.generateSchemaApiFiles([{name: 'users'}], {name: 'Test Test', version: 'v1', url: '/'})
       .then(() => {

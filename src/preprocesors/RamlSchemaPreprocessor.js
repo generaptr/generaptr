@@ -1,32 +1,7 @@
+const typeConverter = require('../commons/utils/typeConverter');
+
 module.exports = class RamlSchemaPreprocessor {
 
-  // {
-//   "name": "firstName",
-//   "primary": false,
-//   "unique": false,
-//   "allowNull": false,
-//   "dataType": {
-//     "type": "string",
-//     "size": 255
-//   }
-
-// { name: 'users',
-//   displayName: 'users',
-//   typePropertyKind: 'TYPE_EXPRESSION',
-//   type: [ 'array' ],
-//   required: false,
-//   items: 'User' }
-// { name: 'id',
-//   displayName: 'id',
-//   typePropertyKind: 'TYPE_EXPRESSION',
-//   type: [ 'number' ],
-//   required: true }
-// { name: 'active',
-//   displayName: 'active',
-//   typePropertyKind: 'TYPE_EXPRESSION',
-//   type: [ 'sent | not-sent' ],
-//   required: true,
-//   fixedFacets: { required: true } }
   /**
    * Normalize the table schema.
    *
@@ -38,8 +13,11 @@ module.exports = class RamlSchemaPreprocessor {
       name: columnSchema.name,
       primary: columnSchema.name === 'id',
       unique: columnSchema.name === 'id',
-      allowNull: columnSchema.required,
-      dataType: {},
+      allowNull: !columnSchema.required,
+      dataType: typeConverter.convertRamlTypes({
+        type: columnSchema.type.pop(),
+        items: columnSchema.items,
+      }),
     };
   }
 };

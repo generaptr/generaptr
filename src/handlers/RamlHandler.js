@@ -9,6 +9,9 @@ class RamlHandler extends BaseHandler {
    */
   constructor(options) {
     super('raml');
+    if (!options.path) {
+      throw new Error('Path is a required argument.');
+    }
     this.path = options.path;
   }
 
