@@ -7,15 +7,15 @@ Generaptr is a node cli package that helps when starting up a package by generat
 
 -------
 ## Table of Contents
-    1. [Documentation](#documentation)
-        1.[Minimum Requirements](#minimum-requirements)
-        2.[Installation](#instalation)
-        3.[Examples](#examples)
-    2.[Support](#support)
-    3.[Code of Conduct](#code-conduct)
-    4.[Contributing](#contributing)
-    5.[License](#license)
-    6.[References](#references)
+1. [Documentation](#documentation)
+2. [Minimum Requirements](#minimum-requirements)
+3. [Installation](#instalation)
+4. [Examples](#examples)
+5. [Support](#support)
+6. [Code of Conduct](#code-conduct)
+7. [Contributing](#contributing)
+8. [License](#license)
+9. [References](#references)
 
 ## Goal and Philosophy
 * for relational databases
