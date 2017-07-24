@@ -8,3 +8,8 @@ coverage
 debug-log.json
 raml.test
 !test/handlers/raml
+api
+api.test
+!src/generators/api
+!tes/generators/api
+!assets/api
