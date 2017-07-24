@@ -1,6 +1,6 @@
-const logger = require('../commons/logger');
+const logger = require('../../../commons/logger');
 const chalk = require('chalk');
-const relational = require('./relational');
+const relational = require('./relational/relational');
 const inquirer = require('inquirer');
 
 exports.questions = [

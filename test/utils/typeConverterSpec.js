@@ -38,4 +38,21 @@ describe('it should convert types to standard', () => {
     }
   });
 
+  it('should should convert raml enum types', () => {
+      const converted = typeConverter.convertRamlTypes({type: 'Yes | No'});
+      assert.equal(converted.type, 'enum');
+      assert.equal(converted.values.length, 2);
+  });
+
+  it('should should convert raml array types', () => {
+    const converted = typeConverter.convertRamlTypes({type: 'array', items: 'User'});
+    assert.equal(converted.type, 'User');
+    assert.equal(converted.isArray, true);
+  });
+
+  it('should should convert raml ordinary types', () => {
+    const converted = typeConverter.convertRamlTypes({type: 'number'});
+    assert.equal(converted.type, 'number');
+    assert.equal(converted.isArray, false);
+  });
 });

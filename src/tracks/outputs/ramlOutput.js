@@ -1,9 +1,9 @@
-const logger = require('../commons/logger');
+const logger = require('../../commons/logger');
 const chalk = require('chalk');
 const inquirer = require('inquirer');
 
-const databaseTypeTrack = require('./databaseType');
-const FileService = require('../fileOperations/fileService');
+const databaseTypeTrack = require('../inputs/database/databaseType');
+const RamlFileOperations = require('../../fileOperations/RamlFileOperations');
 
 exports.questions = [
   {
@@ -30,10 +30,10 @@ exports.questions = [
 ];
 
 exports.handler = (data) => {
-  let fileService = new FileService(data.output);
+  let ramlFileOperations = new RamlFileOperations(data.output);
   let schemaInfo;
 
-  return fileService.createDirectoryStructure()
+  return ramlFileOperations.createDirectoryStructure()
     .then(() => {
       logger.info('reading database schema');
       return inquirer.prompt(databaseTypeTrack.questions).then(databaseTypeTrack.handler);
@@ -42,23 +42,23 @@ exports.handler = (data) => {
       // get reference of current schema information
       schemaInfo = schema;
       logger.info('generating raml data types');
-      return fileService.generateSchemaTypeFiles(schemaInfo);
+      return ramlFileOperations.generateSchemaTypeFiles(schemaInfo);
     })
     .then(() => {
       console.log(chalk.green('DataType files were created for the api spec.'));
-      return fileService.generateSchemaTypeFiles(schemaInfo);
+      return ramlFileOperations.generateSchemaTypeFiles(schemaInfo);
     })
     .then(() => {
-      return fileService.generateSchemaExampleFiles(schemaInfo);
+      return ramlFileOperations.generateSchemaExampleFiles(schemaInfo);
     })
     .then(() => {
       logger.info('generating example files');
-      return fileService.generateSchemaExamplesFilesFromCache();
+      return ramlFileOperations.generateSchemaExamplesFilesFromCache();
     })
     .then(() => {
       console.log(chalk.green('Example response were created for the api spec.'));
     }).then(() => {
-      return fileService.generateSchemaApiFiles(schemaInfo, data);
+      return ramlFileOperations.generateSchemaApiFiles(schemaInfo, data);
     })
     .then(() => {
       logger.info('generating the api spec');

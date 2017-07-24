@@ -15,6 +15,14 @@ class Utils {
   }
 
   /**
+   * Convert word to it's table name
+   * @param {string} word = eg: User
+   * @return {*} eg: users
+   */
+  toTableName(word) {
+    return this.pluralize(word.toLowerCase());
+  }
+  /**
    * @param {string} word - eg: user
    * @return {*} eg: users
    */

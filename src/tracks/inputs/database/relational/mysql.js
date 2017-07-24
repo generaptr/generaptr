@@ -1,6 +1,6 @@
 const chalk = require('chalk');
-const mysqlConnectionValidator = require('../../validators/MysqlConnectionValidator');
-const MysqlHandler = require('../../handlers/MysqlHandler');
+const mysqlConnectionValidator = require('../../../../validators/MysqlConnectionValidator');
+const MysqlHandler = require('../../../../handlers/MysqlHandler');
 
 exports.questions = [
   {
