@@ -1,7 +1,7 @@
 ![](http://i.imgur.com/yCRAubA.png)
 ========
 
-[![npm](https://badge.fury.io/js/generaptr.svg)](http://badge.fury.io/js/generaptr)[![Build Status](https://travis-ci.org/cupsadarius/generaptr.svg)](http://travis-ci.org/cupsadarius/generaptr) [![Join the chat at https://gitter.im/generaptr/proposals](https://badges.gitter.im/generaptr/proposals.svg)](https://gitter.im/generaptr/proposals?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Coverage Status](https://coveralls.io/repos/github/cupsadarius/generaptr/badge.svg?branch=develop)](https://coveralls.io/github/cupsadarius/generaptr?branch=develop)
+[![npm](https://badge.fury.io/js/generaptr.svg)](http://badge.fury.io/js/generaptr)[![Build Status](https://travis-ci.org/cupsadarius/generaptr.svg)](http://travis-ci.org/cupsadarius/generaptr) [![Join the chat at https://gitter.im/generaptr/proposals](https://badges.gitter.im/generaptr/proposals.svg)](https://gitter.im/generaptr/proposals?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Coverage Status](https://coveralls.io/repos/github/cupsadarius/generaptr/badge.svg?branch=develop)](https://coveralls.io/github/cupsadarius/generaptr?branch=develop)[![dependencies](https://david-dm.org/cupsadarius/generaptr.svg?theme=shields.io)](https://david-dm.org/cupsadarius/generaptr)
 
 Generaptr is a node cli package that helps when starting up a package by generating boilerplate code for Express api.
 
@@ -18,13 +18,12 @@ Generaptr is a node cli package that helps when starting up a package by generat
 9. [References](#references)
 
 ## Goal and Philosophy
-* for relational databases
-  reads the database schema and generates a valid *.raml file containing the models and api.
-* for non-relational databases
-  based on already existing models generates a valid *.raml file containing the api.
-* for a valid *.raml file
-  generates the models and the CRUD api
-
+**`Generaptr`** strives to be an easy and useful command line tool for generating boilerplate api for a given database structure.
+ 
+**`Generaptr`** should ease the process of:
+- starting a new backend project
+- writing boilerplate crud operations
+- writing api specs
 
 ## [Documentation](#documentation)
 <a name="documentation"></a>
@@ -42,6 +41,35 @@ npm install generaptr
 
 ### [Examples](#examples)
 <a name="examples"></a>
+
+When starting generaptr the screen displayed below will appear.
+
+![](./assets/genraptr.png)
+
+Here, the two possible actions are shown, actions which will decide on which flow will the execution continue:
+* [raml](#raml-flow)
+* [api](#api-flow)
+#### [Generate Raml spec flow](#raml-flow)
+<a name="raml-flow"></a>
+
+Required information for generating the raml api spec is presented in the next screen.
+ 
+![](./assets/spec/raml-info.png)
+
+![](./assets/spec/raml-final.png)
+
+In the screenShot we can see the logs from a successful api spec generation.
+
+![](./assets/spec/raml-folders.png)
+
+Folder structure for a generated api spec.
+
+#### [Generate Api flow](#api-flow)
+<a name="api-flow"></a> 
+
+Required information for generating the api boilerplate is presented in the next screenShot.
+
+![](./assets/api/api-info.png)
 ## [Support](#support)
 <a name="support"></a>
 You should expect mostly good support for the CLI below. This does not mean we won't
