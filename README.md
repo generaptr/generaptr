@@ -104,7 +104,7 @@ Add documentation for every API change. Feel free to send typo fixes and better 
 <a name="license"></a>
 
 Copyright (c) 2017 Darius Cupsa (twitter: [@cupsadarius](https://twitter.com/cupsadarius))
-Licensed under the GPL-3.0 license.
+Licensed under the MIT license.
 ## [References](#references)
 <a name="references"></a>
 * [RAML](http://raml.org)
