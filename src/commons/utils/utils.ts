@@ -1,41 +1,49 @@
-const pluralize = require('pluralize');
-const config = require('../../configs/config');
+import * as pluralize from 'pluralize';
+import config from '../../configs/config';
 
-class Utils {
+/**
+ * Export utils class.
+ *
+ * @export
+ * @class Utils
+ */
+export class Utils {
 
   /**
    * Convert data type name to 'Object' naming
    * @param {string} word - eg: users
    * @returns {string} eg: User
    */
-  toTitleCase(word) {
-    const initialPosition = 0;
-    const secondWord = 1;
+  public toTitleCase(word: string): string {
+    const initialPosition: number = 0;
+    const secondWord: number = 1;
+
     return pluralize.singular(word.charAt(initialPosition).toUpperCase() + word.substring(secondWord));
   }
 
   /**
    * Convert word to it's table name
    * @param {string} word = eg: User
-   * @return {*} eg: users
+   * @return {string} eg: users
    */
-  toTableName(word) {
+  public toTableName(word: string): string {
     return this.pluralize(word.toLowerCase());
   }
   /**
+   * Pluralizes a word.
    * @param {string} word - eg: user
-   * @return {*} eg: users
+   * @return {string} eg: users
    */
-  pluralize(word) {
+  public pluralize(word: string): string {
     return pluralize.plural(word);
   }
 
   /**
    * Convert plural word into singular
    * @param {string} word - word to be singularized
-   * @returns {*} - singularized word
+   * @returns {string} - singularized word
    */
-  singular(word) {
+  public singular(word: string): string {
     return pluralize.singular(word);
   }
 
@@ -44,42 +52,40 @@ class Utils {
    * @param {string} word - string object
    * @return {string} - Example: input: User[]; output: Users
    */
-  pluraliseWordArray(word) {
-    const initialPosition = 0;
+  public pluraliseWordArray(word: string): string {
+    const initialPosition: number = 0;
+
     return word.includes('[]') ? pluralize.plural(word.substring(initialPosition, word.indexOf('[]'))) : word;
   }
 
   /**
    * Convert js plain object into JSON string
-   * @param {*} object - object to be converted
+   * @param {{}} object - object to be converted
    * @return {string} stringy version of js object
    */
-  convertToJSON(object) {
-    return JSON.stringify(object, null, '\t');
+  public convertToJSON(object: Object): string {
+    return JSON.stringify(object, undefined, '\t');
   }
 
   /**
    * IndexOf implementation with ignore case
-   * @param {Array} array - array of strings
-   * @param {string} query - query string
+   * @param {string[]} haystack - array of strings
+   * @param {string} needle - query string
    * @return {number} key of the query inside the array
    */
-  indexOfIgnoreCase(array, query) {
-    if (typeof query !== 'string') {
-      throw new Error('Index of ignore case works only for string query');
-    }
-
-    return array.findIndex(item => query.toLowerCase() === item.toLowerCase());
+  public indexOfIgnoreCase(haystack: string[], needle: string): number {
+    return haystack.findIndex((item: string) => needle.toLowerCase() === item.toLowerCase());
   }
 
   /**
    * Returns an array of a certain length with same object
-   * @param {*} object - js plain object
+   * @param {{}} object - js plain object
    * @param {int} length - length of returned array
-   * @return {Array.<*>} filled array
+   * @return {Array.<{}>} filled array
    */
-  fillArray(object, length) {
-    const start = 0;
+  public fillArray(object: Object, length: number): Object[] {
+    const start: number = 0;
+
     return new Array(length).fill(object, start, length);
   }
 
@@ -91,9 +97,9 @@ class Utils {
    * @param {string} message - holds the actual content of the line
    * @return {string} - returns the formatted line
    */
-  formatLine(initialIndentation, tabs, message) {
-    let line = `${initialIndentation}`;
-    for (let i = 0; i < tabs; i++) {
+  public formatLine(initialIndentation: string, tabs: number, message: string): string {
+    let line: string = `${initialIndentation}`;
+    for (let i: number = 0; i < tabs; i++) {
       line += `${config.DEFAULT_INDENTATION}`;
     }
     line += `${message}${config.END_OF_LINE}`;
@@ -102,4 +108,4 @@ class Utils {
   }
 }
 
-module.exports = new Utils();
+export default new Utils();

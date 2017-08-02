@@ -1,11 +1,4 @@
-const env = require('get-env')({
-  test: ['test'],
-});
-/**
- * Application configurations
- * @type {{INITIAL_DEPTH_LEVEL: number, DEFAULT_MAX_DEPTH_LEVEL: number, DEFAULT_ARRAY_LENGTH: number, DEPTH_INCREMENT: number}}
- */
-module.exports = {
+export default {
   /**
    * Default depth level used by recursive function for generating type example
    */
@@ -34,7 +27,22 @@ module.exports = {
    */
   DEFAULT_INDENTATION: '  ',
 
-  ENV: env,
+  TABS: {
+    LEVEL_0: 0,
+    LEVEL_1: 1,
+    LEVEL_2: 2,
+    LEVEL_3: 3,
+    LEVEL_4: 4,
+    LEVEL_5: 5,
+    LEVEL_6: 6,
+    LEVEL_7: 7,
+    LEVEL_8: 8,
+    LEVEL_9: 9,
+  },
+
+  NUMERIC_BASE: 10,
+
+  ENV: process.env.toString(),
 
   /**
    * Connection default information

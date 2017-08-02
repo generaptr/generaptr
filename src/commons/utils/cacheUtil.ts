@@ -1,15 +1,27 @@
-class CacheUtil {
-  constructor() {
-    this.cache = {};
-  }
+import { Cache, Everything } from '../types';
 
+/**
+ * Class which holds helper tools when working with cache.
+ *
+ * @export
+ * @class CacheUtil
+ */
+export class CacheUtil {
+  /**
+   * Cache registry.
+   *
+   * @private
+   * @type {Cache}
+   * @memberof CacheUtil
+   */
+  private cache: Cache;
   /**
    * Add new key/value pair in cache
    * @param {string} primeKey - primary identicator
    * @param {string} key - unique string value
-   * @param {*} value - value object to be added in cache
+   * @param {Everything} value - value object to be added in cache
    */
-  add(primeKey, key, value) {
+  public add(primeKey: string, key: string, value: Everything): void {
     if (!this.cache[primeKey]) {
       this.cache[primeKey] = {[key]: value};
     } else {
@@ -23,7 +35,7 @@ class CacheUtil {
    * @param {string} key - key saved in cache
    * @return {*} value out of cache
    */
-  get(primeKey, key) {
+  public get(primeKey: string, key: string): Everything {
     if ((primeKey && key) && (this.cache.hasOwnProperty(primeKey))) {
       return this.cache[primeKey][key];
     }
@@ -36,10 +48,9 @@ class CacheUtil {
    * @param {string} primeKey key where to get the cache from
    * @return {*} get cache at prime key
    */
-  getByPrimeKey(primeKey) {
+  public getByPrimeKey(primeKey: string): {[key: string]: Everything} {
     return this.cache[primeKey];
   }
 }
 
-// export singleton
-module.exports = new CacheUtil();
+export default new CacheUtil();

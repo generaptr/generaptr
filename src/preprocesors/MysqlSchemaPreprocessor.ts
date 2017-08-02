@@ -1,13 +1,21 @@
-const typeConverter = require('../commons/utils/typeConverter');
-const utils = require('../commons/utils/utils');
-const SchemaUtil = require('../commons/utils/schemaUtil');
-const logger = require('../commons/logger');
+import typeConverter from '../commons/utils/typeConverter';
+import utils from '../commons/utils/utils';
+import SchemaUtil from '../commons/utils/schemaUtil';
+import logger from '../commons/logger';
+import config from '../configs/config';
+import { Schema, Table, Column, MySqlColumnSchema } from '../commons/types';
 
-const CROSS_REFERENCE_COL_LENGTH = 2;
-const FIRST_INDEX = 0;
-const SECOND_INDEX = 1;
+const CROSS_REFERENCE_COL_LENGTH: number = 2;
+const FIRST_INDEX: number = 0;
+const SECOND_INDEX: number = 1;
 
-module.exports = class MysqlSchemaPreprocessor {
+/**
+ * MySql schema pre processor.
+ *
+ * @export
+ * @class MysqlSchemaPreprocessor
+ */
+export default class MysqlSchemaPreprocessor {
 
   /**
    * Normalize the table schema.
@@ -15,21 +23,25 @@ module.exports = class MysqlSchemaPreprocessor {
    * @param {*} columnSchema column schema to be normalized
    * @returns {{}} normalized column schema
    */
-  convertToStandardSchema(columnSchema) {
-    const schema = {};
-    schema.name = columnSchema.COLUMN_NAME ? columnSchema.COLUMN_NAME : null;
-    schema.primary = Boolean(columnSchema.COLUMN_KEY && columnSchema.COLUMN_KEY === 'PRI');
-    schema.unique = Boolean(columnSchema.COLUMN_KEY && (columnSchema.COLUMN_KEY === 'PRI' || columnSchema.COLUMN_KEY === 'UNI'));
-    schema.foreignKey = Boolean(columnSchema.COLUMN_KEY && columnSchema.COLUMN_KEY === 'MUL');
-    schema.allowNull = Boolean(columnSchema.IS_NULLABLE && columnSchema.IS_NULLABLE === 'YES');
-    schema.dataType = {
-      type: typeConverter.convertSqlType(columnSchema.DATA_TYPE),
-      size: columnSchema.CHARACTER_MAXIMUM_LENGTH ? parseInt(columnSchema.CHARACTER_MAXIMUM_LENGTH) : null,
-      values: columnSchema.COLUMN_TYPE,
+  public convertToStandardSchema(columnSchema: MySqlColumnSchema): Column {
+    const column: Column = {
+      name: columnSchema.COLUMN_NAME ? columnSchema.COLUMN_NAME : '',
+      primary: Boolean(columnSchema.COLUMN_KEY && columnSchema.COLUMN_KEY === 'PRI'),
+      unique: Boolean(
+        columnSchema.COLUMN_KEY && (columnSchema.COLUMN_KEY === 'PRI' || columnSchema.COLUMN_KEY === 'UNI'),
+      ),
+      foreignKey: Boolean(columnSchema.COLUMN_KEY && columnSchema.COLUMN_KEY === 'MUL'),
+      allowNull: Boolean(columnSchema.IS_NULLABLE && columnSchema.IS_NULLABLE === 'YES'),
+      dataType: {
+        type: typeConverter.convertSqlType(columnSchema.DATA_TYPE),
+        size: columnSchema.CHARACTER_MAXIMUM_LENGTH ?
+          parseInt(columnSchema.CHARACTER_MAXIMUM_LENGTH, config.NUMERIC_BASE) :
+          undefined,
+        rawValues: columnSchema.COLUMN_TYPE,
+      },
     };
 
-    SchemaUtil.convertValues(schema);
-    return schema;
+    return SchemaUtil.convertValues(column);
   }
 
   /**
@@ -38,8 +50,8 @@ module.exports = class MysqlSchemaPreprocessor {
    * @param {*} schema db schema
    * @returns {*} normalized db schema
    */
-  normalizeSchemaRelations(schema) {
-    let normalizedSchema = schema;
+  public normalizeSchemaRelations(schema: Schema): Schema {
+    let normalizedSchema: Schema = schema;
     normalizedSchema = this.normalizeOneToOneRelations(normalizedSchema);
     normalizedSchema = this.normalizeOneToManyRelations(normalizedSchema);
     normalizedSchema = this.normalizeManyToManyRelations(normalizedSchema);
@@ -47,6 +59,7 @@ module.exports = class MysqlSchemaPreprocessor {
     normalizedSchema = this.stripEmptyTables(normalizedSchema);
 
     logger.info(JSON.stringify(normalizedSchema));
+
     return normalizedSchema;
   }
 
@@ -59,15 +72,15 @@ module.exports = class MysqlSchemaPreprocessor {
    * @param {*} schema db schema
    * @returns {*} normalized db schema
    */
-  normalizeOneToOneRelations(schema) {
-    let updatedSchema = schema;
-    schema.forEach(table => {
+  private normalizeOneToOneRelations(schema: Schema): Schema {
+    let updatedSchema: Schema = schema;
+    schema.forEach((table: Table) => {
       if (!this.tableHasForeignKeys(table) || this.tableIsCrossReferenceTable(table)) {
         return table;
       }
-      table.columns.forEach(column => {
+      table.columns.forEach((column: Column) => {
         if (column.foreignKey && column.unique) {
-          const targetColumn = {
+          const targetColumn: Column = {
             name: utils.singular(table.name),
             primary: column.primary,
             unique: true,
@@ -78,10 +91,16 @@ module.exports = class MysqlSchemaPreprocessor {
             },
           };
 
-          updatedSchema = this.addColumnToTable(updatedSchema, column.dataType.references.table, targetColumn);
+          updatedSchema = this.addColumnToTable(
+            updatedSchema,
+            column.dataType.references ? column.dataType.references.table : '',
+            targetColumn,
+          );
           updatedSchema = this.removeColumnFromTable(updatedSchema, table.name, column.name);
         }
       });
+
+      return table;
     });
 
     return updatedSchema;
@@ -96,15 +115,15 @@ module.exports = class MysqlSchemaPreprocessor {
    * @param {*} schema db schema
    * @returns {*} normalized db schema
    */
-  normalizeOneToManyRelations(schema) {
-    let updatedSchema = schema;
-    schema.forEach(table => {
+  private normalizeOneToManyRelations(schema: Schema): Schema {
+    let updatedSchema: Schema = schema;
+    schema.forEach((table: Table) => {
       if (!this.tableHasForeignKeys(table) || this.tableIsCrossReferenceTable(table)) {
         return table;
       }
-      table.columns.forEach(column => {
+      table.columns.forEach((column: Column) => {
         if (column.foreignKey) {
-          const targetColumn = {
+          const targetColumn: Column = {
             name: table.name,
             primary: column.primary,
             unique: false,
@@ -114,10 +133,16 @@ module.exports = class MysqlSchemaPreprocessor {
               isArray: true,
             },
           };
-          updatedSchema = this.addColumnToTable(updatedSchema, column.dataType.references.table, targetColumn);
+          updatedSchema = this.addColumnToTable(
+            updatedSchema,
+            column.dataType.references ? column.dataType.references.table : '',
+            targetColumn,
+          );
           updatedSchema = this.removeColumnFromTable(updatedSchema, table.name, column.name);
         }
       });
+
+      return table;
     });
 
     return updatedSchema;
@@ -132,17 +157,17 @@ module.exports = class MysqlSchemaPreprocessor {
    * @param {*} schema db schema
    * @returns {*} normalized db schema
    */
-  normalizeManyToManyRelations(schema) {
-    let updatedSchema = schema;
-    schema.forEach(table => {
+  private normalizeManyToManyRelations(schema: Schema): Schema {
+    let updatedSchema: Schema = schema;
+    schema.forEach((table: Table) => {
       if (!this.tableIsCrossReferenceTable(table) || table.columns.length !== CROSS_REFERENCE_COL_LENGTH) {
         return table;
       }
-      const source = table.columns[FIRST_INDEX];
-      const target = table.columns[SECOND_INDEX];
+      const source: Column = table.columns[FIRST_INDEX];
+      const target: Column = table.columns[SECOND_INDEX];
 
-      const sourceColumn = {
-        name: source.dataType.references.table,
+      const sourceColumn: Column = {
+        name: source.dataType.references ? source.dataType.references.table : '',
         primary: source.primary,
         unique: false,
         allowNull: true,
@@ -152,8 +177,8 @@ module.exports = class MysqlSchemaPreprocessor {
         },
       };
 
-      const targetColumn = {
-        name: target.dataType.references.table,
+      const targetColumn: Column = {
+        name: target.dataType.references ? target.dataType.references.table : '',
         primary: target.primary,
         unique: false,
         allowNull: true,
@@ -163,10 +188,20 @@ module.exports = class MysqlSchemaPreprocessor {
         },
       };
 
-      updatedSchema = this.addColumnToTable(updatedSchema, source.dataType.references.table, targetColumn);
-      updatedSchema = this.addColumnToTable(updatedSchema, target.dataType.references.table, sourceColumn);
+      updatedSchema = this.addColumnToTable(
+        updatedSchema,
+        source.dataType.references ? source.dataType.references.table : '',
+        targetColumn,
+      );
+      updatedSchema = this.addColumnToTable(
+        updatedSchema,
+        target.dataType.references ? target.dataType.references.table : '',
+        sourceColumn,
+      );
       updatedSchema = this.removeColumnFromTable(updatedSchema, table.name, source.name);
       updatedSchema = this.removeColumnFromTable(updatedSchema, table.name, target.name);
+
+      return table;
     });
 
     return updatedSchema;
@@ -178,8 +213,8 @@ module.exports = class MysqlSchemaPreprocessor {
    * @param {*} schema db schema
    * @returns {Array<*>} cleaned up schema
    */
-  stripEmptyTables(schema) {
-    return schema.filter(table => Boolean(Object.keys(table.columns).length));
+  private stripEmptyTables(schema: Schema): Schema {
+    return schema.filter((table: Table) => Boolean(Object.keys(table.columns).length));
   }
 
   /**
@@ -188,8 +223,8 @@ module.exports = class MysqlSchemaPreprocessor {
    * @param {*} table db table
    * @returns {boolean} checked if it contains foreign keys.
    */
-  tableHasForeignKeys(table) {
-    return Boolean(table.columns.filter(column => column.foreignKey).length);
+  private tableHasForeignKeys(table: Table): boolean {
+    return Boolean(table.columns.filter((column: Column) => column.foreignKey).length);
   }
 
   /**
@@ -198,8 +233,8 @@ module.exports = class MysqlSchemaPreprocessor {
    * @param {*} table table schema
    * @returns {boolean} checked if cross reference table.
    */
-  tableIsCrossReferenceTable(table) {
-    return table.columns.filter(column => column.foreignKey).length === table.columns.length;
+  private tableIsCrossReferenceTable(table: Table): boolean {
+    return table.columns.filter((column: Column) => column.foreignKey).length === table.columns.length;
   }
 
   /**
@@ -210,8 +245,8 @@ module.exports = class MysqlSchemaPreprocessor {
    * @param {*} column column to be added
    * @returns {Array|*} updated schema
    */
-  addColumnToTable(schema, tableName, column) {
-    return this.removeColumnFromTable(schema, tableName, column.name).map(table => {
+  private addColumnToTable(schema: Schema, tableName: string, column: Column): Schema {
+    return this.removeColumnFromTable(schema, tableName, column.name).map((table: Table) => {
       if (table.name !== tableName) {
         return table;
       }
@@ -229,14 +264,12 @@ module.exports = class MysqlSchemaPreprocessor {
    * @param {string} columnName column to be removed
    * @returns {Array|*} schema with removed column
    */
-  removeColumnFromTable(schema, tableName, columnName) {
-    return schema.map(table => {
+  private removeColumnFromTable(schema: Schema, tableName: string, columnName: string): Schema {
+    return schema.map((table: Table) => {
       if (table.name !== tableName) {
         return table;
       }
-      table.columns = table.columns.filter(column => {
-        return column.name !== columnName;
-      });
+      table.columns = table.columns.filter((column: Column) => column.name !== columnName);
 
       return table;
     });
@@ -248,14 +281,16 @@ module.exports = class MysqlSchemaPreprocessor {
    * @param {*} schema db schema
    * @returns {Array|*} cleaned up db schema
    */
-  cleanupUnusedPropertiesFromColumns(schema) {
-    return schema.map(table => {
-      table.columns.map(column => {
+  private cleanupUnusedPropertiesFromColumns(schema: Schema): Schema {
+    return schema.map((table: Table) => {
+      table.columns.map((column: Column) => {
         delete column.foreignKey;
+
         return column;
       });
+
       return table;
     });
   }
 
-};
+}

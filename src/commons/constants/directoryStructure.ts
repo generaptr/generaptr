@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   RAML_STRUCTURE: {
     TYPES: 'types',
     EXAMPLES: 'examples',

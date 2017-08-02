@@ -1,5 +1,4 @@
 const chalk = require('chalk');
-const mysqlConnectionValidator = require('../../../../validators/MysqlConnectionValidator');
 const MysqlHandler = require('../../../../handlers/MysqlHandler');
 
 exports.questions = [
@@ -51,10 +50,6 @@ exports.questions = [
 exports.handler = (data) => {
   return new Promise((resolve, reject) => {
     try {
-      if (!mysqlConnectionValidator.isValid(data)) {
-        reject('Invalid connection data.');
-      }
-
       const handler = new MysqlHandler(data);
       handler.connect();
       handler.readSchema().then(schema => {

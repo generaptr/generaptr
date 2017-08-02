@@ -1,15 +1,21 @@
-const path = require('path');
-const fs = require('fs');
-const fse = require('fs-extra');
+import * as fs from 'fs';
+import * as fse from 'fs-extra';
+import * as path from 'path';
 
-class FileUtil {
+/**
+ * Class which holds helper tools when working with files.
+ *
+ * @export
+ * @class FileUtil
+ */
+export class FileUtil {
 
   /**
    * Normalize folder path
    * @param {string} filePath path to be normalized
    * @returns {*} normalized path
    */
-  normalizePath(filePath) {
+  public normalizePath(filePath: string): string {
     return path.isAbsolute(filePath) ? (path.normalize(filePath)) :
       (
         process.cwd() +
@@ -26,10 +32,15 @@ class FileUtil {
    * @param {string} filePath - relative or absolute file path
    * @returns {boolean} check if path is dir
    */
-  isDirectory(filePath) {
-    const normalizedFilePath = this.normalizePath(filePath);
+  public isDirectory(filePath: string): boolean {
+    const normalizedFilePath: string = this.normalizePath(filePath);
 
-    return Boolean(normalizedFilePath.substring(normalizedFilePath.lastIndexOf('/'), normalizedFilePath.length).indexOf('.'));
+    return Boolean(
+      normalizedFilePath.substring(
+        normalizedFilePath.lastIndexOf('/'),
+        normalizedFilePath.length,
+      ).indexOf('.'),
+    );
   }
 
   /**
@@ -37,15 +48,14 @@ class FileUtil {
    * @param {string} filePath path where the directory should be created.
    * @returns {Promise} directory created
    */
-  createDirectory(filePath) {
-    const normalizedFilePath = this.normalizePath(filePath);
+  public async createDirectory(filePath: string): Promise<boolean> {
+    const normalizedFilePath: string = this.normalizePath(filePath);
 
-    return new Promise((resolve, reject) => {
-      fs.stat(normalizedFilePath, (err, stat) => {
+    return new Promise<boolean>((resolve: Function, reject: Function): void => {
+      fs.stat(normalizedFilePath, (err: Error, stat: fs.Stats) => {
         if (err) {
-          // create directory structure
           /* istanbul ignore next */
-          fse.ensureDir(normalizedFilePath, ensureDirErr => {
+          fse.ensureDir(normalizedFilePath, (ensureDirErr: Error) => {
             if (ensureDirErr) {
               reject(ensureDirErr);
             } else {
@@ -64,19 +74,20 @@ class FileUtil {
    * @param {Array<string>} paths array of paths that need to be merged
    * @returns {string} merged path
    */
-  joinPaths(...paths) {
+  public joinPaths(...paths: string[]): string {
     return path.join(...paths);
   }
 
   /**
+   * Writes content into file.
    *
    * @param {string} filePath - destination file
    * @param {string} content - content to be written
    * @returns {Promise} file written
    */
-  writeFile(filePath, content) {
-    return new Promise((resolve, reject) => {
-      fs.writeFile(filePath, content, 'UTF-8', (err) => {
+  public async writeFile(filePath: string, content: string): Promise<boolean> {
+    return new Promise<boolean>((resolve: Function, reject: Function): void => {
+      fs.writeFile(filePath, content, 'UTF-8', (err: Error) => {
         if (err) {
           /* istanbul ignore next */
           reject(err);
@@ -88,4 +99,4 @@ class FileUtil {
   }
 }
 
-module.exports = new FileUtil();
+export default new FileUtil();
