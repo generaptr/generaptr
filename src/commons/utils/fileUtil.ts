@@ -17,14 +17,7 @@ export class FileUtil {
    */
   public normalizePath(filePath: string): string {
     return path.isAbsolute(filePath) ? (path.normalize(filePath)) :
-      (
-        process.cwd() +
-        (
-          /* istanbul ignore else */
-          process.platform !== 'win32' ? '/' : '\\'
-        ) +
-        path.normalize(filePath)
-      );
+      `${process.cwd()}${process.platform !== 'win32' ? '/' : '\\'}${path.normalize(filePath)}`;
   }
 
   /**
@@ -87,7 +80,7 @@ export class FileUtil {
    */
   public async writeFile(filePath: string, content: string): Promise<boolean> {
     return new Promise<boolean>((resolve: Function, reject: Function): void => {
-      fs.writeFile(filePath, content, 'UTF-8', (err: Error) => {
+      fs.writeFile(filePath, content, {encoding: 'UTF-8'}, (err: Error) => {
         if (err) {
           /* istanbul ignore next */
           reject(err);

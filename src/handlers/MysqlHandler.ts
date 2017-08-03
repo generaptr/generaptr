@@ -18,25 +18,26 @@ export default class MysqlHandler extends BaseHandler {
    * @type {mysql.Connection}
    * @memberof MysqlHandler
    */
-  private connection: mysql.Connection;
+  private connection: mysql.IConnection;
 
   /**
    * Mysql connection options
    *
    * @private
-   * @type {mysql.ConnectionOptions}
+   * @type {mysql.IConnectionConfig}
    * @memberof MysqlHandler
    */
-  private options: mysql.ConnectionOptions;
+  private options: mysql.IConnectionConfig;
   /**
    * Constructor for the MySqlHandler.
    *
-   * @param {mysq.ConnectionOptions} options Connection parameters.
+   * @param {mysq.IConnectionConfig} options Connection parameters.
    */
-  public constructor(options: mysql.ConnectionOptions) {
+  public constructor(options: mysql.IConnectionConfig) {
     super('mysql');
 
     this.options = options;
+
     this.connection = mysql.createConnection({
       host: this.options.host,
       port: this.options.port,

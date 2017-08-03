@@ -15,6 +15,10 @@ export class CacheUtil {
    * @memberof CacheUtil
    */
   private cache: Cache;
+
+  public constructor() {
+    this.cache = {};
+  }
   /**
    * Add new key/value pair in cache
    * @param {string} primeKey - primary identicator
@@ -36,7 +40,7 @@ export class CacheUtil {
    * @return {*} value out of cache
    */
   public get(primeKey: string, key: string): Everything {
-    if ((primeKey && key) && (this.cache.hasOwnProperty(primeKey))) {
+    if ((primeKey && key) && this.cache[primeKey]) {
       return this.cache[primeKey][key];
     }
 

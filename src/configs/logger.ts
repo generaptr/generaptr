@@ -26,6 +26,7 @@ process.on('exit', (code: number) => {
 });
 
 process.on('warning', (warning: Error) => {
+  console.log(warning);
   /* istanbul ignore next */
   bunyan.warn(warning, 'Warning triggered');
 });

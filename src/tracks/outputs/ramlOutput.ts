@@ -1,11 +1,11 @@
-const logger = require('../../commons/logger');
-const chalk = require('chalk');
-const inquirer = require('inquirer');
+import logger from '../../commons/logger';
+import * as chalk from 'chalk';
+import * as inquirer from 'inquirer';
+import * as databaseTypeTrack from '../inputs/database/databaseType';
+import RamlFileOperations from '../../fileOperations/RamlFileOperations';
+import { RAMLApplicationInfo, Schema } from '../../commons/types';
 
-const databaseTypeTrack = require('../inputs/database/databaseType');
-const RamlFileOperations = require('../../fileOperations/RamlFileOperations');
-
-exports.questions = [
+export const questions: inquirer.Questions = [
   {
     name: 'output',
     type: 'input',
@@ -29,44 +29,46 @@ exports.questions = [
   },
 ];
 
-exports.handler = (data) => {
-  let ramlFileOperations = new RamlFileOperations(data.output);
-  let schemaInfo;
+export const handler: (data: RAMLApplicationInfo) => Promise<boolean> =
+async (data: RAMLApplicationInfo): Promise<boolean> => {
+  const ramlFileOperations: RamlFileOperations = new RamlFileOperations(data.output);
+  let schemaInfo: Schema;
 
   return ramlFileOperations.createDirectoryStructure()
-    .then(() => {
+    .then(async () => {
       logger.info('reading database schema');
+
       return inquirer.prompt(databaseTypeTrack.questions).then(databaseTypeTrack.handler);
     })
-    .then(schema => {
-      // get reference of current schema information
+    .then(async (schema: Schema) => {
       schemaInfo = schema;
       logger.info('generating raml data types');
+
       return ramlFileOperations.generateSchemaTypeFiles(schemaInfo);
     })
-    .then(() => {
+    .then(async () => {
       console.log(chalk.green('DataType files were created for the api spec.'));
+
       return ramlFileOperations.generateSchemaTypeFiles(schemaInfo);
     })
-    .then(() => {
-      return ramlFileOperations.generateSchemaExampleFiles(schemaInfo);
-    })
-    .then(() => {
+    .then(async () => ramlFileOperations.generateSchemaExampleFiles(schemaInfo))
+    .then(async () => {
       logger.info('generating example files');
+
       return ramlFileOperations.generateSchemaExamplesFilesFromCache();
     })
-    .then(() => {
+    .then(async () => {
       console.log(chalk.green('Example response were created for the api spec.'));
-    }).then(() => {
-      return ramlFileOperations.generateSchemaApiFiles(schemaInfo, data);
-    })
-    .then(() => {
+    }).then(async () => ramlFileOperations.generateSchemaApiFiles(schemaInfo, data))
+    .then(async () => {
       logger.info('generating the api spec');
       console.log(chalk.green('Api spec has been created.'));
-      return Promise.resolve();
+
+      return Promise.resolve(true);
     })
-    .catch(exception => {
-      logger.error(exception.message);
-      return Promise.reject(exception);
+    .catch(async (e: Error) => {
+      logger.error(e.message);
+
+      return Promise.reject(e);
     });
 };

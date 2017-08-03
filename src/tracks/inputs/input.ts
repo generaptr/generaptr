@@ -1,10 +1,11 @@
-const logger = require('../../commons/logger');
-const chalk = require('chalk');
-const databaseType = require('./database/databaseType');
-const raml = require('./raml/raml');
-const inquirer = require('inquirer');
+import logger from '../../commons/logger';
+import * as chalk from 'chalk';
+import * as databaseType from './database/databaseType';
+import * as raml from './raml/raml';
+import * as inquirer from 'inquirer';
+import { Schema } from '../../commons/types';
 
-exports.questions = [
+export const questions: inquirer.Questions = [
   {
     name: 'input',
     type: 'list',
@@ -14,7 +15,8 @@ exports.questions = [
   },
 ];
 
-exports.handler = (data) => {
+export const handler: (data: {input: string}) => Promise<Schema> =
+async (data: {input: string}): Promise<Schema> => {
   switch (data.input) {
     case 'database':
       return inquirer.prompt(databaseType.questions).then(databaseType.handler);
@@ -23,7 +25,8 @@ exports.handler = (data) => {
     default: {
       logger.warn('Input source not supported yet.');
       console.log(chalk.yellow('Input source not supported yet.'));
-      return Promise.reject();
     }
   }
+
+  return Promise.reject(undefined);
 };

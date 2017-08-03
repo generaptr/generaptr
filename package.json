@@ -36,14 +36,23 @@
     "typescript": ">= 2.4.2"
   },
   "devDependencies": {
+    "@types/assert": "0.0.31",
+    "@types/bunyan": "^1.8.0",
+    "@types/chalk": "^0.4.31",
+    "@types/faker": "^4.1.0",
+    "@types/fs-extra": "^4.0.0",
+    "@types/inquirer": "0.0.35",
+    "@types/mocha": "^2.2.41",
+    "@types/mysql": "0.0.34",
+    "@types/node": "^8.0.19",
+    "@types/pluralize": "0.0.27",
     "assert": "^1.4.1",
     "coveralls": "^2.13.0",
     "istanbul": "^0.4",
-    "mocha": "^3.4.0"
+    "mocha": "^3.4.0",
+    "typings": "^2.1.1"
   },
   "dependencies": {
-    "@types/chalk": "^0.4.31",
-    "@types/inquirer": "0.0.35",
     "bunyan": "^1.8.9",
     "chalk": "^2.0.1",
     "clear": "0.0.1",

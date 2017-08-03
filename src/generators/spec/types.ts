@@ -18,11 +18,7 @@ export class RamlContentGenerator {
    * @return {string} raml content
    */
   public generateTypeContent(table: Table): string {
-    let objectContent: string =
-    `#%RAML 1.0 DataType
-      type: object
-      properties:
-    `;
+    let objectContent: string = '#%RAML 1.0 DataType\ntype: object\nproperties:\n';
 
     table.columns.forEach((column: Column) => {
       objectContent += utils.formatLine(config.DEFAULT_INDENTATION, 0, `${column.name}:`);

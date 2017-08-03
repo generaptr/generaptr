@@ -1,9 +1,10 @@
-const logger = require('../../../commons/logger');
-const chalk = require('chalk');
-const relational = require('./relational/relational');
-const inquirer = require('inquirer');
+import logger from '../../../commons/logger';
+import * as chalk from 'chalk';
+import * as relational from './relational/relational';
+import * as inquirer from 'inquirer';
+import { Schema } from '../../../commons/types';
 
-exports.questions = [
+export const questions: inquirer.Questions = [
   {
     name: 'databaseType',
     type: 'list',
@@ -13,14 +14,16 @@ exports.questions = [
   },
 ];
 
-exports.handler = (data) => {
+export const handler: (data: {databaseType: string}) => Promise<Schema> =
+async (data: {databaseType: string}): Promise<Schema> => {
   switch (data.databaseType) {
     case 'relational':
       return inquirer.prompt(relational.questions).then(relational.handler);
     default: {
       logger.warn('Non-relational databases not supported yet.');
       console.log(chalk.yellow('Non-relational databases not supported yet.'));
-      return Promise.reject();
     }
   }
+
+  return Promise.reject(undefined);
 };

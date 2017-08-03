@@ -2,7 +2,7 @@ import * as chalk from 'chalk';
 import * as figlet from 'figlet';
 import * as inquirer from 'inquirer';
 import logger from './commons/logger';
-import generaptrTrack from './tracks/generaptr';
+import * as generaptr from './tracks/generaptr';
 
 process.stdout.write('\x1Bc');
 
@@ -14,8 +14,8 @@ console.log(
 
 logger.info('session initialized');
 logger.info('generatig folder structure');
-inquirer.prompt(generaptrTrack.questions)
-  .then(generaptrTrack.handler)
+inquirer.prompt(generaptr.questions)
+  .then(generaptr.handler)
   .catch((exception: Error) => {
     console.log(chalk.red(exception.message));
   });

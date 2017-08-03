@@ -42,6 +42,8 @@ export default {
 
   NUMERIC_BASE: 10,
 
+  DEFAULT_INDENTATION_SPACE_COUNT: 2,
+
   ENV: process.env.toString(),
 
   /**

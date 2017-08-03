@@ -1,11 +1,11 @@
-const logger = require('../commons/logger');
-const chalk = require('chalk');
-const inquirer = require('inquirer');
+import logger from '../commons/logger';
+import * as chalk from 'chalk';
+import * as inquirer from 'inquirer';
 
-const ramlOutput = require('./outputs/ramlOutput');
-const apiOutput = require('./outputs/apiOutput');
+import * as ramlOutput from './outputs/ramlOutput';
+import * as apiOutput from './outputs/apiOutput';
 
-exports.questions = [
+export const questions: inquirer.Questions = [
   {
     name: 'action',
     type: 'list',
@@ -15,7 +15,8 @@ exports.questions = [
   },
 ];
 
-exports.handler = (data) => {
+export const handler: (data: {action: string}) => Promise<boolean> =
+async (data: {action: string}): Promise<boolean> => {
   switch (data.action) {
     case 'raml': {
       return inquirer.prompt(ramlOutput.questions).then(ramlOutput.handler);
@@ -27,7 +28,7 @@ exports.handler = (data) => {
       logger.warn(`${data.action} not yet supported.`);
       console.log(chalk.yellow(`${data.action} not yet supported.`));
     }
-
-      return Promise.reject();
   }
+
+  return Promise.reject(undefined);
 };

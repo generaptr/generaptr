@@ -1,17 +1,6 @@
 {
   "name": "generaptr",
-  "dependencies": {
-    "bunyan": "registry:dt/bunyan#0.0.0+20170311003516",
-    "chalk": "registry:npm/chalk#1.1.1+20160812215109",
-    "fs-extra": "registry:dt/fs-extra#2.0.0+20170306033830",
-    "inquirer": "registry:dt/inquirer#0.0.0+20161119044246",
-    "mysql": "registry:npm/mysql#2.11.1+20161114232222"
-  },
   "globalDependencies": {
-    "assert": "registry:dt/assert#0.0.0+20161116022913",
-    "faker": "registry:dt/faker#4.1.0+20170308192816",
-    "figlet": "github:cupsadarius/custom-typings/figlet#master",
-    "mocha": "registry:dt/mocha#2.2.5+20170311011848",
-    "pluralize": "registry:dt/pluralize#0.0.0+20160510002910"
+    "figlet": "github:cupsadarius/custom-typings/figlet#master"
   }
 }

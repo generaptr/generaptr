@@ -27,8 +27,12 @@ export class RamlUtil {
       const index: number = utils.indexOfIgnoreCase((PROPERTIES_NAME as StringMapOfStrings)[key], field.toString());
       const firstPosition: number = 0;
 
-      if (index >= firstPosition || key.toLowerCase() === field.toLowerCase()) {
+      if (index >= firstPosition) {
         return this.parseRamlValue(faker[key][PROPERTIES_NAME[key][index]](), type);
+      }
+
+      if (key.toLowerCase() === field.toLowerCase()) {
+        return this.parseRamlValue(faker[key][PROPERTIES_NAME[key][firstPosition]](), type);
       }
     }
 

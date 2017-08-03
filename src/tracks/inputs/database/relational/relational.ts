@@ -1,9 +1,9 @@
-const inquirer = require('inquirer');
-const chalk = require('chalk');
-const logger = require('../../../../commons/logger');
-const mysql = require('./mysql');
-
-exports.questions = [
+import * as inquirer from 'inquirer';
+import * as chalk from 'chalk';
+import logger from '../../../../commons/logger';
+import * as mysql from './mysql';
+import { Schema } from '../../../../commons/types';
+export const questions: inquirer.Questions = [
   {
     name: 'databaseEngine',
     type: 'list',
@@ -13,7 +13,8 @@ exports.questions = [
   },
 ];
 
-exports.handler = (data) => {
+export const handler: (data: {databaseEngine: string}) => Promise<Schema> =
+async (data: {databaseEngine: string}): Promise<Schema> => {
   switch (data.databaseEngine) {
     case 'MySql': {
       return inquirer.prompt(mysql.questions).then(mysql.handler);
@@ -22,7 +23,7 @@ exports.handler = (data) => {
       logger.warn(`${data.databaseEngine} not yet supported.`);
       console.log(chalk.yellow(`${data.databaseEngine} not yet supported.`));
     }
-
-      return Promise.reject();
   }
+
+  return Promise.reject(undefined);
 };

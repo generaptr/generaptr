@@ -82,4 +82,5 @@ export type RAMLApplicationInfo = {
   name: string;
   version: string;
   url: string;
+  output: string;
 };
