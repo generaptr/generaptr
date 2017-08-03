@@ -13,3 +13,5 @@ api.test
 !src/generators/api
 !tes/generators/api
 !assets/api
+lib
+typings
