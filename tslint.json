@@ -16,6 +16,7 @@
     "no-default-export": false,
     "prefer-function-over-method": false,
     "no-unused-variable": false,
+    "no-magic-numbers": false,
     "member-ordering": [
       false
     ],

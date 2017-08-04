@@ -49,7 +49,7 @@ export class RamlUtil {
    * @param {string} type - raml type
    * @return {*} parsed value
    */
-  protected parseRamlValue(value: string, type: string): number | string | boolean {
+  public parseRamlValue(value: string, type: string): number | string | boolean {
     const base: number = 10;
     switch (type) {
       case 'number':
@@ -68,7 +68,7 @@ export class RamlUtil {
    * @param {string} type - can be number / string / boolean
    * @return {*} random id
    */
-  protected generateId(type: string): number | string {
+  public generateId(type: string): number | string {
     switch (type) {
       case 'number':
         return faker.random.number(Number.MAX_SAFE_INTEGER);

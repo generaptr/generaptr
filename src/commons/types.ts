@@ -1,6 +1,8 @@
 
 export type RamlColumnSchema = {
   name: string;
+  displayName: string;
+  typePropertyKind: string;
   type: string[];
   required: boolean;
   items: string;

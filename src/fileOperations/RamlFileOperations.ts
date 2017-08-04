@@ -150,4 +150,13 @@ export default class RamlFileOperations {
 
     return Promise.all(promises);
   }
+
+  /**
+   * Returns file path.
+   *
+   * @returns {string} file path
+   */
+  public getFilePath(): string {
+    return this.filePath;
+  }
 }

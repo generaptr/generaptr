@@ -1,7 +1,7 @@
-const ramlUtil = require('../../src/commons/utils/ramlUtil');
-const assert = require('assert');
+import ramlUtil from '../../src/commons/utils/ramlUtil';
+import * as assert from 'assert';
 
-describe('it should help with raml opertions', () => {
+describe('Suite for testing RamlUtil class', () => {
   it('should generate fake data', () => {
     assert.equal(typeof ramlUtil.generateFakeData('asd', 'string'), 'string');
     assert.equal(typeof ramlUtil.generateFakeData('company', 'string'), 'string');
@@ -19,14 +19,13 @@ describe('it should help with raml opertions', () => {
 
   it('should know how to parse values', () => {
     assert.equal(ramlUtil.parseRamlValue('2', 'number'), 2);
-    assert.equal(ramlUtil.parseRamlValue(2, 'string'), '2');
     assert.equal(ramlUtil.parseRamlValue('2', 'boolean'), true);
     assert.equal(ramlUtil.parseRamlValue('asd', 'not-a-type'), 'asd');
   });
 
   it('should retrieve random enum values', () => {
-    const randomEnumValue = ramlUtil.generateFakeData('active', 'enum', ['Yes', 'No']);
+    const randomEnumValue: string | number | boolean = ramlUtil.generateFakeData('active', 'enum', ['Yes', 'No']);
     assert(randomEnumValue);
     assert.equal(randomEnumValue === 'Yes' || randomEnumValue === 'No', true);
-  })
+  });
 });

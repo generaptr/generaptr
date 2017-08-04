@@ -1,7 +1,7 @@
-const utils = require('../../src/commons/utils/utils');
-const assert = require('assert');
+import utils from '../../src/commons/utils/utils';
+import * as assert from 'assert';
 
-describe('utils should work as expected', () => {
+describe('Suite for testing Utils class', () => {
 
   it('should convert to title case', () => {
     assert.equal(utils.toTitleCase('users'), 'User');
@@ -17,14 +17,6 @@ describe('utils should work as expected', () => {
 
   it('should convert to json', () => {
     assert.equal(utils.convertToJSON({user: 'test'}), '{\n\t"user": "test"\n}');
-  });
-
-  it('should throw an error when trying to pass different query', () => {
-    try {
-      utils.indexOfIgnoreCase([], 2);
-    } catch (e) {
-      assert.equal(e.message, 'Index of ignore case works only for string query');
-    }
   });
 
   it('should find the index with the right query', () => {

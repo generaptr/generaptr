@@ -37,7 +37,7 @@ export class SchemaUtil {
     switch (column.dataType.type) {
       case 'enum':
         column.dataType.values = columnType ?
-        (columnType.replace(/["'()]/g, '').replace(' ', '').split(',')) : [];
+        (columnType.substring(4).replace(/["'()]/g, '').replace(' ', '').split(',')) : [];
         break;
       default:
         delete column.dataType.rawValues;
