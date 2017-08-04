@@ -77,8 +77,8 @@ describe('raml file operations', () => {
     const ramlFileOperations: RamlFileOperations = new RamlFileOperations('raml.test');
 
     ramlFileOperations.createDirectoryStructure()
-      .then(() => ramlFileOperations.generateSchemaTypeFiles([table]))
-      .then(() => {
+      .then(async () => ramlFileOperations.generateSchemaTypeFiles([table]))
+      .then(async () => {
         fs.readFile(
           path.join(
             ramlFileOperations.getFilePath(),
@@ -102,8 +102,8 @@ describe('raml file operations', () => {
   it('should create entity.json files', (done: Function) => {
     const ramlFileOperations: RamlFileOperations = new RamlFileOperations('raml.test');
     ramlFileOperations.createDirectoryStructure()
-      .then(() => ramlFileOperations.generateSchemaExampleFiles(schema))
-      .then(() => {
+      .then(async () => ramlFileOperations.generateSchemaExampleFiles(schema))
+      .then(async () => {
         fs.readFile(
           path.join(
             ramlFileOperations.getFilePath(),
@@ -133,9 +133,9 @@ describe('raml file operations', () => {
     const ramlFileOperations: RamlFileOperations = new RamlFileOperations('raml.test');
 
     ramlFileOperations.createDirectoryStructure()
-      .then(() => ramlFileOperations.generateSchemaExampleFiles(schema))
-      .then(() => ramlFileOperations.generateSchemaExamplesFilesFromCache())
-      .then(() => {
+      .then(async () => ramlFileOperations.generateSchemaExampleFiles(schema))
+      .then(async () => ramlFileOperations.generateSchemaExamplesFilesFromCache())
+      .then(async () => {
         fs.readFile(
           path.join(
             ramlFileOperations.getFilePath(),
@@ -167,7 +167,7 @@ describe('raml file operations', () => {
       [{name: 'users', columns: []}],
       {name: 'Test Test', version: 'v1', url: '/', output: ramlFileOperations.getFilePath()},
     )
-      .then(() => {
+      .then(async () => {
         fs.readFile(
           path.join(ramlFileOperations.getFilePath(), 'api.raml'), (err: Error, data: Buffer) => {
             assert.ifError(err);
