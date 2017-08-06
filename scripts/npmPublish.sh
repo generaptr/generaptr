@@ -2,7 +2,6 @@
 
 # Publishes generaptr to NPM based on the current version in package.json
 # This script must be run with yarn: "yarn run publish:local"
-# A user running this script must have Palantir NPM organization credentials
 
 set -e
 
