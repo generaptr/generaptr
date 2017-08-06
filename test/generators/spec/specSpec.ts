@@ -65,7 +65,7 @@ const VALID_DELETE: string =
         204:
 `;
 
-describe('Raml api spec generator', () => {
+describe('Suite for testing RamlSpecGeneratorr', () => {
 
   it('should generate a valid get all spec', () => {
     assert.equal(specGenerator.addGetAllSpec('  ', {name: 'users', columns: []}), VALID_GET_ALL);
