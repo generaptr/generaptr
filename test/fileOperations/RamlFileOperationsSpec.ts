@@ -34,7 +34,7 @@ const table: Table = {
   ],
 };
 const schema: Schema = mocks.PROCESSED_SCHEMA_ONE_TABLE;
-describe('raml file operations', () => {
+describe('Suite for testing RamlFileOperation class', () => {
 
   it('should throw an error if path provided is filePath', (done: Function) => {
     const ramlFileOperations: RamlFileOperations = new RamlFileOperations('raml.test');

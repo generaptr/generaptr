@@ -26,9 +26,6 @@ export default class RamlHandler extends BaseHandler {
    */
   public constructor(options: {path: string}) {
     super('raml');
-    if (!options.path) {
-      throw new Error('Path is a required argument.');
-    }
     this.path = options.path;
   }
 

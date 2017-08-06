@@ -1,6 +1,9 @@
 {
   "name": "generaptr",
   "scripts": {
+    "clean": "npm-run-all -p clean:core clean:test",
+    "clean:core": "rimraf lib",
+    "clean:test": "rimraf build",
     "compile": "npm-run-all -p compile:core compile:test",
     "compile:core": "tsc -p src",
     "compile:test": "tsc -p test",
@@ -8,9 +11,12 @@
     "test": "mocha build/test/**/*Spec.js build/test/**/**/*Spec.js",
     "test:coverage": "export NODE_ENV='test' && node --harmony ./node_modules/istanbul/lib/cli.js cover --hook-run-in-context ./node_modules/mocha/bin/_mocha -- --R spec --U exports build/test/**/*Spec.js build/test/**/**/*Spec.js",
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/.bin/coveralls",
-    "logs": "tail -f debug-log.json | ./node_modules/.bin/bunyan"
+    "logs": "tail -f debug-log.json | ./node_modules/.bin/bunyan",
+    "doc": "typedoc --tsconfig src/tsconfig.json --out docs/",
+    "publish:local": "./scripts/npmPublish.sh",
+    "verify": "npm-run-all clean compile lint test doc"
   },
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "Api generator",
   "license": "MIT",
   "repository": {
@@ -69,7 +75,9 @@
     "pluralize": "^6.0.0",
     "preferences": "^0.2.1",
     "raml-1-parser": "^1.1.26",
+    "rimraf": "^2.6.1",
     "tslint": "^5.5.0",
+    "typedoc": "^0.8.0",
     "typescript": "^2.4.2"
   }
 }

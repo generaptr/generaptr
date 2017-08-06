@@ -44,7 +44,7 @@ export default {
 
   DEFAULT_INDENTATION_SPACE_COUNT: 2,
 
-  ENV: process.env.toString(),
+  ENV: process.env.NODE_ENV || 'dev',
 
   /**
    * Connection default information
