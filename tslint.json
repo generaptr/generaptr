@@ -1,0 +1,37 @@
+
+{
+  "lintOptions": {
+    "typeCheck": true
+  },
+  "extends": "tslint:all",
+  "rules": {
+    "quotemark": [
+      "single"
+    ],
+    "no-console": [
+      "log"
+    ],
+    "object-literal-sort-keys": false,
+    "ordered-imports": [false],
+    "no-default-export": false,
+    "prefer-function-over-method": false,
+    "no-unused-variable": false,
+    "no-magic-numbers": false,
+    "member-ordering": [
+      false
+    ],
+    "no-inferrable-types": false,
+    "interface-over-type-literal": false,
+    "array-type": [
+      true,
+      "array"
+    ],
+    "no-void-expression": false,
+
+    // To implement at some point
+    "strict-boolean-expressions": false,
+    "ban": false,
+    "ban-types": false,
+    "no-unsafe-any": false
+  }
+}

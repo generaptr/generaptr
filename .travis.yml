@@ -20,7 +20,11 @@ before_install:
   - mysql -u root test < ./test/handlers/mysql/data.sql
 
 script:
+  - typings install
   - npm run lint
+  # yarn won't install latest typescript version.
+  - npm install typescript@2.4.2
+  - npm run compile
   - npm run test:coverage
 
 after_success:
@@ -32,4 +36,4 @@ deploy:
   email: NPM_EMAIL
   api_key: NPM_TOKEN
   on:
-      branch: develop
+    branch: develop

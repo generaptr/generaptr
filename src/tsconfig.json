@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "noImplicitAny": false,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noUnusedParameters": true,
+    "noUnusedLocals": true,
+    "strictNullChecks": true,
+    "importHelpers": true,
+    "declaration": true,
+    "sourceMap": false,
+    "target": "es5",
+    "lib": ["es6"],
+    "outDir": "../lib",
+    "types": [
+      "assert", "faker", "figlet", "mocha", "node", "pluralize", "bunyan", "chalk", "fs-extra", "inquirer", "mysql"
+    ],
+    "typeRoots": ["../typings/globals", "../typings/modules", "../node_modules/@types"]
+  }
+}

@@ -1,13 +1,22 @@
 {
   "name": "generaptr",
   "scripts": {
-    "lint": "./node_modules/.bin/eslint src",
-    "test": "./node_modules/.bin/mocha test/**/*Spec.js test/**/**/*Spec.js",
-    "test:coverage": "export NODE_ENV='test' && node --harmony ./node_modules/istanbul/lib/cli.js cover --hook-run-in-context ./node_modules/mocha/bin/_mocha -- --R spec --U exports test/**/*Spec.js test/**/**/*Spec.js",
+    "clean": "npm-run-all -p clean:core clean:test",
+    "clean:core": "rimraf lib",
+    "clean:test": "rimraf build",
+    "compile": "npm-run-all -p compile:core compile:test",
+    "compile:core": "tsc -p src",
+    "compile:test": "tsc -p test",
+    "lint": "tslint --project test/tsconfig.json --format stylish # test includes 'src' too",
+    "test": "mocha build/test/**/*Spec.js build/test/**/**/*Spec.js",
+    "test:coverage": "export NODE_ENV='test' && node --harmony ./node_modules/istanbul/lib/cli.js cover --hook-run-in-context ./node_modules/mocha/bin/_mocha -- --R spec --U exports build/test/**/*Spec.js build/test/**/**/*Spec.js",
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/.bin/coveralls",
-    "logs": "tail -f debug-log.json | ./node_modules/.bin/bunyan"
+    "logs": "tail -f debug-log.json | ./node_modules/.bin/bunyan",
+    "doc": "typedoc --tsconfig src/tsconfig.json --out docs/",
+    "publish:local": "./scripts/npmPublish.sh",
+    "verify": "npm-run-all clean compile lint test doc"
   },
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "Api generator",
   "license": "MIT",
   "repository": {
@@ -15,7 +24,7 @@
     "url": "git@github.com:cupsadarius/generaptr.git"
   },
   "author": "Darius Cupsa <cupsadarius@gmail.com>",
-  "main": "index.js",
+  "main": "./lib/generaptr.js",
   "bugs": {
     "url": "https://github.com/cupsadarius/generaptr/issues"
   },
@@ -30,14 +39,25 @@
     "generaptr": "./bin/generaptr"
   },
   "engines": {
-    "node": ">= 7.5.0"
+    "node": ">= 7.5.0",
+    "typescript": ">= 2.4.2"
   },
   "devDependencies": {
+    "@types/assert": "0.0.31",
+    "@types/bunyan": "^1.8.0",
+    "@types/chalk": "^0.4.31",
+    "@types/faker": "^4.1.0",
+    "@types/fs-extra": "^4.0.0",
+    "@types/inquirer": "0.0.35",
+    "@types/mocha": "^2.2.41",
+    "@types/mysql": "0.0.34",
+    "@types/node": "^8.0.19",
+    "@types/pluralize": "0.0.27",
     "assert": "^1.4.1",
     "coveralls": "^2.13.0",
-    "eslint": "^3.19.0",
     "istanbul": "^0.4",
-    "mocha": "^3.4.0"
+    "mocha": "^3.4.0",
+    "typings": "^2.1.1"
   },
   "dependencies": {
     "bunyan": "^1.8.9",
@@ -51,8 +71,13 @@
     "inquirer": "^3.0.6",
     "minimist": "^1.2.0",
     "mysql": "^2.13.0",
+    "npm-run-all": "^4.0.2",
     "pluralize": "^6.0.0",
     "preferences": "^0.2.1",
-    "raml-1-parser": "^1.1.26"
+    "raml-1-parser": "^1.1.26",
+    "rimraf": "^2.6.1",
+    "tslint": "^5.5.0",
+    "typedoc": "^0.8.0",
+    "typescript": "^2.4.2"
   }
 }

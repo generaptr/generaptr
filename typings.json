@@ -1,0 +1,6 @@
+{
+  "name": "generaptr",
+  "globalDependencies": {
+    "figlet": "github:cupsadarius/custom-typings/figlet#master"
+  }
+}
