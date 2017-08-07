@@ -21,12 +21,13 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git@github.com:cupsadarius/generaptr.git"
+    "url": "git@github.com:generaptr/generaptr.git"
   },
   "author": "Darius Cupsa <cupsadarius@gmail.com>",
+  "homepage": "https://generaptr.github.io",
   "main": "./lib/generaptr.js",
   "bugs": {
-    "url": "https://github.com/cupsadarius/generaptr/issues"
+    "url": "https://github.com/generaptr/generaptr/issues"
   },
   "contributors": [
     "Boieru Luca <luca.boieru@yahoo.com>",

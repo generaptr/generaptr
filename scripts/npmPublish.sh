@@ -8,7 +8,7 @@ set -e
 rm -rf tempPublish
 mkdir tempPublish
 
-git clone git@github.com:cupsadarius/generaptr.git tempPublish
+git clone git@github.com:generaptr/generaptr.git tempPublish
 cd tempPublish
 git checkout $npm_package_version
 
