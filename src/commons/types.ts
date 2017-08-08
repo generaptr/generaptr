@@ -1,3 +1,4 @@
+export type MapOfStrings = {[key: string]: string};
 
 export type RamlColumnSchema = {
   name: string;
@@ -84,5 +85,46 @@ export type RAMLApplicationInfo = {
   name: string;
   version: string;
   url: string;
+  output: string;
+};
+
+export type ConnectionData = {
+  user: string;
+  password: string;
+  host: string;
+  port: string;
+  database: string;
+  dialect: string;
+};
+
+export type SequleizeConfig = {
+  database: {
+    uri: string;
+    username: string;
+    password: string;
+    database: string;
+    host: string;
+    dialect: string;
+    port: string;
+  };
+};
+
+export type PackageJson = {
+  name: string;
+  version: string;
+  description: string;
+  main: string;
+  scripts: {[key: string]: string};
+  author: string;
+  license: string;
+  dependencies: MapOfStrings;
+};
+
+export type PackageJsonInfo = {
+  name: string;
+  version: string;
+  description: string;
+  author: string;
+  license: string;
   output: string;
 };
