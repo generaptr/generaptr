@@ -53,7 +53,6 @@ describe('Suite for testing MySqlPreProcessor class', () => {
     const processed: Schema = preProcessor.normalizeSchemaRelations(mocks.SCHEMA_ONE_TO_ONE);
     const processedAccounts: Table = processed[0];
     const processedUsers: Table = processed[1];
-
     assert.equal(processedAccounts.name, validAccounts.name);
     assert.equal(processedAccounts.columns.length, validAccounts.columns.length);
     assert.equal(processedUsers.name, validUsers.name);

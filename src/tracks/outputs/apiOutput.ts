@@ -89,25 +89,19 @@ async (data: PackageJsonInfo): Promise<boolean> => {
       return apiFileOperations.installDependencies(connection.dialect);
     })
     .then(async () => {
-      switch (connection.dialect) {
-        case 'MySql': {
-          logger.info('initializing Sequelize');
+      logger.info('initialize odm');
 
-          return apiFileOperations.initSequelize();
-        }
-        default:
-          return Promise.resolve(true);
-      }
+      return apiFileOperations.initializeODM(connection.dialect);
     })
     .then(async () => {
       logger.info('installing config');
 
-      return apiFileOperations.initConfig(connection);
+      return apiFileOperations.initializeConfig(connection);
     })
     .then(async () => {
       logger.info('installing models');
 
-      return Promise.resolve(true);
+      return apiFileOperations.initializeModels(connection.dialect, schema);
     })
     .then(async () => {
       logger.info('installing repositories');

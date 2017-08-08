@@ -4,7 +4,9 @@ import fileUtil from '../commons/utils/fileUtil';
 import DIRECTORY_STRUCTURE from '../commons/constants/directoryStructure';
 import packageJsonGenerator from '../generators/api/packageJson';
 import modelGenerator from '../generators/api/models';
-import { PackageJsonInfo, ConnectionData } from '../commons/types';
+import odmFileOperations from './api/odmFileOperations';
+import modelsFileOperations from './api/modelsFileOperations';
+import { PackageJsonInfo, ConnectionData, Schema } from '../commons/types';
 /**
  * Class which implements the logic for implementing api generation file related actions.
  *
@@ -96,29 +98,19 @@ export default class ApiFileOperations {
   }
 
   /**
-   * Initializes sequelize
-   * @returns {Promise<boolean>} initialized sequelize
-   * @memberof ApiFileOperations
+   * Initialize ODM
+   *
+   * @param {string} dialect database dialect
+   * @returns {Promise<boolean>} initialized odm
    */
-  public async initSequelize(): Promise<boolean> {
-    return new Promise<boolean>((resolve: (data: boolean) => void, reject: (reason: Error) => void): void => {
-      console.log(`running: ${chalk.green('sequelize init')}`);
-      exec(
-        `cd ${this.filePath} && ./node_modules/.bin/sequelize init && rm -rf ./config ./models`,
-        (err: Error, stdout: string, stderr: string) => {
-          if (err) {
-            console.log(stdout, stderr);
-
-            return reject(err);
-          }
-
-          return fileUtil.writeFile(
-            `${this.filePath}/${DIRECTORY_STRUCTURE.API_STRUCTURE.MODELS}/index.js`,
-            modelGenerator.sequelize.getModelsRegistry(),
-          )
-          .then(() => resolve(true));
-      });
-    });
+  public async initializeODM(dialect: string): Promise<boolean> {
+    switch (dialect) {
+      case 'MySql': {
+        return odmFileOperations.initSequelize(this.filePath);
+      }
+      default:
+        return Promise.reject('Dialect not supported');
+    }
   }
 
   /**
@@ -127,7 +119,7 @@ export default class ApiFileOperations {
    * @returns {Promise<boolean>} - true if generated config
    * @memberof ApiFileOperations
    */
-  public async initConfig(connection: ConnectionData): Promise<boolean> {
+  public async initializeConfig(connection: ConnectionData): Promise<boolean> {
     console.log(`running: ${chalk.green('init src/config/index.js')}`);
     let config: string = '';
     switch (connection.dialect) {
@@ -140,6 +132,23 @@ export default class ApiFileOperations {
       `${this.filePath}/${DIRECTORY_STRUCTURE.API_STRUCTURE.CONFIG}/index.js`,
       config,
     );
+  }
+
+  /**
+   * Initialize ODM
+   *
+   * @param {string} dialect database dialect
+   * @returns {Promise<boolean[]>} initialized odm
+   */
+  public async initializeModels(dialect: string, schema: Schema): Promise<boolean[]> {
+    console.log(`running: ${chalk.green(`intializing models for ${dialect}`)}`);
+    switch (dialect) {
+      case 'MySql': {
+        return modelsFileOperations.initializeSequelizeModels(this.filePath, schema);
+      }
+      default:
+        return Promise.reject('Dialect not supported');
+    }
   }
 
   /**

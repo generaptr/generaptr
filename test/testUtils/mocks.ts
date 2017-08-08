@@ -70,6 +70,16 @@ export default {
             size: 255,
           },
         },
+        {
+          name: 'user',
+          unique: true,
+          allowNull: false,
+          primary: false,
+          dataType: {
+            type: 'User',
+            isArray: false,
+          },
+        },
       ],
     },
     {

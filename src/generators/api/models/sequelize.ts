@@ -1,4 +1,5 @@
-import { ConnectionData, SequleizeConfig } from '../../../commons/types';
+import utils from '../../../commons/utils/utils';
+import { ConnectionData, SequleizeConfig, Schema, Table, Column, DataType } from '../../../commons/types';
 
 /**
  * Class which implements the logic for generating valid sequelize files.
@@ -68,6 +69,62 @@ module.exports = db;`;
     };
 
     return `module.exports = ${JSON.stringify(config, undefined, 2)}`;
+  }
+
+  public getModels(schema: Schema): {name: string; content: string}[] {
+    const models: {name: string; content: string}[] = [];
+    schema.forEach((table: Table) => {
+      models.push({
+        name: `${utils.toTitleCase(table.name)}.js`,
+        content: this.getModelForTable(table),
+      });
+    });
+
+    return models;
+  }
+
+  private getModelForTable(table: Table): string {
+    return `module.exports = (sequelize, DataTypes) => {
+  const ${utils.toTitleCase(table.name)} = sequelize.define('${utils.singular(table.name).toLowerCase()}', {
+${this.getBasicDataTypes(table)}
+  }, {
+    tableName: '${table.name}',
+    timestamps: false,
+    underscored: false,
+    classMethods: {
+      associate: (models) => {
+      },
+    },
+  });
+
+  return ${utils.toTitleCase(table.name)};
+};`;
+  }
+
+  private getBasicDataTypes(table: Table): string {
+    let dataTypes: string = '';
+    table.columns.forEach((column: Column) => {
+      dataTypes += `    ${column.name}: {
+      type: ${this.getType(column.dataType)},
+      allowNull: ${column.allowNull ? 'true' : 'false'},
+      unique: ${column.unique ? 'true' : 'false'},
+      primary: ${column.primary ? 'true' : 'false'}
+    },\n`;
+    });
+
+    return dataTypes;
+
+  }
+
+  private getType(type: DataType): string {
+    switch (type.type) {
+      case 'string':
+        return 'DataTypes.STRING()';
+      case 'number':
+        return 'DataTypes.INTEGER()';
+      default:
+        return '';
+    }
   }
 }
 

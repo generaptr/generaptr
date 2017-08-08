@@ -45,6 +45,7 @@ export type DataType = {
   rawValues?: string;
   values?: string[];
   isArray?: boolean;
+  relationType?: '1-1' | '1-n' | 'n-n';
   references?: TableReference;
 };
 
