@@ -88,15 +88,28 @@ export default class MysqlSchemaPreprocessor {
             dataType: {
               type: utils.toTitleCase(table.name),
               isArray: false,
+              relationType: '1-1',
             },
           };
 
+          const sourceColumn: Column = {
+            name: column.name,
+            primary: column.primary,
+            unique: true,
+            allowNull: false,
+            dataType: {
+              type: utils.toTitleCase(column.name),
+              isArray: false,
+              relationType: '1-1',
+            },
+          };
           updatedSchema = this.addColumnToTable(
             updatedSchema,
             column.dataType.references ? column.dataType.references.table : '',
             targetColumn,
           );
           updatedSchema = this.removeColumnFromTable(updatedSchema, table.name, column.name);
+          updatedSchema = this.addColumnToTable(updatedSchema, table.name, sourceColumn);
         }
       });
 
@@ -131,6 +144,7 @@ export default class MysqlSchemaPreprocessor {
             dataType: {
               type: utils.toTitleCase(table.name),
               isArray: true,
+              relationType: '1-n',
             },
           };
           updatedSchema = this.addColumnToTable(
@@ -174,6 +188,7 @@ export default class MysqlSchemaPreprocessor {
         dataType: {
           type: utils.toTitleCase(source.dataType.type),
           isArray: true,
+          relationType: 'n-n',
         },
       };
 
@@ -185,6 +200,7 @@ export default class MysqlSchemaPreprocessor {
         dataType: {
           type: utils.toTitleCase(target.dataType.type),
           isArray: true,
+          relationType: 'n-n',
         },
       };
 

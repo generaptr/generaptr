@@ -4,11 +4,13 @@ export default {
     EXAMPLES: 'examples',
   },
   API_STRUCTURE: {
-    MODELS: 'models',
-    REPOSITORIES: 'repositories',
-    SERVICES: 'services',
-    CONTROLLERS: 'controllers',
+    SRC: 'src',
+    PUBLIC: 'public',
+    MODELS: 'src/models',
+    REPOSITORIES: 'src/repositories',
+    SERVICES: 'src/services',
+    CONTROLLERS: 'src/controllers',
     MIGRATIONS: 'migrations',
-    CONFIG: 'config',
+    CONFIG: 'src/configs',
   },
 };

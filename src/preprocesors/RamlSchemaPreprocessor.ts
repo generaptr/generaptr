@@ -1,5 +1,5 @@
 import typeConverter from '../commons/utils/typeConverter';
-import { RamlColumnSchema, Column } from '../commons/types';
+import { RamlColumnSchema, Column, Schema } from '../commons/types';
 
 /**
  * Raml schema pre processor.
@@ -26,5 +26,15 @@ export default class RamlSchemaPreprocessor {
         items: columnSchema.items,
       }),
     };
+  }
+
+  /**
+   * Normalize schema relations.
+   *
+   * @param {Schema} schema - schema which needs to be normalized
+   * @returns {Schema} normalized schema
+   */
+  public normalizeSchemaRelations(schema: Schema): Schema {
+    return schema;
   }
 }
