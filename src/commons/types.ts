@@ -99,7 +99,16 @@ export type ConnectionData = {
 };
 
 export type SequleizeConfig = {
-  database: {
+  development: {
+    uri: string;
+    username: string;
+    password: string;
+    database: string;
+    host: string;
+    dialect: string;
+    port: string;
+  };
+  production: {
     uri: string;
     username: string;
     password: string;

@@ -57,7 +57,7 @@ module.exports = db;`;
    */
   public getConfig(connection: ConnectionData): string {
     const config: SequleizeConfig = {
-      database: {
+      development: {
         uri: `${connection.dialect.toLowerCase()}://${connection.user}:${connection.password}@${connection.host}:${connection.port}/${connection.database}`,
         username: connection.user,
         password: connection.password,
@@ -65,6 +65,15 @@ module.exports = db;`;
         host: connection.host,
         dialect: connection.dialect.toLowerCase(),
         port: connection.port,
+      },
+      production: {
+        uri: 'mysq;://user:password@host:port/database',
+        username: 'user',
+        password: 'password',
+        database: 'database',
+        host: 'host',
+        dialect: 'mysql',
+        port: 'port',
       },
     };
 
