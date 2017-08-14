@@ -129,7 +129,7 @@ export default class ApiFileOperations {
     }
 
     return fileUtil.writeFile(
-      `${this.filePath}/${DIRECTORY_STRUCTURE.API_STRUCTURE.CONFIG}/index.js`,
+      `${this.filePath}/${DIRECTORY_STRUCTURE.API_STRUCTURE.CONFIG}/database.js`,
       config,
     );
   }

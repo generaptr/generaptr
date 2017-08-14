@@ -60,8 +60,8 @@ export class PackageJsonGenerator {
     switch (databaseType) {
       case 'MySql':
         return {
-          'db:migrate': './node_modules/.bin/sequelize db:migrate --env database --config ./src/configs/index.js',
-          'db:create-migration': `./node_modules/.bin/sequelize migration:create --env database --config ./src/configs/index.js`,
+          'db:migrate': './node_modules/.bin/sequelize db:migrate --env development --config ./src/configs/index.js',
+          'db:create-migration': `./node_modules/.bin/sequelize migration:create --env development --config ./src/configs/index.js`,
         };
       default:
         return {};
