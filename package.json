@@ -16,7 +16,7 @@
     "publish:local": "./scripts/npmPublish.sh",
     "verify": "npm-run-all clean compile lint test doc"
   },
-  "version": "0.10.0",
+  "version": "0.10.1",
   "description": "Api generator",
   "license": "MIT",
   "repository": {
