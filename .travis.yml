@@ -16,8 +16,11 @@ services:
   - mysql
 
 before_install:
+  - yarn global add greenkeeper-lockfile@1
   - mysql -e 'CREATE DATABASE test;'
   - mysql -u root test < ./test/handlers/mysql/data.sql
+
+before_script: greenkeeper-lockfile-update
 
 script:
   - typings install
@@ -26,6 +29,8 @@ script:
   - npm install typescript@2.4.2
   - npm run compile
   - npm run test:coverage
+
+after_script: greenkeeper-lockfile-upload
 
 after_success:
   - npm run coveralls
