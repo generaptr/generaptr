@@ -158,6 +158,8 @@ ${this.getRelations(table)}
         return 'DataTypes.STRING()';
       case 'number':
         return 'DataTypes.INTEGER()';
+      case 'enum':
+        return `DataTypes.ENUM(${typeUtil.getEnumValuesAsString(type)})`;
       default:
         return '';
     }

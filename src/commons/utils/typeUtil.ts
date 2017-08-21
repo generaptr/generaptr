@@ -85,6 +85,20 @@ export class TypeUtil {
   }
 
   /**
+   * Converts Enum values to string.
+   *
+   * @param {DataType} type source datatype
+   * @return {string} enum values as string
+   */
+  public getEnumValuesAsString(type: DataType): string {
+    if (type.type === 'enum' && type.values) {
+      return type.values.map((value: string) => `'${value}'`).join(', ');
+    }
+
+    return '';
+  }
+
+  /**
    * Checks if the provided type is a default one.
    *
    * @param {string} type - data type
