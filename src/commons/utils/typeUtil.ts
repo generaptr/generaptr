@@ -1,18 +1,18 @@
 import utils from './utils';
 import { DataType } from '../types';
 /**
- * TypeCovertor util class.
+ * TypeUtil util class.
  *
  * @export
- * @class TypeConverter
+ * @class TypeUtil
  */
-export class TypeConverter {
+export class TypeUtil {
   /**
    * Array that holds the number types
    *
    * @private
    * @type {string[]}
-   * @memberof TypeConverter
+   * @memberof TypeUtil
    */
   private numberTypes: string[] = ['int', 'tinyint', 'smallint', 'mediumint', 'bigint', 'decimal', 'float', 'double'];
 
@@ -21,7 +21,7 @@ export class TypeConverter {
    *
    * @private
    * @type {string[]}
-   * @memberof TypeConverter
+   * @memberof TypeUtil
    */
   private stringTypes: string[] = [
     'char', 'varchar', 'blob', 'text', 'tinyblob', 'tinytext', 'mediumblob', 'mediumtext', 'longblob', 'longtext',
@@ -83,6 +83,16 @@ export class TypeConverter {
       isArray: false,
     };
   }
+
+  /**
+   * Checks if the provided type is a default one.
+   *
+   * @param {string} type - data type
+   * @return {boolean} returns true if type is a default one.
+   */
+  public isDefaultType(type: string): boolean {
+    return ['enum', 'number', 'string'].some((item: string) => type === item);
+  }
 }
 
-export default new TypeConverter();
+export default new TypeUtil();

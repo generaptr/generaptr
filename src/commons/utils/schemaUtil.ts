@@ -54,6 +54,23 @@ export class SchemaUtil {
   public valuesToRamlDataType(values: string[]): string {
     return (values && values.length > 0) ? values.join(' | ') : '';
   }
+
+  /**
+   * Checks if a circular reference exists between the source and target table.
+   *
+   * @param {Table} source - source table
+   * @param {Column} column - column which references another table
+   * @param {Schema} schema - whole schema
+   * @return {boolean} true if a circular reference exists in the target table
+   */
+  public isCircularRelation(source: Table, column: Column, schema: Schema): boolean {
+    const target: Table | undefined = schema.find((table: Table) => table.name === utils.toTableName(column.name));
+    if (target) {
+      return target.columns.some((col: Column) => utils.toTableName(col.name) === source.name);
+    }
+
+    return false;
+  }
 }
 
 export default new SchemaUtil();

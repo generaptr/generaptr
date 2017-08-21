@@ -95,7 +95,7 @@ describe('Suite for testing MySqlHandler class', () => {
           assert.equal(users.name, 'users');
           assert.equal(Object.keys(users.columns).length, 6);
           assert.equal(accounts.name, 'accounts');
-          assert.equal(Object.keys(accounts.columns).length, 4);
+          assert.equal(Object.keys(accounts.columns).length, 3);
 
           done();
         }).catch((err: Error) => {
