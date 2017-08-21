@@ -20,7 +20,7 @@ Do not open issues for general support questions as we want to keep GitHub issue
 
 ## <a name="issue"></a> Found a Bug?
 If you find a bug in the source code, you can help us by
-[submitting an issue](#submit-issue) to our [GitHub Repository][github]. Even better, you can
+[submitting an issue](#submit-issue) to our [GitHub Repository](https://github.com/generaptr/generaptr). Even better, you can
 [submit a Pull Request](#submit-pr) with a fix.
 
 ## <a name="feature"></a> Missing a Feature?
@@ -65,7 +65,7 @@ Before you submit your Pull Request (PR) consider the following guidelines:
 
 * Create your patch, **including appropriate test cases**.
 * Follow our [Coding Rules](#rules).
-* Run the full generaptr test suite, as described in the [developer documentation][dev-doc],
+* Run the full generaptr test suite, as described in the [developer documentation](DEVELOPER.md),
   and ensure that all tests pass.
 * Commit your changes using a descriptive commit message that follows our
   [commit message conventions](#commit). Adherence to these conventions
