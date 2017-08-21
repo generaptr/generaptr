@@ -1,9 +1,7 @@
 ![](http://i.imgur.com/yCRAubA.png)
 ========
 
-[![Greenkeeper badge](https://badges.greenkeeper.io/generaptr/generaptr.svg)](https://greenkeeper.io/)
-
-[![npm](https://badge.fury.io/js/generaptr.svg)](http://badge.fury.io/js/generaptr) [![Build Status](https://travis-ci.org/generaptr/generaptr.svg)](http://travis-ci.org/generaptr/generaptr) [![Join the chat at https://gitter.im/generaptr/proposals](https://badges.gitter.im/generaptr/proposals.svg)](https://gitter.im/generaptr/proposals?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Coverage Status](https://coveralls.io/repos/github/cupsadarius/generaptr/badge.svg?branch=develop)](https://coveralls.io/github/cupsadarius/generaptr?branch=develop) [![dependencies](https://david-dm.org/cupsadarius/generaptr.svg?theme=shields.io)](https://david-dm.org/cupsadarius/generaptr)
+[![npm](https://badge.fury.io/js/generaptr.svg)](http://badge.fury.io/js/generaptr) [![Build Status](https://travis-ci.org/generaptr/generaptr.svg)](http://travis-ci.org/generaptr/generaptr) [![Join the chat at https://gitter.im/generaptr/proposals](https://badges.gitter.im/generaptr/proposals.svg)](https://gitter.im/generaptr/proposals?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Coverage Status](https://coveralls.io/repos/github/cupsadarius/generaptr/badge.svg?branch=develop)](https://coveralls.io/github/cupsadarius/generaptr?branch=develop) [![dependencies](https://david-dm.org/cupsadarius/generaptr.svg?theme=shields.io)](https://david-dm.org/cupsadarius/generaptr) [![Greenkeeper badge](https://badges.greenkeeper.io/generaptr/generaptr.svg)](https://greenkeeper.io/)
 
 Generaptr is a node cli package that helps when starting up a package by generating boilerplate code for Express api.
 
