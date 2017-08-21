@@ -73,7 +73,7 @@
     "minimist": "^1.2.0",
     "mysql": "^2.13.0",
     "npm-run-all": "^4.0.2",
-    "pluralize": "^6.0.0",
+    "pluralize": "^7.0.0",
     "preferences": "^0.2.1",
     "raml-1-parser": "^1.1.26",
     "rimraf": "^2.6.1",
