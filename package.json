@@ -14,7 +14,8 @@
     "logs": "tail -f debug-log.json | ./node_modules/.bin/bunyan",
     "doc": "typedoc --tsconfig src/tsconfig.json --out docs/",
     "publish:local": "./scripts/npmPublish.sh",
-    "verify": "npm-run-all clean compile lint test doc"
+    "verify": "npm-run-all clean compile lint test doc",
+    "commit": "git-cz"
   },
   "version": "0.10.1",
   "description": "Api generator",
@@ -55,7 +56,9 @@
     "@types/node": "^8.0.19",
     "@types/pluralize": "0.0.27",
     "assert": "^1.4.1",
+    "commitizen": "^2.9.6",
     "coveralls": "^2.13.0",
+    "cz-conventional-changelog": "^2.0.0",
     "istanbul": "^0.4",
     "mocha": "^3.4.0",
     "typings": "^2.1.1"
@@ -80,5 +83,10 @@
     "tslint": "^5.5.0",
     "typedoc": "^0.8.0",
     "typescript": "^2.4.2"
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
   }
 }
