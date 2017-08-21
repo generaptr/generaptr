@@ -11,6 +11,13 @@ import { Schema } from '../../commons/types';
  */
 export class ModelsFileOperations {
 
+  /**
+   * Generate sequelize models based on schema.
+   *
+   * @param {string} filePath path of the root of the api
+   * @param {Schema} schema source schema for api generation
+   * @return {Promise<boolean[]>} true if all models have been generated
+   */
   public async initializeSequelizeModels(filePath: string, schema: Schema): Promise<boolean[]> {
     const promises: [Promise<boolean>] = [Promise.resolve(true)];
 

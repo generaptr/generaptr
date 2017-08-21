@@ -1,4 +1,5 @@
 import utils from '../../../commons/utils/utils';
+import typeUtil from '../../../commons/utils/typeUtil';
 import { ConnectionData, SequleizeConfig, Schema, Table, Column, DataType } from '../../../commons/types';
 
 /**
@@ -80,6 +81,12 @@ module.exports = db;`;
     return `module.exports = ${JSON.stringify(config, undefined, 2)}`;
   }
 
+  /**
+   * Generate models for a given schema.
+   *
+   * @param {Schema} schema - api schema
+   * @return {{name: string, content: string}[]}
+   */
   public getModels(schema: Schema): {name: string; content: string}[] {
     const models: {name: string; content: string}[] = [];
     schema.forEach((table: Table) => {
@@ -92,6 +99,12 @@ module.exports = db;`;
     return models;
   }
 
+  /**
+   * Generate contents for each model based on the table schema.
+   *
+   * @param {Table} table - source
+   * @return {string} content of sequelize model as string.
+   */
   private getModelForTable(table: Table): string {
     return `module.exports = (sequelize, DataTypes) => {
   const ${utils.toTitleCase(table.name)} = sequelize.define('${utils.singular(table.name).toLowerCase()}', {
@@ -99,9 +112,10 @@ ${this.getBasicDataTypes(table)}
   }, {
     tableName: '${table.name}',
     timestamps: false,
-    underscored: false,
+    underscored: true,
     classMethods: {
       associate: (models) => {
+${this.getRelations(table)}
       },
     },
   });
@@ -110,9 +124,17 @@ ${this.getBasicDataTypes(table)}
 };`;
   }
 
+  /**
+   * Generate contents for the basic data types.
+   * @param {Table} table - source
+   * @return {string} generated content.
+   */
   private getBasicDataTypes(table: Table): string {
     let dataTypes: string = '';
     table.columns.forEach((column: Column) => {
+      if (!typeUtil.isDefaultType(column.dataType.type)) {
+        return;
+      }
       dataTypes += `    ${column.name}: {
       type: ${this.getType(column.dataType)},
       allowNull: ${column.allowNull ? 'true' : 'false'},
@@ -125,6 +147,11 @@ ${this.getBasicDataTypes(table)}
 
   }
 
+  /**
+   * Returns the string version of the sequelize type.
+   * @param {DataType} type source
+   * @return {string} sequelize type
+   */
   private getType(type: DataType): string {
     switch (type.type) {
       case 'string':
@@ -134,6 +161,35 @@ ${this.getBasicDataTypes(table)}
       default:
         return '';
     }
+  }
+
+  /**
+   * Generate association methods for types.
+   * @param {Table} table source
+   * @return {string} - generated content
+   */
+  private getRelations(table: Table): string {
+    const modelName: string = utils.toTitleCase(table.name);
+
+    return table.columns.filter((column: Column) => !typeUtil.isDefaultType(column.dataType.type)).map((column: Column) => {
+      switch (column.dataType.relationType) {
+        case '1-1': {
+          return `        ${modelName}.belongsTo(models.${column.dataType.type}, {as: '${column.dataType.type.toLowerCase()}'}),`;
+        }
+        case '1-n': {
+          return `        ${modelName}.hasMany(models.${column.dataType.type}, {as: '${utils.pluralize(column.dataType.type).toLowerCase()}'}),`;
+        }
+        case 'n-n': {
+          if (modelName.localeCompare(column.dataType.type) > 0) {
+            return `        ${modelName}.hasMany(models.${column.dataType.type}, {as: '${utils.pluralize(column.dataType.type).toLowerCase()}', through: '${utils.pluralize(modelName).toLowerCase()}_${utils.pluralize(column.dataType.type).toLowerCase()}'}),`;
+          } else {
+            return `        ${modelName}.belongsTo(models.${column.dataType.type}, {as: '${utils.pluralize(column.dataType.type).toLowerCase()}', through: '${utils.pluralize(column.dataType.type).toLowerCase()}_${utils.pluralize(modelName).toLowerCase()}'}),`;
+          }
+        }
+        default:
+          return '';
+      }
+    }).join('\n');
   }
 }
 

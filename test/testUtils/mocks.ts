@@ -70,6 +70,16 @@ export default {
             size: 255,
           },
         },
+        {
+          name: 'user',
+          unique: true,
+          allowNull: false,
+          primary: false,
+          dataType: {
+            type: 'User',
+            isArray: false,
+          },
+        },
       ],
     },
     {
@@ -113,16 +123,6 @@ export default {
           dataType: {
             type: 'string',
             size: 50,
-          },
-        },
-        {
-          name: 'account',
-          unique: true,
-          allowNull: false,
-          primary: false,
-          dataType: {
-            type: 'Account',
-            isArray: false,
           },
         },
       ],

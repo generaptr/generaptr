@@ -81,23 +81,23 @@ export default class MysqlSchemaPreprocessor {
       table.columns.forEach((column: Column) => {
         if (column.foreignKey && column.unique) {
           const targetColumn: Column = {
-            name: utils.singular(table.name),
+            name: column.name,
             primary: column.primary,
             unique: true,
             allowNull: false,
             dataType: {
-              type: utils.toTitleCase(table.name),
+              type: column.dataType.type,
               isArray: false,
               relationType: '1-1',
             },
           };
 
+          updatedSchema = this.removeColumnFromTable(updatedSchema, table.name, column.name);
           updatedSchema = this.addColumnToTable(
             updatedSchema,
-            column.dataType.references ? column.dataType.references.table : '',
+            table.name,
             targetColumn,
           );
-          updatedSchema = this.removeColumnFromTable(updatedSchema, table.name, column.name);
         }
       });
 
