@@ -8,7 +8,7 @@ import { ConnectionData, SequleizeConfig, Schema, Table, Column, DataType } from
  * @export
  * @class SequelizeModelGenerator
  */
-export class SequelizeModelGenerator {
+export default class SequelizeModelGenerator {
 
   /**
    * Returns the string version of the code which will manage the sequelzie models.
@@ -194,5 +194,3 @@ ${this.getRelations(table)}
     }).join('\n');
   }
 }
-
-export default new SequelizeModelGenerator();

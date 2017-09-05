@@ -71,6 +71,16 @@ export class SchemaUtil {
 
     return false;
   }
+
+  /**
+   * Get related table names for a given table.
+   *
+   * @param {Table} table - given table
+   * @returns {string[]} - related tables
+   */
+  public getRelatedTablesForTable(table: Table): string[] {
+    return table.columns.filter((column: Column) => column.dataType.relationType).map((column: Column) => column.dataType.type);
+  }
 }
 
 export default new SchemaUtil();

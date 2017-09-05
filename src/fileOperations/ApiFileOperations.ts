@@ -6,6 +6,7 @@ import packageJsonGenerator from '../generators/api/packageJson';
 import modelGenerator from '../generators/api/models';
 import odmFileOperations from './api/odmFileOperations';
 import modelsFileOperations from './api/modelsFileOperations';
+import repositoriesFileOperations from './api/repositoriesFileOperations';
 import { PackageJsonInfo, ConnectionData, Schema } from '../commons/types';
 /**
  * Class which implements the logic for implementing api generation file related actions.
@@ -138,6 +139,7 @@ export default class ApiFileOperations {
    * Initialize ODM
    *
    * @param {string} dialect database dialect
+   * @param {Schema} schema source schema for api generation
    * @returns {Promise<boolean[]>} initialized odm
    */
   public async initializeModels(dialect: string, schema: Schema): Promise<boolean[]> {
@@ -145,6 +147,24 @@ export default class ApiFileOperations {
     switch (dialect) {
       case 'MySql': {
         return modelsFileOperations.initializeSequelizeModels(this.filePath, schema);
+      }
+      default:
+        return Promise.reject('Dialect not supported');
+    }
+  }
+
+  /**
+   * Initialize Repositories
+   *
+   * @param {string} dialect database dialect
+   * @param {Schema} schema source schema for api generation
+   * @returns {Promise<boolean[]>} initialized repositories
+   */
+  public async initializeRepositories(dialect: string, schema: Schema): Promise<boolean[]> {
+    console.log(`running: ${chalk.green(`intializing repositories for ${dialect}`)}`);
+    switch (dialect) {
+      case 'MySql': {
+        return repositoriesFileOperations.initializeSequelizeRepositories(this.filePath, schema);
       }
       default:
         return Promise.reject('Dialect not supported');
