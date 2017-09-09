@@ -174,23 +174,22 @@ export default class ApiFileOperations {
 
   /**
    * Initialize Services
-   * @param {Schema} schema source schema for api generation
-   * @return {Promise<void>}
+   * @param schema
+   * @return {Promise<Promise<boolean[]>>}
    */
-  public async initializeServices(schema: Schema): Promose<boolean[]> {
+  public async initializeServices(schema: Schema): Promise<boolean[]> {
     console.log(`running: ${chalk.green('init src/services')}`);
-    return Promise.all([].concat(servicesFileOperations.initializeServices(this.filePath, schema)));
+    return servicesFileOperations.initializeServices(this.filePath, schema);
   }
 
   /**
    * Initialize Controllers
-   * @param {Schema} schema source schema for api generation
-   * @return {Promise<[boolean,T2,T3,T4,T5,T6,T7,T8,T9,T10]>}
+   * @param schema
+   * @return {Promise<boolean[]>}
    */
   public async initializeControllers(schema: Schema): Promise<boolean[]> {
     console.log(`running: ${chalk.green('init src/controllers')}`);
-    return Promise.all([controllersFileOperations.initializeDefaultController(this.filePath)]
-      .concat(controllersFileOperations.initializeAppControllers(this.filePath, schema)));
+    return controllersFileOperations.initializeControllers(this.filePath, schema);
   }
 
   /**

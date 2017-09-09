@@ -19,53 +19,63 @@ ${model}Route.post('/', (request, response) => {
       response.header('Location', 'someShitHere');
       response.status(201);
       response.end();
+    })
+    .catch(err => {
+      response.status(err.status);
+      response.json(err);
     });  
 });
 
 ${model}Route.get('/:id', (request, response) => {
   ${model}Service.get(request.params.id)
     .then(data => { 
-      if (!data) {
-        response.status(404);
-        response.json({code: 404, message: 'No ${model} found for id' + request.params.id});
-      } else {
-        response.status(200);
-        response.json(data);
-      }
+      response.status(200);
+      response.json(data);
+    })
+    .catch(err => {
+      response.status(err.status);
+      response.json(err);
     });
 });
 
 ${model}Route.delete('/:id', (request, response) => {
   ${model}Service.delete(request.params.id)
     .then(() => {
-      response.status(200);
+      response.status(204);
       response.end();
+    })
+    .catch(err => {
+      response.status(err.status);
+      response.json(err);
     });
 });
 
 ${model}Route.put('/:id', (request, response) => {
   ${model}Service.update(request.params.id, request.body)
-    .then(updatedData => {
-      if (!updatedData) {
-        response.status(404);
-        response.json({code: 404, message: 'No ${model} found for id' + request.params.id});
-      } else {
-        response.status(200);
-        response.json(data);
-      }
+    .then(data => {
+      response.status(200);
+      response.json(data);
+    })
+    .catch(err => {
+      response.status(err.status);
+      response.json(err);
     });
 });
 
 ${model}Route.get('/', (request, response) => {
   ${model}Service.getAll(request.params.offset, request.params.limit)
     .then(data => {
-      if (!data || data.length === 0) {
+      if (!data || data.size === 0) {
         response.status(204);
         response.end();
       } else {
         response.status(200);
         response.json(data);
       }
+    })
+    .catch(err => {
+      response.status(err.status);
+      response.json(err);
     });
 });
 

@@ -37,8 +37,8 @@ export default class SequelizeRepositoryGenerator {
     const related: string[] = schemaUtils.getRelatedTablesForTable(table).map((name: string) => utils.toTitleCase(name));
     const entity: string = utils.toTitleCase(table.name);
 
-    return `const ${entity} = require('../models').${entity};
-${related.map((name: string) => `const ${name} = require('../models').${name};`).join('\n')}
+    return `const ${entity} = require('../models').${entity.toLowerCase()};
+${related.map((name: string) => `const ${name} = require('../models').${name.toLowerCase()};`).join('\n')}
 
 class ${entity}Repository {
   get(id) {
@@ -87,16 +87,16 @@ module.exports = new ${entity}Repository();
    * @return {{name: string, content: string}}
    */
   public getRepositoryFactory(schema: Schema): {name: string; content: string} {
-    const models: string[] = schema.map((table: Table) => utils.toTableName(table.name));
+    const models: string[] = schema.map((table: Table) => utils.toTitleCase(table.name));
 
     return {
       name: 'repositoryFactory.js',
-      content: `${models.map((name: string) => `const ${name.toLowerCase()}Repository = require('./${name.toLowerCase()}Repository');`).join('\n')}
+      content: `${models.map((name: string) => `const ${name.toLowerCase()}Repository = require('./${name}Repository');`).join('\n')}
 
 class RepositoryFactory {
   getRepositoryForModel(model) {
     switch(model) {
-${models.map((name: string) => `      case ${name}:
+${models.map((name: string) => `      case '${name}':
         return ${name.toLowerCase()}Repository;`).join('\n')}
       default:
         throw new Error('Repository not implemented for this model');

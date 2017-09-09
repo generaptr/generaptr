@@ -18,7 +18,7 @@ export class ServicesFileOperations {
       );
     });
 
-    return promises;
+    return Promise.all(promises);
   }
 }
 

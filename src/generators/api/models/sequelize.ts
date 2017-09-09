@@ -23,12 +23,14 @@ const path      = require('path');
 const Sequelize = require('sequelize');
 const basename  = path.basename(module.filename);
 const env       = process.env.NODE_ENV || 'development';
-const config    = require(__dirname + '../config')['database'];
+const config    = require(__dirname + '/../configs/database')[env];
 const db        = {};
+let sequelize;
+
 if (config.use_env_variable) {
-  const sequelize = new Sequelize(process.env[config.use_env_variable]);
+  sequelize = new Sequelize(process.env[config.use_env_variable]);
 } else {
-  const sequelize = new Sequelize(config.database, config.username, config.password, config);
+  sequelize = new Sequelize(config.database, config.username, config.password, config);
 }
 fs
   .readdirSync(__dirname)
@@ -68,7 +70,7 @@ module.exports = db;`;
         port: connection.port,
       },
       production: {
-        uri: 'mysq;://user:password@host:port/database',
+        uri: 'mysql://user:password@host:port/database',
         username: 'user',
         password: 'password',
         database: 'database',
@@ -139,7 +141,7 @@ ${this.getRelations(table)}
       type: ${this.getType(column.dataType)},
       allowNull: ${column.allowNull ? 'true' : 'false'},
       unique: ${column.unique ? 'true' : 'false'},
-      primary: ${column.primary ? 'true' : 'false'}
+      primaryKey: ${column.primary ? 'true' : 'false'}
     },\n`;
     });
 
