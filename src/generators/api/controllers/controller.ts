@@ -12,12 +12,14 @@ module.exports = defaultRoute;`;
   public getController(model: string): string {
     return `const ${model}Route = require('express').Router();
 const ${model}Service = require('../services/${model}Service');
+const Util = require('../commons/util');
+const STATUS_CODE = require('../commons/constants/statusCode');
 
 ${model}Route.post('/', (request, response) => { 
   ${model}Service.save(request.body)
     .then(id => {
-      response.header('Location', 'someShitHere');
-      response.status(201);
+      response.header('Location', Util.generateLocationUri(request, id));
+      response.status(STATUS_CODE.CREATED);
       response.end();
     })
     .catch(err => {
@@ -29,7 +31,7 @@ ${model}Route.post('/', (request, response) => {
 ${model}Route.get('/:id', (request, response) => {
   ${model}Service.get(request.params.id)
     .then(data => { 
-      response.status(200);
+      response.status(STATUS_CODE.OK);
       response.json(data);
     })
     .catch(err => {
@@ -41,7 +43,7 @@ ${model}Route.get('/:id', (request, response) => {
 ${model}Route.delete('/:id', (request, response) => {
   ${model}Service.delete(request.params.id)
     .then(() => {
-      response.status(204);
+      response.status(STATUS_CODE.NO_CONTENT);
       response.end();
     })
     .catch(err => {
@@ -53,7 +55,7 @@ ${model}Route.delete('/:id', (request, response) => {
 ${model}Route.put('/:id', (request, response) => {
   ${model}Service.update(request.params.id, request.body)
     .then(data => {
-      response.status(200);
+      response.status(STATUS_CODE.OK);
       response.json(data);
     })
     .catch(err => {
@@ -66,10 +68,10 @@ ${model}Route.get('/', (request, response) => {
   ${model}Service.getAll(request.params.offset, request.params.limit)
     .then(data => {
       if (!data || data.size === 0) {
-        response.status(204);
+        response.status(STATUS_CODE.NO_CONTENT);
         response.end();
       } else {
-        response.status(200);
+        response.status(STATUS_CODE.OK);
         response.json(data);
       }
     })
@@ -80,8 +82,6 @@ ${model}Route.get('/', (request, response) => {
 });
 
 module.exports = ${model}Route;`;
-    // TODO: generate util class for generating location !!!
-    // TODO: reject promise from service and on catch return exception
   }
 }
 

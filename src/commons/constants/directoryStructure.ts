@@ -13,6 +13,7 @@ export default {
     CONTROLLERS: 'src/controllers',
     MIGRATIONS: 'migrations',
     CONFIG: 'src/configs',
-    COMMONS: 'src/commons'
+    COMMONS: 'src/commons',
+    CONSTANTS: 'src/commons/constants',
   },
 };

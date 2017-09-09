@@ -99,6 +99,11 @@ async (data: PackageJsonInfo): Promise<boolean> => {
       return apiFileOperations.initializeConfig(connection, schema);
     })
     .then(async () => {
+      logger.info('installing commons');
+
+      return apiFileOperations.initializeCommons();
+    })
+    .then(async () => {
       logger.info('installing models');
 
       return apiFileOperations.initializeModels(connection.dialect, schema);
@@ -117,11 +122,6 @@ async (data: PackageJsonInfo): Promise<boolean> => {
       logger.info('installing controllers');
 
       return apiFileOperations.initializeControllers(schema);
-    })
-    .then(async () => {
-      logger.info('installing express');
-
-      return Promise.resolve(true);
     })
     .catch(async (e: Error) => {
       logger.error(e.message);

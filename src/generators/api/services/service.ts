@@ -5,6 +5,7 @@ export class Service {
     const modelTitleCase = utils.toTitleCase(model);
 
     return `const repositoryFactory = require('../repositories/repositoryFactory');
+const STATUS_CODE = require('../commons/constants/statusCode');
 
 class ${modelTitleCase}Service {
   constructor() {
@@ -17,8 +18,8 @@ class ${modelTitleCase}Service {
         .then(id => {
           resolve(id);
         })
-        .catch(er => {
-          reject(er); //TODO: map err into exception
+        .catch(err => {
+          reject({'status': STATUS_CODE.INTERNAL_SERVER_ERROR, 'message': err.message});
         });
     });
   }
@@ -28,12 +29,12 @@ class ${modelTitleCase}Service {
       this.repository.get(id)
         .then(data => {
           if (!data) {
-            return reject({'status': 404, 'message': 'No ${modelTitleCase} found with id ' + id});
+            return reject({'status': STATUS_CODE.NOT_FOUND, 'message': 'No ${modelTitleCase} found with id ' + id});
           }
           resolve(data);
         })
         .catch(err => {
-          reject(err); //TODO: map err into exception
+          reject({'status': STATUS_CODE.INTERNAL_SERVER_ERROR, 'message': err.message});
         });
     });
   }
@@ -57,7 +58,7 @@ class ${modelTitleCase}Service {
           resolve(result);
         })
         .catch(err => {
-          reject(err); //TODO: map err to response
+          reject({'status': STATUS_CODE.INTERNAL_SERVER_ERROR, 'message': err.message});
         });
      });
   }
@@ -67,18 +68,15 @@ class ${modelTitleCase}Service {
       this.repository.exists(id)
         .then(exists => {
           if (!exists) {
-            return reject({'status': 404, 'message': 'No ${modelTitleCase} found with id: ' + id}); // map err into exception
+            return reject({'status': STATUS_CODE.NOT_FOUND, 'message': 'No ${modelTitleCase} found with id: ' + id});
           }
           return this.repository.delete(id);
         })
         .then(affected${modelTitleCase} => {
-              if (!affected${modelTitleCase}) {
-                return reject({'status': 500, 'message': 'Internal server error'}); // map err into exception
-              }
               resolve(true);
         })
         .catch(err => {
-          reject(err); //TODO: map err into exception          
+          reject({'status': STATUS_CODE.INTERNAL_SERVER_ERROR, 'message': err.message});    
         });
     });
   }
@@ -88,7 +86,7 @@ class ${modelTitleCase}Service {
       this.repository.exists(id)
         .then(exists => {
           if (!exists) {
-            return reject({'status': 404, 'message': 'No ${modelTitleCase} found with id ' + id});
+            return reject({'status': STATUS_CODE.NOT_FOUND, 'message': 'No ${modelTitleCase} found with id ' + id});
           }
           return this.repository.update(id, data);
         })
@@ -96,7 +94,7 @@ class ${modelTitleCase}Service {
           resolve(data);
         })
         .catch(err => {
-          reject(err); //TODO: map err into exception
+          reject({'status': STATUS_CODE.INTERNAL_SERVER_ERROR, 'message': err.message});
         });
     });
   }

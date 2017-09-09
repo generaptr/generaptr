@@ -9,6 +9,7 @@ import modelsFileOperations from './api/modelsFileOperations';
 import repositoriesFileOperations from './api/repositoriesFileOperations';
 import servicesFileOperations from './api/servicesFileOperations';
 import controllersFileOperations from './api/controllersFileOperations';
+import commonsFileOperations from './api/commonsFileOperations';
 import {PackageJsonInfo, ConnectionData, Schema} from '../commons/types';
 /**
  * Class which implements the logic for implementing api generation file related actions.
@@ -137,6 +138,18 @@ export default class ApiFileOperations {
   }
 
   /**
+   * Initialize commons
+   * @return {Promise<boolean[]>}
+   */
+  public async initializeCommons(): Promise<boolean[]> {
+    console.log(`running: ${chalk.green('init src/commons')}`);
+    return Promise.all([
+      commonsFileOperations.initializeUtil(this.filePath),
+      commonsFileOperations.initializeConstants(this.filePath)
+    ]);
+  }
+
+  /**
    * Initialize ODM
    *
    * @param {string} dialect database dialect
@@ -144,7 +157,7 @@ export default class ApiFileOperations {
    * @returns {Promise<boolean[]>} initialized odm
    */
   public async initializeModels(dialect: string, schema: Schema): Promise<boolean[]> {
-    console.log(`running: ${chalk.green(`intializing models for ${dialect}`)}`);
+    console.log(`running: ${chalk.green(`initializing models for ${dialect}`)}`);
     switch (dialect) {
       case 'MySql': {
         return modelsFileOperations.initializeSequelizeModels(this.filePath, schema);
@@ -162,7 +175,7 @@ export default class ApiFileOperations {
    * @returns {Promise<boolean[]>} initialized repositories
    */
   public async initializeRepositories(dialect: string, schema: Schema): Promise<boolean[]> {
-    console.log(`running: ${chalk.green(`intializing repositories for ${dialect}`)}`);
+    console.log(`running: ${chalk.green(`initializing repositories for ${dialect}`)}`);
     switch (dialect) {
       case 'MySql': {
         return repositoriesFileOperations.initializeSequelizeRepositories(this.filePath, schema);
