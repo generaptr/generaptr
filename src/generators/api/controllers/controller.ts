@@ -1,7 +1,17 @@
+/**
+ * Class which generates string content for API controller files
+ *
+ * @export
+ * @class Controller
+ */
 export class Controller {
-  public getDefaultController() : string {
+  /**
+   * Generate default controller string content
+   * @return {string} - default controller content
+   */
+  public getDefaultController(): string {
     return `const defaultRoute = require('express').Router();
-    
+
 defaultRoute.get('/', (request, response, next) => {
   response.json({ message: 'Hello from Generaptr' });
 });
@@ -9,13 +19,18 @@ defaultRoute.get('/', (request, response, next) => {
 module.exports = defaultRoute;`;
   }
 
+  /**
+   * Generate controller content for one model.
+   * @param {String} model - model string value. e.g: User
+   * @return {string} - string content for generated controller
+   */
   public getController(model: string): string {
     return `const ${model}Route = require('express').Router();
 const ${model}Service = require('../services/${model}Service');
 const Util = require('../commons/util');
 const STATUS_CODE = require('../commons/constants/statusCode');
 
-${model}Route.post('/', (request, response) => { 
+${model}Route.post('/', (request, response) => {
   ${model}Service.save(request.body)
     .then(id => {
       response.header('Location', Util.generateLocationUri(request, id));
@@ -25,12 +40,12 @@ ${model}Route.post('/', (request, response) => {
     .catch(err => {
       response.status(err.status);
       response.json(err);
-    });  
+    });
 });
 
 ${model}Route.get('/:id', (request, response) => {
   ${model}Service.get(request.params.id)
-    .then(data => { 
+    .then(data => {
       response.status(STATUS_CODE.OK);
       response.json(data);
     })

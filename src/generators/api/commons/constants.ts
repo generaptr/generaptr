@@ -1,4 +1,15 @@
+/**
+ * Class which contains all constants generated content.
+ *
+ * @export
+ * @class Constants
+ */
 export class Constants {
+
+  /**
+   * Generate StatusCode string content class
+   * @return {string}
+   */
   public getStatusCode(): string {
     const statuses: Object = {
       OK: 200,
@@ -13,11 +24,11 @@ export class Constants {
       METHOD_NOT_ALLOWED: 405,
       CONFLICT: 409,
       INTERNAL_SERVER_ERROR: 500,
-      BAD_GATEWAY: 502
+      BAD_GATEWAY: 502,
     };
 
     return `module.exports = ${JSON.stringify(statuses, undefined, 2)};`;
-  };
+  }
 }
 
 export default new Constants();

@@ -1,5 +1,5 @@
 import * as chalk from 'chalk';
-import {exec} from 'child_process';
+import { exec } from 'child_process';
 import fileUtil from '../commons/utils/fileUtil';
 import DIRECTORY_STRUCTURE from '../commons/constants/directoryStructure';
 import packageJsonGenerator from '../generators/api/packageJson';
@@ -10,7 +10,8 @@ import repositoriesFileOperations from './api/repositoriesFileOperations';
 import servicesFileOperations from './api/servicesFileOperations';
 import controllersFileOperations from './api/controllersFileOperations';
 import commonsFileOperations from './api/commonsFileOperations';
-import {PackageJsonInfo, ConnectionData, Schema} from '../commons/types';
+import { PackageJsonInfo, ConnectionData, Schema } from '../commons/types';
+
 /**
  * Class which implements the logic for implementing api generation file related actions.
  *
@@ -126,6 +127,7 @@ export default class ApiFileOperations {
    */
   public async initializeConfig(connection: ConnectionData, schema: Schema): Promise<boolean[]> {
     console.log(`running: ${chalk.green('init src/config files')}`);
+
     return Promise.all([
       configFileOperations.initializeConfig(this.filePath),
       configFileOperations.initializeGetEnvBasedConfig(this.filePath),
@@ -133,7 +135,7 @@ export default class ApiFileOperations {
       configFileOperations.initializeCorsConfig(this.filePath),
       configFileOperations.initializeExpressConfig(this.filePath),
       configFileOperations.initializeRouterConfig(this.filePath, schema),
-      configFileOperations.initializeIndex(this.filePath)
+      configFileOperations.initializeIndex(this.filePath),
     ]);
   }
 
@@ -143,9 +145,10 @@ export default class ApiFileOperations {
    */
   public async initializeCommons(): Promise<boolean[]> {
     console.log(`running: ${chalk.green('init src/commons')}`);
+
     return Promise.all([
       commonsFileOperations.initializeUtil(this.filePath),
-      commonsFileOperations.initializeConstants(this.filePath)
+      commonsFileOperations.initializeConstants(this.filePath),
     ]);
   }
 
@@ -192,6 +195,7 @@ export default class ApiFileOperations {
    */
   public async initializeServices(schema: Schema): Promise<boolean[]> {
     console.log(`running: ${chalk.green('init src/services')}`);
+
     return servicesFileOperations.initializeServices(this.filePath, schema);
   }
 
@@ -202,6 +206,7 @@ export default class ApiFileOperations {
    */
   public async initializeControllers(schema: Schema): Promise<boolean[]> {
     console.log(`running: ${chalk.green('init src/controllers')}`);
+
     return controllersFileOperations.initializeControllers(this.filePath, schema);
   }
 

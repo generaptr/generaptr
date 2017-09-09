@@ -1,4 +1,15 @@
+/**
+ * Class which generates string content for main js file
+ *
+ * @export
+ * @class Index
+ */
 export class Index {
+
+  /**
+   * Generate main js file string content
+   * @return {string} - generated content for index.js file
+   */
   public getIndex(): string {
     return `const express = require('express');
 const profile = require('./configs/index.js').getEnvBasedConfig();
