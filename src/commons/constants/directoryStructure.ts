@@ -9,8 +9,10 @@ export default {
     MODELS: 'src/models',
     REPOSITORIES: 'src/repositories',
     SERVICES: 'src/services',
+    MIDDLEWARES: 'src/middlewares',
     CONTROLLERS: 'src/controllers',
     MIGRATIONS: 'migrations',
     CONFIG: 'src/configs',
+    COMMONS: 'src/commons'
   },
 };

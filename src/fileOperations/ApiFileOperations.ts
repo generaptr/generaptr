@@ -1,12 +1,14 @@
 import * as chalk from 'chalk';
-import { exec } from 'child_process';
+import {exec} from 'child_process';
 import fileUtil from '../commons/utils/fileUtil';
 import DIRECTORY_STRUCTURE from '../commons/constants/directoryStructure';
 import packageJsonGenerator from '../generators/api/packageJson';
-import modelGenerator from '../generators/api/models';
 import odmFileOperations from './api/odmFileOperations';
+import configFileOperations from './api/configurationsFileOperations';
 import modelsFileOperations from './api/modelsFileOperations';
-import { PackageJsonInfo, ConnectionData, Schema } from '../commons/types';
+import servicesFileOperations from './api/servicesFileOperations';
+import controllersFileOperations from './api/controllersFileOperations';
+import {PackageJsonInfo, ConnectionData, Schema} from '../commons/types';
 /**
  * Class which implements the logic for implementing api generation file related actions.
  *
@@ -116,22 +118,21 @@ export default class ApiFileOperations {
   /**
    * Generate config
    * @param {ConnectionData} connection - connection info
-   * @returns {Promise<boolean>} - true if generated config
-   * @memberof ApiFileOperations
+   * @param {Schema} schema - database schema tables
+   * @returns {Promise<boolean[]>} - true if generated config
+   * @memberOf ApiFileOperations
    */
-  public async initializeConfig(connection: ConnectionData): Promise<boolean> {
-    console.log(`running: ${chalk.green('init src/config/index.js')}`);
-    let config: string = '';
-    switch (connection.dialect) {
-      case 'MySql':
-        config = modelGenerator.sequelize.getConfig(connection);
-      default:
-    }
-
-    return fileUtil.writeFile(
-      `${this.filePath}/${DIRECTORY_STRUCTURE.API_STRUCTURE.CONFIG}/database.js`,
-      config,
-    );
+  public async initializeConfig(connection: ConnectionData, schema: Schema): Promise<boolean[]> {
+    console.log(`running: ${chalk.green('init src/config files')}`);
+    return Promise.all([
+      configFileOperations.initializeConfig(this.filePath),
+      configFileOperations.initializeGetEnvBasedConfig(this.filePath),
+      configFileOperations.initializeDbConfig(connection, this.filePath),
+      configFileOperations.initializeCorsConfig(this.filePath),
+      configFileOperations.initializeExpressConfig(this.filePath),
+      configFileOperations.initializeRouterConfig(this.filePath, schema),
+      configFileOperations.initializeIndex(this.filePath)
+    ]);
   }
 
   /**
@@ -149,6 +150,27 @@ export default class ApiFileOperations {
       default:
         return Promise.reject('Dialect not supported');
     }
+  }
+
+  /**
+   *
+   * @param schema
+   * @return {Promise<void>}
+   */
+  public async initializeServices(schema: Schema): Promose<boolean[]> {
+    console.log(`running: ${chalk.green('init src/services')}`);
+    return Promise.all([].concat(servicesFileOperations.initializeServices(this.filePath, schema)));
+  }
+
+  /**
+   * Initilize
+   * @param schema
+   * @return {Promise<[boolean,T2,T3,T4,T5,T6,T7,T8,T9,T10]>}
+   */
+  public async initializeControllers(schema: Schema): Promise<boolean[]> {
+    console.log(`running: ${chalk.green('init src/controllers')}`);
+    return Promise.all([controllersFileOperations.initializeDefaultController(this.filePath)]
+      .concat(controllersFileOperations.initializeAppControllers(this.filePath, schema)));
   }
 
   /**
@@ -176,5 +198,4 @@ export default class ApiFileOperations {
   public getFilePath(): string {
     return this.filePath;
   }
-
 }
