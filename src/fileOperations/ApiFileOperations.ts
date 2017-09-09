@@ -6,6 +6,7 @@ import packageJsonGenerator from '../generators/api/packageJson';
 import odmFileOperations from './api/odmFileOperations';
 import configFileOperations from './api/configurationsFileOperations';
 import modelsFileOperations from './api/modelsFileOperations';
+import repositoriesFileOperations from './api/repositoriesFileOperations';
 import servicesFileOperations from './api/servicesFileOperations';
 import controllersFileOperations from './api/controllersFileOperations';
 import {PackageJsonInfo, ConnectionData, Schema} from '../commons/types';
@@ -22,7 +23,7 @@ export default class ApiFileOperations {
    *
    * @private
    * @type {string}
-   * @memberof ApiFileOperations
+   * @memberOf ApiFileOperations
    */
   private filePath: string;
 
@@ -139,6 +140,7 @@ export default class ApiFileOperations {
    * Initialize ODM
    *
    * @param {string} dialect database dialect
+   * @param {Schema} schema source schema for api generation
    * @returns {Promise<boolean[]>} initialized odm
    */
   public async initializeModels(dialect: string, schema: Schema): Promise<boolean[]> {
@@ -153,8 +155,26 @@ export default class ApiFileOperations {
   }
 
   /**
+   * Initialize Repositories
    *
-   * @param schema
+   * @param {string} dialect database dialect
+   * @param {Schema} schema source schema for api generation
+   * @returns {Promise<boolean[]>} initialized repositories
+   */
+  public async initializeRepositories(dialect: string, schema: Schema): Promise<boolean[]> {
+    console.log(`running: ${chalk.green(`intializing repositories for ${dialect}`)}`);
+    switch (dialect) {
+      case 'MySql': {
+        return repositoriesFileOperations.initializeSequelizeRepositories(this.filePath, schema);
+      }
+      default:
+        return Promise.reject('Dialect not supported');
+    }
+  }
+
+  /**
+   * Initialize Services
+   * @param {Schema} schema source schema for api generation
    * @return {Promise<void>}
    */
   public async initializeServices(schema: Schema): Promose<boolean[]> {
@@ -163,8 +183,8 @@ export default class ApiFileOperations {
   }
 
   /**
-   * Initilize
-   * @param schema
+   * Initialize Controllers
+   * @param {Schema} schema source schema for api generation
    * @return {Promise<[boolean,T2,T3,T4,T5,T6,T7,T8,T9,T10]>}
    */
   public async initializeControllers(schema: Schema): Promise<boolean[]> {

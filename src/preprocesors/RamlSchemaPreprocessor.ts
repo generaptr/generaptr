@@ -1,5 +1,6 @@
-import typeConverter from '../commons/utils/typeConverter';
-import { RamlColumnSchema, Column, Schema } from '../commons/types';
+import typeUtil from '../commons/utils/typeUtil';
+import schemaUtil from '../commons/utils/schemaUtil';
+import { RamlColumnSchema, Column, Schema, Table } from '../commons/types';
 
 /**
  * Raml schema pre processor.
@@ -21,7 +22,7 @@ export default class RamlSchemaPreprocessor {
       primary: columnSchema.name === 'id',
       unique: columnSchema.name === 'id',
       allowNull: !columnSchema.required,
-      dataType: typeConverter.convertRamlTypes({
+      dataType: typeUtil.convertRamlTypes({
         type: columnSchema.type.pop() || '',
         items: columnSchema.items,
       }),
@@ -35,6 +36,96 @@ export default class RamlSchemaPreprocessor {
    * @returns {Schema} normalized schema
    */
   public normalizeSchemaRelations(schema: Schema): Schema {
-    return schema;
+    let normalizedSchema: Schema = schema;
+
+    normalizedSchema = this.normalizeOneToOneRelation(normalizedSchema);
+    normalizedSchema = this.normalizeOneToManyRelation(normalizedSchema);
+    normalizedSchema = this.normalizeManyToManyRelation(normalizedSchema);
+
+    return normalizedSchema;
+  }
+
+  /**
+   * Adds the relation type to schema.
+   *
+   * @param {Schema} schema - schema which needs normalization
+   * @return {Schema} normalized schema
+   */
+  private normalizeOneToOneRelation(schema: Schema): Schema {
+    const updatedSchema: Schema = schema;
+    updatedSchema.map((table: Table) => {
+      table.columns.map((column: Column) => {
+        if (
+            !column.allowNull &&
+            !column.dataType.isArray &&
+            !schemaUtil.isCircularRelation(table, column, schema) &&
+            !typeUtil.isDefaultType(column.dataType.type)
+        ) {
+          column.dataType.relationType = '1-1';
+        }
+
+        return column;
+      });
+
+      return table;
+    });
+
+    return updatedSchema;
+  }
+
+  /**
+   * Adds the relation type to schema.
+   *
+   * @param {Schema} schema - schema which needs normalization
+   * @return {Schema} normalized schema
+   */
+  private normalizeOneToManyRelation(schema: Schema): Schema {
+    const updatedSchema: Schema = schema;
+    updatedSchema.map((table: Table) => {
+      table.columns.map((column: Column) => {
+        if (
+            column.allowNull &&
+            column.dataType.isArray &&
+            !schemaUtil.isCircularRelation(table, column, schema) &&
+            !typeUtil.isDefaultType(column.dataType.type)
+        ) {
+          column.dataType.relationType = '1-n';
+        }
+
+        return column;
+      });
+
+      return table;
+    });
+
+    return updatedSchema;
+  }
+
+  /**
+   * Adds the relation type to schema.
+   *
+   * @param {Schema} schema - schema which needs normalization
+   * @return {Schema} normalized schema
+   */
+  private normalizeManyToManyRelation(schema: Schema): Schema {
+    const updatedSchema: Schema = schema;
+    updatedSchema.map((table: Table) => {
+      table.columns.map((column: Column) => {
+        if (
+            column.allowNull &&
+            column.dataType.isArray &&
+            schemaUtil.isCircularRelation(table, column, schema) &&
+            !typeUtil.isDefaultType(column.dataType.type)
+        ) {
+          column.dataType.relationType = 'n-n';
+        }
+
+        return column;
+      });
+
+      return table;
+    });
+
+    return updatedSchema;
   }
 }

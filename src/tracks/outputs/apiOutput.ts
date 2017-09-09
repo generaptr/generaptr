@@ -106,7 +106,7 @@ async (data: PackageJsonInfo): Promise<boolean> => {
     .then(async () => {
       logger.info('installing repositories');
 
-      return Promise.resolve(true);
+      return apiFileOperations.initializeRepositories(connection.dialect, schema);
     })
     .then(async () => {
       logger.info('installing services');

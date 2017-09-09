@@ -1,4 +1,5 @@
 import utils from '../../../commons/utils/utils';
+import typeUtil from '../../../commons/utils/typeUtil';
 import { ConnectionData, SequleizeConfig, Schema, Table, Column, DataType } from '../../../commons/types';
 
 /**
@@ -7,7 +8,7 @@ import { ConnectionData, SequleizeConfig, Schema, Table, Column, DataType } from
  * @export
  * @class SequelizeModelGenerator
  */
-export class SequelizeModelGenerator {
+export default class SequelizeModelGenerator {
 
   /**
    * Returns the string version of the code which will manage the sequelzie models.
@@ -17,17 +18,17 @@ export class SequelizeModelGenerator {
    */
   public getModelsRegistry(): string {
     return `'use strict';
-var fs        = require('fs');
-var path      = require('path');
-var Sequelize = require('sequelize');
-var basename  = path.basename(module.filename);
-var env       = process.env.NODE_ENV || 'development';
-var config    = require(__dirname + '../config')['database'];
-var db        = {};
+const fs        = require('fs');
+const path      = require('path');
+const Sequelize = require('sequelize');
+const basename  = path.basename(module.filename);
+const env       = process.env.NODE_ENV || 'development';
+const config    = require(__dirname + '../config')['database'];
+const db        = {};
 if (config.use_env_variable) {
-  var sequelize = new Sequelize(process.env[config.use_env_variable]);
+  const sequelize = new Sequelize(process.env[config.use_env_variable]);
 } else {
-  var sequelize = new Sequelize(config.database, config.username, config.password, config);
+  const sequelize = new Sequelize(config.database, config.username, config.password, config);
 }
 fs
   .readdirSync(__dirname)
@@ -80,6 +81,12 @@ module.exports = db;`;
     return `module.exports = ${JSON.stringify(config, undefined, 2)}`;
   }
 
+  /**
+   * Generate models for a given schema.
+   *
+   * @param {Schema} schema - api schema
+   * @return {{name: string, content: string}[]}
+   */
   public getModels(schema: Schema): {name: string; content: string}[] {
     const models: {name: string; content: string}[] = [];
     schema.forEach((table: Table) => {
@@ -92,6 +99,12 @@ module.exports = db;`;
     return models;
   }
 
+  /**
+   * Generate contents for each model based on the table schema.
+   *
+   * @param {Table} table - source
+   * @return {string} content of sequelize model as string.
+   */
   private getModelForTable(table: Table): string {
     return `module.exports = (sequelize, DataTypes) => {
   const ${utils.toTitleCase(table.name)} = sequelize.define('${utils.singular(table.name).toLowerCase()}', {
@@ -99,9 +112,10 @@ ${this.getBasicDataTypes(table)}
   }, {
     tableName: '${table.name}',
     timestamps: false,
-    underscored: false,
+    underscored: true,
     classMethods: {
       associate: (models) => {
+${this.getRelations(table)}
       },
     },
   });
@@ -110,9 +124,17 @@ ${this.getBasicDataTypes(table)}
 };`;
   }
 
+  /**
+   * Generate contents for the basic data types.
+   * @param {Table} table - source
+   * @return {string} generated content.
+   */
   private getBasicDataTypes(table: Table): string {
     let dataTypes: string = '';
     table.columns.forEach((column: Column) => {
+      if (!typeUtil.isDefaultType(column.dataType.type)) {
+        return;
+      }
       dataTypes += `    ${column.name}: {
       type: ${this.getType(column.dataType)},
       allowNull: ${column.allowNull ? 'true' : 'false'},
@@ -125,16 +147,50 @@ ${this.getBasicDataTypes(table)}
 
   }
 
+  /**
+   * Returns the string version of the sequelize type.
+   * @param {DataType} type source
+   * @return {string} sequelize type
+   */
   private getType(type: DataType): string {
     switch (type.type) {
       case 'string':
         return 'DataTypes.STRING()';
       case 'number':
         return 'DataTypes.INTEGER()';
+      case 'enum':
+        return `DataTypes.ENUM(${typeUtil.getEnumValuesAsString(type)})`;
       default:
         return '';
     }
   }
-}
 
-export default new SequelizeModelGenerator();
+  /**
+   * Generate association methods for types.
+   * @param {Table} table source
+   * @return {string} - generated content
+   */
+  private getRelations(table: Table): string {
+    const modelName: string = utils.toTitleCase(table.name);
+
+    return table.columns.filter((column: Column) => !typeUtil.isDefaultType(column.dataType.type)).map((column: Column) => {
+      switch (column.dataType.relationType) {
+        case '1-1': {
+          return `        ${modelName}.belongsTo(models.${column.dataType.type}, {as: '${column.dataType.type.toLowerCase()}'}),`;
+        }
+        case '1-n': {
+          return `        ${modelName}.hasMany(models.${column.dataType.type}, {as: '${utils.pluralize(column.dataType.type).toLowerCase()}'}),`;
+        }
+        case 'n-n': {
+          if (modelName.localeCompare(column.dataType.type) > 0) {
+            return `        ${modelName}.hasMany(models.${column.dataType.type}, {as: '${utils.pluralize(column.dataType.type).toLowerCase()}', through: '${utils.pluralize(modelName).toLowerCase()}_${utils.pluralize(column.dataType.type).toLowerCase()}'}),`;
+          } else {
+            return `        ${modelName}.belongsTo(models.${column.dataType.type}, {as: '${utils.pluralize(column.dataType.type).toLowerCase()}', through: '${utils.pluralize(column.dataType.type).toLowerCase()}_${utils.pluralize(modelName).toLowerCase()}'}),`;
+          }
+        }
+        default:
+          return '';
+      }
+    }).join('\n');
+  }
+}

@@ -125,16 +125,6 @@ export default {
             size: 50,
           },
         },
-        {
-          name: 'account',
-          unique: true,
-          allowNull: false,
-          primary: false,
-          dataType: {
-            type: 'Account',
-            isArray: false,
-          },
-        },
       ],
     },
   ],
