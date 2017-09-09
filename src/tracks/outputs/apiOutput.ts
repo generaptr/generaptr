@@ -123,6 +123,10 @@ async (data: PackageJsonInfo): Promise<boolean> => {
 
       return apiFileOperations.initializeControllers(schema);
     })
+    .then(async () => {
+      logger.info('finished api generation');
+      return Promise.resolve(true);
+    })
     .catch(async (e: Error) => {
       logger.error(e.message);
 
