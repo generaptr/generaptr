@@ -125,6 +125,7 @@ async (data: PackageJsonInfo): Promise<boolean> => {
     })
     .then(async () => {
       logger.info('finished api generation');
+
       return Promise.resolve(true);
     })
     .catch(async (e: Error) => {
