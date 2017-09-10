@@ -70,6 +70,17 @@ export default {
             size: 255,
           },
         },
+        {
+          name: 'user',
+          unique: true,
+          allowNull: false,
+          primary: false,
+          dataType: {
+            type: 'User',
+            isArray: false,
+            relationType: '1-1',
+          },
+        },
       ],
     },
     {
@@ -123,6 +134,7 @@ export default {
           dataType: {
             type: 'Account',
             isArray: false,
+            relationType: '1-1',
           },
         },
       ],
@@ -160,6 +172,7 @@ export default {
           dataType: {
             type: 'Application',
             isArray: true,
+            relationType: '1-n',
           },
         },
       ],
@@ -185,6 +198,17 @@ export default {
           dataType: {
             type: 'string',
             size: 255,
+          },
+        },
+        {
+          name: 'account',
+          unique: false,
+          allowNull: false,
+          primary: false,
+          dataType: {
+            type: 'Account',
+            isArray: false,
+            relationType: '1-1',
           },
         },
       ],
@@ -222,6 +246,7 @@ export default {
           dataType: {
             type: 'User',
             isArray: true,
+            relationType: 'n-n',
           },
         },
       ],
@@ -277,6 +302,7 @@ export default {
           dataType: {
             type: 'Group',
             isArray: false,
+            relationType: 'n-n',
           },
         },
       ],

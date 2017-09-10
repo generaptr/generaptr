@@ -1,5 +1,6 @@
 import * as assert from 'assert';
 import schemaUtil from '../../src/commons/utils/schemaUtil';
+import mocks from '../testUtils/mocks';
 import { Table } from '../../src/commons/types';
 
 describe('Suite for testing SchemaUtil class', () => {
@@ -25,5 +26,11 @@ describe('Suite for testing SchemaUtil class', () => {
     assert(ramlValues);
     assert.equal(ramlValues.length, 8);
     assert.equal(ramlValues, 'Yes | No');
+  });
+
+  it('should get related Tables for a given Table', () => {
+    const related: string[] = schemaUtil.getRelatedTablesForTable(mocks.PROCESSED_SCHEMA_ONE_TO_ONE[0] as Table);
+    assert.equal(related.length, 1);
+    assert.equal(related[0], 'User');
   });
 });

@@ -54,6 +54,67 @@ export class SchemaUtil {
   public valuesToRamlDataType(values: string[]): string {
     return (values && values.length > 0) ? values.join(' | ') : '';
   }
+
+  /**
+   * Checks if a circular reference exists between the source and target table.
+   *
+   * @param {Table} source - source table
+   * @param {Column} column - column which references another table
+   * @param {Schema} schema - whole schema
+   * @return {boolean} true if a circular reference exists in the target table
+   */
+  public isCircularRelation(source: Table, column: Column, schema: Schema): boolean {
+    const target: Table | undefined = schema.find((table: Table) => table.name === utils.toTableName(column.name));
+    if (target) {
+      return target.columns.some((col: Column) => utils.toTableName(col.name) === source.name);
+    }
+
+    return false;
+  }
+
+  /**
+   * Checks if a circular reference is required.
+   *
+   * @param {Table} source - source table
+   * @param {Column} column - column which references another table
+   * @param {Schema} schema - whole schema
+   * @return {boolean} true if a circular reference is required
+   */
+  public circularRelationIsRequired(source: Table, column: Column, schema: Schema): boolean {
+    const target: Table | undefined = schema.find((table: Table) => table.name === utils.toTableName(column.name));
+    if (target) {
+      return target.columns.some((col: Column) => utils.toTableName(col.name) === source.name && !col.allowNull);
+    }
+
+    return false;
+  }
+
+  /**
+   * Checks if a circular reference is array.
+   *
+   * @param {Table} source - source table
+   * @param {Column} column - column which references another table
+   * @param {Schema} schema - whole schema
+   * @return {boolean} true if a circular reference is array
+   */
+  public circularRelationIsArray(source: Table, column: Column, schema: Schema): boolean {
+    const target: Table | undefined = schema.find((table: Table) => table.name === utils.toTableName(column.name));
+    if (target) {
+      return target.columns.some((col: Column) => utils.toTableName(col.name) === source.name && Boolean(col.dataType.isArray));
+    }
+
+    return false;
+  }
+
+  /**
+   * Get related table names for a given table.
+   *
+   * @param {Table} table - given table
+   * @returns {string[]} - related tables
+   */
+  public getRelatedTablesForTable(table: Table): string[] {
+    return table.columns.filter((column: Column) => column.dataType.relationType).map((column: Column) => column.dataType.type);
+  }
 }
 
 export default new SchemaUtil();
