@@ -80,7 +80,7 @@ ${model}Route.put('/:id', (request, response) => {
 });
 
 ${model}Route.get('/', (request, response) => {
-  ${model}Service.getAll(request.params.offset, request.params.limit)
+  ${model}Service.getAll(request.query.offset, request.query.limit)
     .then(data => {
       if (!data || data.size === 0) {
         response.status(STATUS_CODE.NO_CONTENT);

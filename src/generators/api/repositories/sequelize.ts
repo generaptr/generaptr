@@ -46,7 +46,7 @@ class ${entity}Repository {
   }
 
   getAll(offset, limit) {
-    return ${entity}.findAll({limit, offset, includes: [${related.join(', ')}]});
+    return ${entity}.findAll({offset: offset, limit: limit, includes: [${related.join(', ')}]});
   }
 
   save(data) {

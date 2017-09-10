@@ -53,19 +53,23 @@ class ${modelTitleCase}Service {
 
   getAll(offset = 0, limit = 15) {
      const result = {
-      size: 0,
+      meta: {
+        offset: offset,
+        limit: limit,
+        count: 0
+      },
       data: []
      };
 
      return new Promise((resolve, reject) => {
-      this.repository.getAll(offset, limit)
+      this.repository.getAll(Number(offset), Number(limit))
         .then(data => {
           result.data = data;
 
           return this.repository.count();
         })
         .then(count => {
-          result.size = count;
+          result.meta.count = count;
 
           resolve(result);
         })
