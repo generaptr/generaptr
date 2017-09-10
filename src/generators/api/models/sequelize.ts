@@ -174,10 +174,18 @@ ${this.getRelations(table)}
     return table.columns.filter((column: Column) => !typeUtil.isDefaultType(column.dataType.type)).map((column: Column) => {
       switch (column.dataType.relationType) {
         case '1-1': {
-          return `    ${modelName}.belongsTo(models.${column.dataType.type.toLowerCase()});`;
+          if (column.dataType.isRelationHolder) {
+            return `    ${modelName}.hasOne(models.${column.dataType.type.toLowerCase()});`;
+          } else {
+            return `    ${modelName}.belongsTo(models.${column.dataType.type.toLowerCase()});`;
+          }
         }
         case '1-n': {
-          return `    ${modelName}.hasMany(models.${column.dataType.type.toLowerCase()});`;
+          if (column.dataType.isRelationHolder) {
+            return `    ${modelName}.hasMany(models.${column.dataType.type.toLowerCase()});`;
+          } else {
+            return `    ${modelName}.belongsTo(models.${column.dataType.type.toLowerCase()});`;
+          }
         }
         case 'n-n': {
           if (modelName.localeCompare(column.dataType.type) > 0) {

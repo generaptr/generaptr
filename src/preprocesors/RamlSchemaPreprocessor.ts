@@ -139,6 +139,8 @@ export default class RamlSchemaPreprocessor {
             column.allowNull &&
             column.dataType.isArray &&
             schemaUtil.isCircularRelation(table, column, schema) &&
+            schemaUtil.circularRelationIsArray(table, column, schema) &&
+            !schemaUtil.circularRelationIsRequired(table, column, schema) &&
             !typeUtil.isDefaultType(column.dataType.type)
         ) {
           column.dataType.relationType = 'n-n';
