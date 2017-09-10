@@ -38,7 +38,7 @@ export default class SequelizeRepositoryGenerator {
     const entity: string = utils.toTitleCase(table.name);
 
     return `const ${entity} = require('../models').${entity.toLowerCase()};
-${related.map((name: string) => `const ${name} = require('../models').${name};`).join('\n')}
+${related.map((name: string) => `const ${name} = require('../models').${name.toLowerCase()};`).join('\n')}
 
 class ${entity}Repository {
   get(id) {
