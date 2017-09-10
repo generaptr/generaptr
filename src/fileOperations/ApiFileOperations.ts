@@ -3,7 +3,6 @@ import { exec } from 'child_process';
 import fileUtil from '../commons/utils/fileUtil';
 import DIRECTORY_STRUCTURE from '../commons/constants/directoryStructure';
 import packageJsonGenerator from '../generators/api/packageJson';
-import modelGenerator from '../generators/api/models';
 import odmFileOperations from './api/odmFileOperations';
 import configFileOperations from './api/configurationsFileOperations';
 import modelsFileOperations from './api/modelsFileOperations';
