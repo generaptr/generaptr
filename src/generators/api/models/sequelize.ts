@@ -137,7 +137,7 @@ ${this.getRelations(table)}
       allowNull: ${column.allowNull ? 'true' : 'false'},
       unique: ${column.unique ? 'true' : 'false'},
       primary: ${column.primary ? 'true' : 'false'},
-      ${column.primary && column.dataType.type === 'number' ? 'autoincrement: true,' : ''}
+      ${column.primary && column.dataType.type === 'number' ? 'autoIncrement: true,' : ''}
     },\n`;
     });
 
