@@ -38,15 +38,15 @@ export default class SequelizeRepositoryGenerator {
     const entity: string = utils.toTitleCase(table.name);
 
     return `const ${entity} = require('../models').${entity.toLowerCase()};
-${related.map((name: string) => `const ${name} = require('../models').${name.toLowerCase()};`).join('\n')}
+${related.map((name: string) => `const ${name} = require('../models').${name};`).join('\n')}
 
 class ${entity}Repository {
   get(id) {
-    return ${entity}.findOne({where: {id}, includes: [${related.join(', ')}]});
+    return ${entity}.findOne({where: {id}, include: [${related.join(', ')}]});
   }
 
   getAll(offset, limit) {
-    return ${entity}.findAll({offset: offset, limit: limit, includes: [${related.join(', ')}]});
+    return ${entity}.findAll({limit, offset, include: [${related.join(', ')}]});
   }
 
   save(data) {

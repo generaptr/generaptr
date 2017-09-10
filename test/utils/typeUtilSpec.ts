@@ -60,4 +60,11 @@ describe('Suite for testing TypeConverter class', () => {
     assert.equal(converted.type, 'number');
     assert.equal(converted.isArray, false);
   });
+
+  it('should convert enum data type to string', () => {
+    const asString: string = typeUtil.getEnumValuesAsString({type: 'enum', values: ['Yes', 'No']});
+    assert.equal(asString, `'Yes', 'No'`);
+
+    assert.equal('', typeUtil.getEnumValuesAsString({type: 'string'}));
+  });
 });

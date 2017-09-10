@@ -91,8 +91,23 @@ export default class MysqlSchemaPreprocessor {
               relationType: '1-1',
             },
           };
-
-          updatedSchema = this.removeColumnFromTable(updatedSchema, table.name, column.name);
+          const sourceColumn: Column = {
+            name: utils.singular(table.name).toLowerCase(),
+            primary: column.primary,
+            unique: true,
+            allowNull: true,
+            dataType: {
+              type: utils.toTitleCase(table.name),
+              isArray: false,
+              relationType: '1-1',
+              isRelationHolder: true,
+            },
+          };
+          updatedSchema = this.addColumnToTable(
+            updatedSchema,
+            column.dataType.references ? column.dataType.references.table : '',
+            sourceColumn,
+          );
           updatedSchema = this.addColumnToTable(
             updatedSchema,
             table.name,
@@ -124,6 +139,17 @@ export default class MysqlSchemaPreprocessor {
       }
       table.columns.forEach((column: Column) => {
         if (column.foreignKey) {
+          const sourceColumn: Column = {
+            name: column.name,
+            primary: column.primary,
+            unique: false,
+            allowNull: false,
+            dataType: {
+              type: utils.toTitleCase(column.name),
+              isArray: false,
+              relationType: '1-n',
+            },
+          };
           const targetColumn: Column = {
             name: table.name,
             primary: column.primary,
@@ -133,6 +159,7 @@ export default class MysqlSchemaPreprocessor {
               type: utils.toTitleCase(table.name),
               isArray: true,
               relationType: '1-n',
+              isRelationHolder: true,
             },
           };
           updatedSchema = this.addColumnToTable(
@@ -140,7 +167,11 @@ export default class MysqlSchemaPreprocessor {
             column.dataType.references ? column.dataType.references.table : '',
             targetColumn,
           );
-          updatedSchema = this.removeColumnFromTable(updatedSchema, table.name, column.name);
+          updatedSchema = this.addColumnToTable(
+            updatedSchema,
+            table.name,
+            sourceColumn,
+          );
         }
       });
 
@@ -177,6 +208,7 @@ export default class MysqlSchemaPreprocessor {
           type: utils.toTitleCase(source.dataType.type),
           isArray: true,
           relationType: 'n-n',
+          isRelationHolder: true,
         },
       };
 
@@ -189,6 +221,7 @@ export default class MysqlSchemaPreprocessor {
           type: utils.toTitleCase(target.dataType.type),
           isArray: true,
           relationType: 'n-n',
+          isRelationHolder: true,
         },
       };
 

@@ -58,11 +58,23 @@ export default class RamlSchemaPreprocessor {
         if (
             !column.allowNull &&
             !column.dataType.isArray &&
-            !schemaUtil.isCircularRelation(table, column, schema) &&
+            schemaUtil.isCircularRelation(table, column, schema) &&
+            !schemaUtil.circularRelationIsRequired(table, column, schema) &&
+            !schemaUtil.circularRelationIsArray(table, column, schema) &&
             !typeUtil.isDefaultType(column.dataType.type)
         ) {
           column.dataType.relationType = '1-1';
-        }
+        } else if (
+          column.allowNull &&
+          !column.dataType.isArray &&
+          schemaUtil.isCircularRelation(table, column, schema) &&
+          schemaUtil.circularRelationIsRequired(table, column, schema) &&
+          !schemaUtil.circularRelationIsArray(table, column, schema) &&
+          !typeUtil.isDefaultType(column.dataType.type)
+      ) {
+        column.dataType.relationType = '1-1';
+        column.dataType.isRelationHolder = true;
+      }
 
         return column;
       });
@@ -86,8 +98,20 @@ export default class RamlSchemaPreprocessor {
         if (
             column.allowNull &&
             column.dataType.isArray &&
-            !schemaUtil.isCircularRelation(table, column, schema) &&
+            schemaUtil.isCircularRelation(table, column, schema) &&
+            schemaUtil.circularRelationIsRequired(table, column, schema) &&
+            !schemaUtil.circularRelationIsArray(table, column, schema) &&
             !typeUtil.isDefaultType(column.dataType.type)
+        ) {
+          column.dataType.relationType = '1-n';
+          column.dataType.isRelationHolder = true;
+        } else if (
+          !column.allowNull &&
+          !column.dataType.isArray &&
+          schemaUtil.isCircularRelation(table, column, schema) &&
+          !schemaUtil.circularRelationIsRequired(table, column, schema) &&
+          schemaUtil.circularRelationIsArray(table, column, schema) &&
+          !typeUtil.isDefaultType(column.dataType.type)
         ) {
           column.dataType.relationType = '1-n';
         }
@@ -115,9 +139,12 @@ export default class RamlSchemaPreprocessor {
             column.allowNull &&
             column.dataType.isArray &&
             schemaUtil.isCircularRelation(table, column, schema) &&
+            schemaUtil.circularRelationIsArray(table, column, schema) &&
+            !schemaUtil.circularRelationIsRequired(table, column, schema) &&
             !typeUtil.isDefaultType(column.dataType.type)
         ) {
           column.dataType.relationType = 'n-n';
+          column.dataType.isRelationHolder = true;
         }
 
         return column;
