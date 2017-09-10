@@ -42,11 +42,11 @@ ${related.map((name: string) => `const ${name} = require('../models').${name};`)
 
 class ${entity}Repository {
   get(id) {
-    return ${entity}.findOne({where: {id}, includes: [${related.join(', ')}]});
+    return ${entity}.findOne({where: {id}, include: [${related.join(', ')}]});
   }
 
   getAll(offset, limit) {
-    return ${entity}.findAll({limit, offset, includes: [${related.join(', ')}]});
+    return ${entity}.findAll({limit, offset, include: [${related.join(', ')}]});
   }
 
   save(data) {

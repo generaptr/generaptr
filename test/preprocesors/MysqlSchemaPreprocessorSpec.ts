@@ -47,7 +47,7 @@ describe('Suite for testing MySqlPreProcessor class', () => {
   });
 
   it('should normalize one to one relations', () => {
-    const schema: Schema = mocks.PROCESSED_SCHEMA_ONE_TO_ONE;
+    const schema: Schema = mocks.PROCESSED_SCHEMA_ONE_TO_ONE as Schema;
     const validAccounts: Table = schema[0];
     const validUsers: Table = schema[1];
     const processed: Schema = preProcessor.normalizeSchemaRelations(mocks.SCHEMA_ONE_TO_ONE);
@@ -60,8 +60,8 @@ describe('Suite for testing MySqlPreProcessor class', () => {
   });
 
   it('should normalize many to one relations', () => {
-    const validAccounts: Table = mocks.PROCESSED_SCHEMA_MANY_TO_ONE[0];
-    const validApplications: Table = mocks.PROCESSED_SCHEMA_MANY_TO_ONE[1];
+    const validAccounts: Table = mocks.PROCESSED_SCHEMA_MANY_TO_ONE[0] as Table;
+    const validApplications: Table = mocks.PROCESSED_SCHEMA_MANY_TO_ONE[1] as Table;
     const processed: Schema = preProcessor.normalizeSchemaRelations(mocks.SCHEMA_MANY_TO_ONE);
     const processedAccounts: Table = processed[0];
     const processedApplications: Table = processed[1];
@@ -73,8 +73,8 @@ describe('Suite for testing MySqlPreProcessor class', () => {
   });
 
   it('should normalize many to many relations', () => {
-    const validGroups: Table = mocks.PROCESSED_SCHEMA_MANY_TO_MANY[0];
-    const validUsers: Table = mocks.PROCESSED_SCHEMA_MANY_TO_MANY[1];
+    const validGroups: Table = mocks.PROCESSED_SCHEMA_MANY_TO_MANY[0] as Table;
+    const validUsers: Table = mocks.PROCESSED_SCHEMA_MANY_TO_MANY[1] as Table;
     const processed: Schema = preProcessor.normalizeSchemaRelations(mocks.SCHEMA_MANY_TO_MANY);
     const processedGroups: Table = processed[0];
     const processedUsers: Table = processed[1];
