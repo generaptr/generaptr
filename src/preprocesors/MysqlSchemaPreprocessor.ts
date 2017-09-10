@@ -95,7 +95,7 @@ export default class MysqlSchemaPreprocessor {
             name: utils.singular(table.name).toLowerCase(),
             primary: column.primary,
             unique: true,
-            allowNull: false,
+            allowNull: true,
             dataType: {
               type: utils.toTitleCase(table.name),
               isArray: false,
