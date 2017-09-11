@@ -42,8 +42,7 @@
     "generaptr": "./bin/generaptr"
   },
   "engines": {
-    "node": ">= 7.5.0",
-    "typescript": ">= 2.4.2"
+    "node": ">= 7.5.0"
   },
   "devDependencies": {
     "@types/assert": "0.0.31",
