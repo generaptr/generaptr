@@ -44,7 +44,7 @@ npm install generaptr
 
 When starting generaptr the screen displayed below will appear.
 
-![](./assets/genraptr.png)
+![](./assets/generaptr.png)
 
 Here, the two possible actions are shown, actions which will decide on which flow will the execution continue:
 * [raml](#raml-flow)
