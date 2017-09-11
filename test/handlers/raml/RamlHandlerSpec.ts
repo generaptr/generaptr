@@ -19,4 +19,16 @@ describe('Suite for testing RamlHandler class', () => {
       done();
     }
   });
+  it('should throw an error if invalid schema', (done: Function) => {
+    try {
+      const handler: RamlHandler = new RamlHandler({path: './index.js'});
+      handler.parseSchema().catch((e: Error) => {
+        assert.equal(e.message, 'Incorrect RAML file!');
+        done();
+      });
+    } catch (e) {
+      assert.fail(e.message);
+      done();
+    }
+  });
 });

@@ -62,4 +62,22 @@ describe('Suite for testing RamlPreProcessor class', () => {
     assert.equal(processed.dataType.type, 'number');
     assert.equal(processed.dataType.isArray, false);
   });
+
+  it('should cover empty type when converting to standard schema', () => {
+    const colSchema: RamlColumnSchema = {
+      name: 'id',
+      displayName: 'id',
+      typePropertyKind: 'TYPE_EXPRESSION',
+      type: [],
+      required: true,
+      items: '',
+    };
+    const processed: Column = preProcessor.convertToStandardSchema(colSchema);
+    assert.equal(processed.name, 'id');
+    assert.equal(processed.primary, true);
+    assert.equal(processed.allowNull, false);
+    assert.equal(processed.unique, true);
+    assert.equal(processed.dataType.type, '');
+    assert.equal(processed.dataType.isArray, false);
+  });
 });
