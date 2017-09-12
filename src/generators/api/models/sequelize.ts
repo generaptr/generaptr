@@ -161,6 +161,7 @@ ${this.getRelations(table)}
         return 'DataTypes.INTEGER()';
       case 'enum':
         return `DataTypes.ENUM(${typeUtil.getEnumValuesAsString(type)})`;
+      /* istanbul ignore next */
       default:
         return '';
     }
