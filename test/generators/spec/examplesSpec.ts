@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import mocks from '../../testUtils/mocks';
+import mocks from '../../testUtils/schemaMocks';
 import examplesGenerator from '../../../src/generators/spec/examples';
 import { Example, Schema, Table } from '../../../src/commons/types';
 

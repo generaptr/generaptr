@@ -42,5 +42,4 @@ describe('Suite for testing ApiFileOperation class', () => {
         assert.fail(exception.message);
       });
   });
-
 });
