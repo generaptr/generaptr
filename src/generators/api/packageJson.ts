@@ -24,8 +24,8 @@ export class PackageJsonGenerator {
       main: 'index.js',
       scripts: {
         'test': 'echo \'Error: no test specified\' && exit 1',
-        'start': 'node index.js',
-        'start:dev': './node_modules/.bin/nodemon index.js',
+        'start': 'node src/index.js',
+        'start:dev': './node_modules/.bin/nodemon src/index.js',
       },
       author: options.author,
       license: options.license,

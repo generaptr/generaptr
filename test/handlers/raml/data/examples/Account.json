@@ -1,14 +1,50 @@
 {
-	"id": 8952108028002304,
-	"type": "set",
+	"id": 683996394553344,
+	"type": "bit",
+	"user": {
+		"id": 55550222008320,
+		"firstName": "Amalia",
+		"lastName": "Brown",
+		"email": "Alford.Sipes@gmail.com",
+		"account": {
+			"id": 8899919695839232,
+			"type": "float",
+			"user": {},
+			"applications": []
+		},
+		"groups": [
+			{
+				"id": 3037594359169024,
+				"name": "Sim",
+				"users": []
+			},
+			{
+				"id": 3037594359169024,
+				"name": "Sim",
+				"users": []
+			}
+		]
+	},
 	"applications": [
 		{
-			"id": 2629431860396032,
-			"name": "Stella"
+			"id": 4719763943063552,
+			"name": "Kelley",
+			"account": {
+				"id": 8899919695839232,
+				"type": "float",
+				"user": {},
+				"applications": []
+			}
 		},
 		{
-			"id": 2629431860396032,
-			"name": "Stella"
+			"id": 4719763943063552,
+			"name": "Kelley",
+			"account": {
+				"id": 8899919695839232,
+				"type": "float",
+				"user": {},
+				"applications": []
+			}
 		}
 	]
 }

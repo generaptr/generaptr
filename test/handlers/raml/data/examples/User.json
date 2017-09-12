@@ -1,31 +1,23 @@
 {
-	"id": 1634120547434496,
-	"firstName": "Norberto",
-	"lastName": "Streich",
-	"email": "Lance.McGlynn@hotmail.com",
+	"id": 55550222008320,
+	"firstName": "Amalia",
+	"lastName": "Brown",
+	"email": "Alford.Sipes@gmail.com",
 	"account": {
-		"id": 8952108028002304,
-		"type": "set",
-		"applications": [
-			{
-				"id": 2629431860396032,
-				"name": "Stella"
-			},
-			{
-				"id": 2629431860396032,
-				"name": "Stella"
-			}
-		]
+		"id": 8899919695839232,
+		"type": "float",
+		"user": {},
+		"applications": []
 	},
 	"groups": [
 		{
-			"id": 2446288767418368,
-			"name": "Cara",
+			"id": 3037594359169024,
+			"name": "Sim",
 			"users": []
 		},
 		{
-			"id": 2446288767418368,
-			"name": "Cara",
+			"id": 3037594359169024,
+			"name": "Sim",
 			"users": []
 		}
 	]

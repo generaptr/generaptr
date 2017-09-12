@@ -23,12 +23,14 @@ const path      = require('path');
 const Sequelize = require('sequelize');
 const basename  = path.basename(module.filename);
 const env       = process.env.NODE_ENV || 'development';
-const config    = require(__dirname + '../config/database')['database'];
+const config    = require(__dirname + '/../configs/database')[env];
 const db        = {};
+let sequelize;
+
 if (config.use_env_variable) {
-  const sequelize = new Sequelize(process.env[config.use_env_variable]);
+  sequelize = new Sequelize(process.env[config.use_env_variable]);
 } else {
-  const sequelize = new Sequelize(config.database, config.username, config.password, config);
+  sequelize = new Sequelize(config.database, config.username, config.password, config);
 }
 fs
   .readdirSync(__dirname)
@@ -46,7 +48,8 @@ Object.keys(db).forEach(function(modelName) {
 });
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
-module.exports = db;`;
+module.exports = db;
+`;
   }
 
   /**
@@ -136,7 +139,7 @@ ${this.getRelations(table)}
       type: ${this.getType(column.dataType)},
       allowNull: ${column.allowNull ? 'true' : 'false'},
       unique: ${column.unique ? 'true' : 'false'},
-      primary: ${column.primary ? 'true' : 'false'},
+      primaryKey: ${column.primary ? 'true' : 'false'},
       ${column.primary && column.dataType.type === 'number' ? 'autoIncrement: true,' : ''}
     },\n`;
     });

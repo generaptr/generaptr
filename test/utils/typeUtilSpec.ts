@@ -67,4 +67,9 @@ describe('Suite for testing TypeConverter class', () => {
 
     assert.equal('', typeUtil.getEnumValuesAsString({type: 'string'}));
   });
+
+  it('should detect if given type is part of raml default types', () => {
+    assert.equal(typeUtil.isDefaultType('number'), true);
+    assert.equal(typeUtil.isDefaultType('User'), false);
+  });
 });
