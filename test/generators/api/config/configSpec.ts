@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import apiMocks from '../../../testUtils/apiMocks';
 import config from '../../../../src/generators/api/config/config';
 
-describe('Suite for testing Config content class', () => {
+describe('Suite for testing the Config class', () => {
   it('should generate valid config content', () => {
     assert.equal(config.getConfig(), apiMocks.VALID_CONFIG_VALUE);
   });
