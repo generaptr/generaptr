@@ -14,6 +14,7 @@ export class Logger {
    * @param {string} message
    * @memberof Logger
    */
+  /* istanbul ignore next */
   public error(message: string): void {
     if (config.ENV === 'dev') {
       bunyan.error(message);
@@ -26,6 +27,7 @@ export class Logger {
    * @param {string} message
    * @memberof Logger
    */
+  /* istanbul ignore next */
   public info(message: string): void {
     if (config.ENV === 'dev' || config.ENV === 'test') {
       bunyan.info(message);
@@ -38,6 +40,7 @@ export class Logger {
    * @param {string} message
    * @memberof Logger
    */
+  /* istanbul ignore next */
   public warn(message: string): void {
     if (config.ENV === 'dev' || config.ENV === 'test') {
       bunyan.warn(message);

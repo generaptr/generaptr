@@ -5,7 +5,7 @@ import RamlFileOperations from '../../src/fileOperations/RamlFileOperations';
 import DIRECTORY_STRUCTURE from '../../src/commons/constants/directoryStructure';
 import typesGenerator from '../../src/generators/spec/types';
 import utils from '../../src/commons/utils/utils';
-import mocks from '../testUtils/mocks';
+import mocks from '../testUtils/schemaMocks';
 import { Table, Schema } from '../../src/commons/types';
 
 const table: Table = {

@@ -71,7 +71,7 @@ module.exports = db;
         port: connection.port,
       },
       production: {
-        uri: 'mysq;://user:password@host:port/database',
+        uri: 'mysql://user:password@host:port/database',
         username: 'user',
         password: 'password',
         database: 'database',

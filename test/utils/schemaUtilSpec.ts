@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import schemaUtil from '../../src/commons/utils/schemaUtil';
-import mocks from '../testUtils/mocks';
+import mocks from '../testUtils/schemaMocks';
 import { Table, Column, Schema } from '../../src/commons/types';
 
 describe('Suite for testing SchemaUtil class', () => {
