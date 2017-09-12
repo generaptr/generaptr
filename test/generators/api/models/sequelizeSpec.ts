@@ -46,4 +46,35 @@ describe('Suite for testing the SequelizeModelGenerator class', () => {
     const models: {name: string; content: string}[] = sequelizeModelGenerator.getModels(schemaMocks.PROCESSED_SCHEMA_ONE_TABLE_WITH_ENUM as Schema);
     assert.equal(models[0].name, 'User.js');
   });
+
+  it('should not fail for unknown column type or relation', () => {
+    const invalidSchema: Schema = [
+      {
+        name: 'users',
+        columns: [
+          {
+            name: 'type',
+            primary: false,
+            unique: false,
+            allowNull: false,
+            dataType: {
+              type: 'wrong-type',
+            },
+          },
+          {
+            name: 'relation',
+            primary: false,
+            unique: false,
+            allowNull: false,
+            dataType: {
+              type: 'Account',
+              relationType: undefined,
+            },
+          },
+        ],
+      },
+    ];
+    const models: {name: string; content: string}[] = sequelizeModelGenerator.getModels(invalidSchema);
+    assert.equal(models[0].name, 'User.js');
+  });
 });
