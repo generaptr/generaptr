@@ -84,4 +84,85 @@ module.exports = db;
     "port": "port"
   }
 }`,
+  VALID_STATUS_CODES_CONSTANTS: `module.exports = {
+  "OK": 200,
+  "CREATED": 201,
+  "NO_CONTENT": 204,
+  "FOUND": 302,
+  "SEE_OTHER": 303,
+  "BAD_REQUEST": 400,
+  "UNAUTHORIZED": 401,
+  "FORBIDDEN": 403,
+  "NOT_FOUND": 404,
+  "METHOD_NOT_ALLOWED": 405,
+  "CONFLICT": 409,
+  "INTERNAL_SERVER_ERROR": 500,
+  "BAD_GATEWAY": 502
+};`,
+  VALID_UTIL_CLASS: `class Util {
+  generateLocationUri(request, id) {
+    return request.protocol + '://' + request.get('host') + request.originalUrl + '/' + id;
+  }
+}
+
+module.exports = new Util();`,
+  VALID_CONFIG_VALUE: `module.exports = {
+  development: {
+    morgan: 'dev',
+    APP_PORT: process.env.PORT || 3000
+  },
+  production: {
+    morgan: 'combined',
+    APP_PORT: process.env.PORT || 3000
+  }
+};`,
+  VALID_CONFIG_GET_ENV_BASED_CONFIG: `const config = require('./config');
+
+module.exports = {
+  getEnvBasedConfig: () => {
+    return (config[process.env.NODE_ENV] || config['development']);
+  }
+};`,
+  VALID_CORS_CONFIG: `module.exports = (request, response, next) => {
+    response.header('Access-Control-Allow-Origin', '*');
+    response.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    response.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+
+    next();
+};`,
+  VALID_EXPRESS_CONFIG: `const bodyParser = require('body-parser');
+const morgan = require('morgan');
+const cors = require('../middlewares/cors');
+const profile = require('./index.js').getEnvBasedConfig();
+
+module.exports = (app) => {
+  app.use(bodyParser.json());
+  app.use(bodyParser.urlencoded({extended: false}));
+  app.use(morgan(profile.morgan));
+  app.use(cors);
+
+  return app;
+};`,
+  VALID_INDEX_FILE: `const express = require('express');
+const profile = require('./configs/index.js').getEnvBasedConfig();
+const loadExpressConfig = require('./configs/express.js');
+const router = require('./configs/router.js');
+
+let app = express();
+app = loadExpressConfig(app);
+
+app.use('/', router);
+
+app.listen(profile.APP_PORT, () => {
+  console.log('App started on port: ' + profile.APP_PORT);
+});`,
+  VALID_ROUTER_CONFIG: `const router = require('express').Router();
+
+const defaultController = require('../controllers/defaultController');
+const userController = require('../controllers/userController');
+
+router.use('/', defaultController);
+router.use('/users', userController);
+
+module.exports = router;`,
 };
