@@ -193,7 +193,6 @@ describe('Suite for testing ApiFileOperation class', () => {
     });
   });
 
-
   it('should know how to generate repositories', (done: Function) => {
     const apiFileOperations: ApiFileOperations = new ApiFileOperations('api.test');
 
