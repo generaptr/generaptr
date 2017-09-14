@@ -4,7 +4,7 @@ import * as path from 'path';
 import ApiFileOperations from '../../src/fileOperations/ApiFileOperations';
 import DIRECTORY_STRUCTURE from '../../src/commons/constants/directoryStructure';
 import apiMocks from '../testUtils/apiMocks';
-import schemaMocks from '../testutils/schemaMocks';
+import schemaMocks from '../testUtils/schemaMocks';
 
 describe('Suite for testing ApiFileOperation class', () => {
 
