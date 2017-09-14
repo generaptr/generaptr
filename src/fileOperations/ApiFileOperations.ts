@@ -3,7 +3,7 @@ import { exec } from 'child_process';
 import fileUtil from '../commons/utils/fileUtil';
 import DIRECTORY_STRUCTURE from '../commons/constants/directoryStructure';
 import packageJsonGenerator from '../generators/api/packageJson';
-import odmFileOperations from './api/odmFileOperations';
+import ormFileOperations from './api/ormFileOperations';
 import configFileOperations from './api/configurationsFileOperations';
 import modelsFileOperations from './api/modelsFileOperations';
 import repositoriesFileOperations from './api/repositoriesFileOperations';
@@ -86,11 +86,13 @@ export default class ApiFileOperations {
       exec(
         `cd ${this.filePath} && npm i --save express body-parser morgan ${this.getDependenciesForDb(dialect)}`,
         (errDependencies: Error) => {
+          /* istanbul ignore next */
           if (errDependencies) {
             return reject(errDependencies);
           }
           console.log(`running: ${chalk.green('npm i --save-dev nodemon')}`);
           exec(`cd ${this.filePath} && npm i --save-dev nodemon`, (errDev: Error) => {
+            /* istanbul ignore next */
             if (errDev) {
               return reject(errDev);
             }
@@ -105,12 +107,12 @@ export default class ApiFileOperations {
    * Initialize ODM
    *
    * @param {string} dialect database dialect
-   * @returns {Promise<boolean>} initialized odm
+   * @returns {Promise<boolean>} initialized orm
    */
-  public async initializeODM(dialect: string): Promise<boolean> {
+  public async initializeORM(dialect: string): Promise<boolean> {
     switch (dialect) {
       case 'MySql': {
-        return odmFileOperations.initSequelize(this.filePath);
+        return ormFileOperations.initSequelize(this.filePath);
       }
       default:
         return Promise.reject('Dialect not supported');
@@ -234,4 +236,5 @@ export default class ApiFileOperations {
   public getFilePath(): string {
     return this.filePath;
   }
+
 }

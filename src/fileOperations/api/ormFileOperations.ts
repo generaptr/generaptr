@@ -7,9 +7,9 @@ import modelGenerator from '../../generators/api/models';
  * Class which implements the logic for odm initializer actions.
  *
  * @export
- * @class ODMFileOperations
+ * @class ORMFileOperations
  */
-export class ODMFileOperations {
+export class ORMFileOperations {
 
   /**
    * Initializes sequelize
@@ -22,10 +22,9 @@ export class ODMFileOperations {
       console.log(`running: ${chalk.green('sequelize init')}`);
       exec(
         `cd ${filePath} && ./node_modules/.bin/sequelize init && rm -rf ./config ./models`,
-        (err: Error, stdout: string, stderr: string) => {
+        (err: Error) => {
+           /* istanbul ignore next */
           if (err) {
-            console.log(stdout, stderr);
-
             return reject(err);
           }
 
@@ -40,4 +39,4 @@ export class ODMFileOperations {
 
 }
 
-export default new ODMFileOperations();
+export default new ORMFileOperations();

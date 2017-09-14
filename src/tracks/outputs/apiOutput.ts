@@ -91,7 +91,7 @@ async (data: PackageJsonInfo): Promise<boolean> => {
     .then(async () => {
       logger.info('initialize odm');
 
-      return apiFileOperations.initializeODM(connection.dialect);
+      return apiFileOperations.initializeORM(connection.dialect);
     })
     .then(async () => {
       logger.info('installing config');
