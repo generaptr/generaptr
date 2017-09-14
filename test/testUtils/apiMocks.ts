@@ -61,7 +61,7 @@ module.exports = db;
     password: 'secret',
     database: 'test',
     host: '127.0.0.1',
-    dialect: 'mysql',
+    dialect: 'MySql',
     port: '3306',
   },
   VALID_SEQUELIZE_DATABASE_CONFIG: `module.exports = {
