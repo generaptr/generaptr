@@ -10,18 +10,16 @@ export class Config {
    * @return {string} - string generated content
    */
   public getConfig(): string {
-    const config: Object = {
-      development: {
-        morgan: 'dev',
-        APP_PORT: process.env.PORT || 3000,
-      },
-      production: {
-        morgan: 'combined',
-        APP_PORT: process.env.PORT || 3000,
-      },
-    };
-
-    return `module.exports = ${JSON.stringify(config, undefined, 2)};`;
+    return `module.exports = {
+  development: {
+    morgan: 'dev',
+    APP_PORT: process.env.PORT || 3000
+  },
+  production: {
+    morgan: 'combined',
+    APP_PORT: process.env.PORT || 3000
+  }
+};`;
   }
 
   /**
