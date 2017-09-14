@@ -1,4 +1,4 @@
-import typeConverter from '../commons/utils/typeConverter';
+import typeUtil from '../commons/utils/typeUtil';
 import utils from '../commons/utils/utils';
 import SchemaUtil from '../commons/utils/schemaUtil';
 import logger from '../commons/logger';
@@ -33,7 +33,7 @@ export default class MysqlSchemaPreprocessor {
       foreignKey: Boolean(columnSchema.COLUMN_KEY && columnSchema.COLUMN_KEY === 'MUL'),
       allowNull: Boolean(columnSchema.IS_NULLABLE && columnSchema.IS_NULLABLE === 'YES'),
       dataType: {
-        type: typeConverter.convertSqlType(columnSchema.DATA_TYPE),
+        type: typeUtil.convertSqlType(columnSchema.DATA_TYPE),
         size: columnSchema.CHARACTER_MAXIMUM_LENGTH ?
           parseInt(columnSchema.CHARACTER_MAXIMUM_LENGTH, config.NUMERIC_BASE) :
           undefined,
@@ -81,22 +81,38 @@ export default class MysqlSchemaPreprocessor {
       table.columns.forEach((column: Column) => {
         if (column.foreignKey && column.unique) {
           const targetColumn: Column = {
-            name: utils.singular(table.name),
+            name: column.name,
             primary: column.primary,
             unique: true,
             allowNull: false,
             dataType: {
-              type: utils.toTitleCase(table.name),
+              type: column.dataType.type,
               isArray: false,
+              relationType: '1-1',
             },
           };
-
+          const sourceColumn: Column = {
+            name: utils.singular(table.name).toLowerCase(),
+            primary: column.primary,
+            unique: true,
+            allowNull: true,
+            dataType: {
+              type: utils.toTitleCase(table.name),
+              isArray: false,
+              relationType: '1-1',
+              isRelationHolder: true,
+            },
+          };
           updatedSchema = this.addColumnToTable(
             updatedSchema,
             column.dataType.references ? column.dataType.references.table : '',
+            sourceColumn,
+          );
+          updatedSchema = this.addColumnToTable(
+            updatedSchema,
+            table.name,
             targetColumn,
           );
-          updatedSchema = this.removeColumnFromTable(updatedSchema, table.name, column.name);
         }
       });
 
@@ -123,6 +139,17 @@ export default class MysqlSchemaPreprocessor {
       }
       table.columns.forEach((column: Column) => {
         if (column.foreignKey) {
+          const sourceColumn: Column = {
+            name: column.name,
+            primary: column.primary,
+            unique: false,
+            allowNull: false,
+            dataType: {
+              type: utils.toTitleCase(column.name),
+              isArray: false,
+              relationType: '1-n',
+            },
+          };
           const targetColumn: Column = {
             name: table.name,
             primary: column.primary,
@@ -131,6 +158,8 @@ export default class MysqlSchemaPreprocessor {
             dataType: {
               type: utils.toTitleCase(table.name),
               isArray: true,
+              relationType: '1-n',
+              isRelationHolder: true,
             },
           };
           updatedSchema = this.addColumnToTable(
@@ -138,7 +167,11 @@ export default class MysqlSchemaPreprocessor {
             column.dataType.references ? column.dataType.references.table : '',
             targetColumn,
           );
-          updatedSchema = this.removeColumnFromTable(updatedSchema, table.name, column.name);
+          updatedSchema = this.addColumnToTable(
+            updatedSchema,
+            table.name,
+            sourceColumn,
+          );
         }
       });
 
@@ -174,6 +207,8 @@ export default class MysqlSchemaPreprocessor {
         dataType: {
           type: utils.toTitleCase(source.dataType.type),
           isArray: true,
+          relationType: 'n-n',
+          isRelationHolder: true,
         },
       };
 
@@ -185,6 +220,8 @@ export default class MysqlSchemaPreprocessor {
         dataType: {
           type: utils.toTitleCase(target.dataType.type),
           isArray: true,
+          relationType: 'n-n',
+          isRelationHolder: true,
         },
       };
 

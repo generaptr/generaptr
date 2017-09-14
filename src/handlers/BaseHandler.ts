@@ -54,6 +54,9 @@ export default class BaseHandler {
       case 'mysql': {
         return (new MysqlSchemaPreprocessor()).normalizeSchemaRelations(schema);
       }
+      case 'raml': {
+        return (new RamlSchemaPreprocessor()).normalizeSchemaRelations(schema);
+      }
       default: {
         throw new Error('Input source not not supported.');
       }

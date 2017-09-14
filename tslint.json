@@ -27,6 +27,9 @@
       "array"
     ],
     "no-void-expression": false,
+    "max-line-length": [
+      false
+    ],
 
     // To implement at some point
     "strict-boolean-expressions": false,

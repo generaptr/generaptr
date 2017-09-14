@@ -3,6 +3,7 @@ dist
 .idea
 .vscode
 raml
+/api/
 !src/tracks/inputs/raml
 coverage
 debug-log.json

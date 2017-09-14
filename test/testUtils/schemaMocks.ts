@@ -46,6 +46,63 @@ export default {
       ],
     },
   ],
+  PROCESSED_SCHEMA_ONE_TABLE_WITH_ENUM: [
+    {
+      name: 'users',
+      columns: [
+        {
+          name: 'id',
+          primary: true,
+          unique: true,
+          allowNull: false,
+          dataType: {
+            type: 'number',
+            size: undefined,
+          },
+        },
+        {
+          name: 'firstName',
+          primary: false,
+          unique: false,
+          allowNull: true,
+          dataType: {
+            type: 'string',
+            size: 255,
+          },
+        },
+        {
+          name: 'lastName',
+          primary: false,
+          unique: false,
+          allowNull: true,
+          dataType: {
+            type: 'string',
+            size: 255,
+          },
+        },
+        {
+          name: 'email',
+          primary: false,
+          unique: true,
+          allowNull: false,
+          dataType: {
+            type: 'string',
+            size: 50,
+          },
+        },
+        {
+          name: 'active',
+          primary: false,
+          unique: true,
+          allowNull: false,
+          dataType: {
+            type: 'enum',
+            values: ['Yes', 'No'],
+          },
+        },
+      ],
+    },
+  ],
   PROCESSED_SCHEMA_ONE_TO_ONE: [
     {
       name: 'accounts',
@@ -68,6 +125,17 @@ export default {
           dataType: {
             type: 'string',
             size: 255,
+          },
+        },
+        {
+          name: 'user',
+          unique: true,
+          allowNull: false,
+          primary: false,
+          dataType: {
+            type: 'User',
+            isArray: false,
+            relationType: '1-1',
           },
         },
       ],
@@ -123,6 +191,8 @@ export default {
           dataType: {
             type: 'Account',
             isArray: false,
+            relationType: '1-1',
+            isRelationHolder: true,
           },
         },
       ],
@@ -160,6 +230,8 @@ export default {
           dataType: {
             type: 'Application',
             isArray: true,
+            relationType: '1-n',
+            isRelationHolder: true,
           },
         },
       ],
@@ -185,6 +257,91 @@ export default {
           dataType: {
             type: 'string',
             size: 255,
+          },
+        },
+        {
+          name: 'account',
+          unique: false,
+          allowNull: false,
+          primary: false,
+          dataType: {
+            type: 'Account',
+            isArray: false,
+            relationType: '1-1',
+          },
+        },
+      ],
+    },
+  ],
+  PROCESSED_SCHEMA_ONE_TO_MANY: [
+    {
+      name: 'accounts',
+      columns: [
+        {
+          name: 'id',
+          primary: true,
+          unique: true,
+          allowNull: false,
+          dataType: {
+            type: 'number',
+            size: undefined,
+          },
+        },
+        {
+          name: 'type',
+          primary: false,
+          unique: false,
+          allowNull: false,
+          dataType: {
+            type: 'string',
+            size: 255,
+          },
+        },
+        {
+          name: 'applications',
+          primary: false,
+          unique: false,
+          allowNull: true,
+          dataType: {
+            type: 'Application',
+            isArray: true,
+            relationType: '1-n',
+          },
+        },
+      ],
+    },
+    {
+      name: 'applications',
+      columns: [
+        {
+          name: 'id',
+          primary: true,
+          unique: true,
+          allowNull: false,
+          dataType: {
+            type: 'number',
+            size: undefined,
+          },
+        },
+        {
+          name: 'name',
+          primary: false,
+          unique: false,
+          allowNull: false,
+          dataType: {
+            type: 'string',
+            size: 255,
+          },
+        },
+        {
+          name: 'account',
+          unique: false,
+          allowNull: false,
+          primary: false,
+          dataType: {
+            type: 'Account',
+            isArray: false,
+            relationType: '1-1',
           },
         },
       ],
@@ -222,6 +379,7 @@ export default {
           dataType: {
             type: 'User',
             isArray: true,
+            relationType: 'n-n',
           },
         },
       ],
@@ -277,6 +435,7 @@ export default {
           dataType: {
             type: 'Group',
             isArray: false,
+            relationType: 'n-n',
           },
         },
       ],

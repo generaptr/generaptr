@@ -54,10 +54,9 @@ export default class RamlHandler extends BaseHandler {
           schema.push(table);
         });
 
-        resolve(schema);
+        resolve(this.normalizeRelations(schema));
       } catch (e) {
-        console.log('Incorrect RAML file!');
-        reject(e);
+        reject(new Error('Incorrect RAML file!'));
       }
     });
   }
