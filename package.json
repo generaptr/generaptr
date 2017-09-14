@@ -15,10 +15,9 @@
     "doc": "typedoc --tsconfig src/tsconfig.json --out docs/",
     "publish:local": "./scripts/npmPublish.sh",
     "verify": "npm-run-all clean compile lint test doc",
-    "commit": "git-cz",
-    "semantic-release": "semantic-release pre && npm publish && semantic-release post"
+    "commit": "git-cz"
   },
-  "version": "0.0.0-development",
+  "version": "1.0.0",
   "description": "Api generator",
   "license": "MIT",
   "repository": {
@@ -61,8 +60,7 @@
     "cz-conventional-changelog": "^2.0.0",
     "istanbul": "^0.4",
     "mocha": "^3.4.0",
-    "typings": "^2.1.1",
-    "semantic-release": "^7.0.2"
+    "typings": "^2.1.1"
   },
   "dependencies": {
     "bunyan": "^1.8.9",
@@ -89,8 +87,5 @@
     "commitizen": {
       "path": "cz-conventional-changelog"
     }
-  },
-  "publishConfig": {
-    "access": "restricted"
   }
 }
