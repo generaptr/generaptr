@@ -1,14 +1,14 @@
 import * as assert from 'assert';
-import mocks from '../../testUtils/mocks';
+import mocks from '../../testUtils/schemaMocks';
 import examplesGenerator from '../../../src/generators/spec/examples';
-import { Example } from '../../../src/commons/types';
+import { Example, Schema, Table } from '../../../src/commons/types';
 
 describe('Suite for testing RamlExampleGenerator', () => {
 
   it('should return js entity object for a simple table', () => {
     const groupExample: Example = examplesGenerator.generateTypeExampleContent(
-      mocks.PROCESSED_SCHEMA_MANY_TO_MANY,
-      mocks.PROCESSED_SCHEMA_MANY_TO_MANY[0],
+      mocks.PROCESSED_SCHEMA_MANY_TO_MANY as Schema,
+      mocks.PROCESSED_SCHEMA_MANY_TO_MANY[0] as Table,
       0,
     );
 
@@ -19,8 +19,8 @@ describe('Suite for testing RamlExampleGenerator', () => {
     assert.equal(Object.keys(groupExample.data).length, 3, 'Number of data generated should be 3');
 
     const userExample: Example = examplesGenerator.generateTypeExampleContent(
-      mocks.PROCESSED_SCHEMA_MANY_TO_MANY,
-      mocks.PROCESSED_SCHEMA_MANY_TO_MANY[1],
+      mocks.PROCESSED_SCHEMA_MANY_TO_MANY as Schema,
+      mocks.PROCESSED_SCHEMA_MANY_TO_MANY[1] as Table,
       0,
     );
 

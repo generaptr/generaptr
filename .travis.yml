@@ -4,7 +4,7 @@ notifications:
   slack: generaptr:WVInkDTeAegbpm2wBcMmCKv2
   webhooks:
     urls:
-      - https://webhooks.gitter.im/e/a80c735c20f7603bf06a
+      - https://webhooks.gitter.im/e/d21fae5b7ff17bd4c444
     on_success: change  
     on_failure: always  
     on_start: never     
@@ -35,10 +35,4 @@ after_script: greenkeeper-lockfile-upload
 after_success:
   - npm run coveralls
   - rm -rf ./raml.test
-
-deploy:
-  provider: npm
-  email: NPM_EMAIL
-  api_key: NPM_TOKEN
-  on:
-    branch: develop
+  - rm -rf ./api.test
