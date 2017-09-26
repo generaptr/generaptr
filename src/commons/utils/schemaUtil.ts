@@ -110,10 +110,14 @@ export class SchemaUtil {
    * Get related table names for a given table.
    *
    * @param {Table} table - given table
-   * @returns {string[]} - related tables
+   * @returns {Column[]} - related tables
    */
-  public getRelatedTablesForTable(table: Table): string[] {
-    return table.columns.filter((column: Column) => column.dataType.relationType).map((column: Column) => column.dataType.type);
+  public getRelatedTablesForTable(table: Table): Column[] {
+    return table.columns.filter((column: Column) => column.dataType.relationType).map((column: Column) => column);
+  }
+
+  public relationIsAlias(column: Column): boolean {
+    return Boolean(column.dataType.references && utils.similarity(column.dataType.references.name, column.dataType.references.table) < 0.5);
   }
 }
 

@@ -1,6 +1,6 @@
 import typeUtil from '../commons/utils/typeUtil';
 import utils from '../commons/utils/utils';
-import SchemaUtil from '../commons/utils/schemaUtil';
+import schemaUtil from '../commons/utils/schemaUtil';
 import logger from '../commons/logger';
 import config from '../configs/config';
 import { Schema, Table, Column, MySqlColumnSchema } from '../commons/types';
@@ -41,7 +41,7 @@ export default class MysqlSchemaPreprocessor {
       },
     };
 
-    return SchemaUtil.convertValues(column);
+    return schemaUtil.convertValues(column);
   }
 
   /**
@@ -128,8 +128,8 @@ export default class MysqlSchemaPreprocessor {
    * which have foreign keys, are not CrossReferenceTables(many to many)
    * and adds the foreign column on the holder.
    *
-   * @param {*} schema db schema
-   * @returns {*} normalized db schema
+   * @param {Schema} schema db schema
+   * @returns {Schema} normalized db schema
    */
   private normalizeOneToManyRelations(schema: Schema): Schema {
     let updatedSchema: Schema = schema;
@@ -138,9 +138,9 @@ export default class MysqlSchemaPreprocessor {
         return table;
       }
       table.columns.forEach((column: Column) => {
-        if (column.foreignKey) {
+        if (column.foreignKey && column.dataType.references) {
           const sourceColumn: Column = {
-            name: column.name,
+            name: schemaUtil.relationIsAlias(column) ? column.dataType.references.name : column.name,
             primary: column.primary,
             unique: false,
             allowNull: false,
@@ -151,7 +151,7 @@ export default class MysqlSchemaPreprocessor {
             },
           };
           const targetColumn: Column = {
-            name: table.name,
+            name: schemaUtil.relationIsAlias(column) ? `${table.name}_${column.dataType.references.name}` : table.name,
             primary: column.primary,
             unique: false,
             allowNull: true,
@@ -164,7 +164,7 @@ export default class MysqlSchemaPreprocessor {
           };
           updatedSchema = this.addColumnToTable(
             updatedSchema,
-            column.dataType.references ? column.dataType.references.table : '',
+            column.dataType.references.table,
             targetColumn,
           );
           updatedSchema = this.addColumnToTable(
@@ -172,6 +172,9 @@ export default class MysqlSchemaPreprocessor {
             table.name,
             sourceColumn,
           );
+          if (schemaUtil.relationIsAlias(column)) {
+            updatedSchema = this.removeColumnFromTable(updatedSchema, table.name, column.name);
+          }
         }
       });
 
