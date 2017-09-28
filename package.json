@@ -56,7 +56,7 @@
     "@types/pluralize": "0.0.27",
     "assert": "^1.4.1",
     "commitizen": "^2.9.6",
-    "coveralls": "^2.13.0",
+    "coveralls": "^3.0.0",
     "cz-conventional-changelog": "^2.0.0",
     "istanbul": "^0.4",
     "mocha": "^3.4.0",
