@@ -123,9 +123,9 @@ export default class MysqlHandler extends BaseHandler {
           this.getRelationsForTable(tableName).then((relations: TableReference[]) => {
             columns.forEach((result: MySqlColumnSchema) => {
               const column: Column = this.normalizeColumnSchema(result);
-              const relation: TableReference | undefined = relations.filter(
+              const relation: TableReference | undefined = relations.find(
                 (rel: TableReference) => rel.name === column.name,
-              ).pop();
+              );
               if (relation) {
                 column.foreignKey = true;
                 column.dataType.references = relation;

@@ -1,48 +1,96 @@
 [
 	{
-		"id": 55550222008320,
-		"firstName": "Amalia",
-		"lastName": "Brown",
-		"email": "Alford.Sipes@gmail.com",
+		"id": 775323893366784,
+		"firstName": "Allene",
+		"lastName": "Schowalter",
+		"email": "Agnes90@gmail.com",
 		"account": {
-			"id": 8899919695839232,
-			"type": "float",
+			"id": 6930363523792896,
+			"type": "timestamp",
 			"user": {},
 			"applications": []
 		},
+		"applications_owner": [
+			{
+				"id": 1542123316838400,
+				"name": "Lolita",
+				"account": {
+					"id": 6930363523792896,
+					"type": "timestamp",
+					"user": {},
+					"applications": []
+				},
+				"owner": {}
+			},
+			{
+				"id": 1542123316838400,
+				"name": "Lolita",
+				"account": {
+					"id": 6930363523792896,
+					"type": "timestamp",
+					"user": {},
+					"applications": []
+				},
+				"owner": {}
+			}
+		],
 		"groups": [
 			{
-				"id": 3037594359169024,
-				"name": "Sim",
+				"id": 8231918776614912,
+				"name": "Malinda",
 				"users": []
 			},
 			{
-				"id": 3037594359169024,
-				"name": "Sim",
+				"id": 8231918776614912,
+				"name": "Malinda",
 				"users": []
 			}
 		]
 	},
 	{
-		"id": 55550222008320,
-		"firstName": "Amalia",
-		"lastName": "Brown",
-		"email": "Alford.Sipes@gmail.com",
+		"id": 775323893366784,
+		"firstName": "Allene",
+		"lastName": "Schowalter",
+		"email": "Agnes90@gmail.com",
 		"account": {
-			"id": 8899919695839232,
-			"type": "float",
+			"id": 6930363523792896,
+			"type": "timestamp",
 			"user": {},
 			"applications": []
 		},
+		"applications_owner": [
+			{
+				"id": 1542123316838400,
+				"name": "Lolita",
+				"account": {
+					"id": 6930363523792896,
+					"type": "timestamp",
+					"user": {},
+					"applications": []
+				},
+				"owner": {}
+			},
+			{
+				"id": 1542123316838400,
+				"name": "Lolita",
+				"account": {
+					"id": 6930363523792896,
+					"type": "timestamp",
+					"user": {},
+					"applications": []
+				},
+				"owner": {}
+			}
+		],
 		"groups": [
 			{
-				"id": 3037594359169024,
-				"name": "Sim",
+				"id": 8231918776614912,
+				"name": "Malinda",
 				"users": []
 			},
 			{
-				"id": 3037594359169024,
-				"name": "Sim",
+				"id": 8231918776614912,
+				"name": "Malinda",
 				"users": []
 			}
 		]

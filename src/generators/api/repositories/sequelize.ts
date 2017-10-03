@@ -1,6 +1,6 @@
 import utils from '../../../commons/utils/utils';
 import schemaUtils from '../../../commons/utils/schemaUtil';
-import { Schema, Table } from '../../../commons/types';
+import { Schema, Table, Column } from '../../../commons/types';
 
 /**
  * Class which implements the logic for generating valid sequelize repositories.
@@ -34,19 +34,19 @@ export default class SequelizeRepositoryGenerator {
    * @return {{name: string, content: string}}
    */
   public getRepositoryForTable(table: Table): string {
-    const related: string[] = schemaUtils.getRelatedTablesForTable(table).map((name: string) => utils.toTitleCase(name));
+    const related: {names: string[]; includes: string[]} = this.getRelatedEntities(table);
     const entity: string = utils.toTitleCase(table.name);
 
     return `const ${entity} = require('../models').${entity.toLowerCase()};
-${related.map((name: string) => `const ${name} = require('../models').${name.toLowerCase()};`).join('\n')}
+${related.names.map((name: string) => `const ${name} = require('../models').${name.toLowerCase()};`).join('\n')}
 
 class ${entity}Repository {
   get(id) {
-    return ${entity}.findOne({where: {id}, include: [${related.join(', ')}]});
+    return ${entity}.findOne({where: {id}, include: [${related.includes.join(', ')}]});
   }
 
   getAll(offset, limit) {
-    return ${entity}.findAll({limit, offset, include: [${related.join(', ')}]});
+    return ${entity}.findAll({limit, offset, include: [${related.includes.join(', ')}]});
   }
 
   save(data) {
@@ -107,6 +107,21 @@ ${models.map((name: string) => `      case '${name}':
 module.exports = new RepositoryFactory();
 
 `,
+    };
+  }
+
+    /**
+     * Format related entities.
+     *
+     * @param {Table} table
+     * @returns {{names: string[]; includes: string[]}}
+     */
+  protected getRelatedEntities(table: Table): {names: string[]; includes: string[]} {
+    const relations: Column[] = schemaUtils.getRelatedTablesForTable(table);
+
+    return {
+      names: relations.map((column: Column) => utils.toTitleCase(column.dataType.type)).filter((item: string, index: number, array: string[]) => index === array.indexOf(item)),
+      includes: relations.map((column: Column) => `{model: ${utils.toTitleCase(column.dataType.type)}, as: '${column.name}'}`).filter((item: string, index: number, array: string[]) => index === array.indexOf(item)),
     };
   }
 }
