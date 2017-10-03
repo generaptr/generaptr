@@ -93,7 +93,7 @@ describe('Suite for testing MySqlHandler class', () => {
           const accounts: Table = schema.filter((table: Table) => table.name === 'accounts')[0];
 
           assert.equal(users.name, 'users');
-          assert.equal(Object.keys(users.columns).length, 6);
+          assert.equal(Object.keys(users.columns).length, 7);
           assert.equal(accounts.name, 'accounts');
           assert.equal(Object.keys(accounts.columns).length, 4);
 

@@ -1,10 +1,11 @@
 {
-	"id": 4719763943063552,
-	"name": "Kelley",
+	"id": 1542123316838400,
+	"name": "Lolita",
 	"account": {
-		"id": 8899919695839232,
-		"type": "float",
+		"id": 6930363523792896,
+		"type": "timestamp",
 		"user": {},
 		"applications": []
-	}
+	},
+	"owner": {}
 }

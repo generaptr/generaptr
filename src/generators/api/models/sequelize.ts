@@ -179,23 +179,23 @@ ${this.getRelations(table)}
       switch (column.dataType.relationType) {
         case '1-1': {
           if (column.dataType.isRelationHolder) {
-            return `    ${modelName}.hasOne(models.${column.dataType.type.toLowerCase()});`;
+            return `    ${modelName}.hasOne(models.${column.dataType.type.toLowerCase()}, {as: '${column.name}'});`;
           } else {
-            return `    ${modelName}.belongsTo(models.${column.dataType.type.toLowerCase()});`;
+            return `    ${modelName}.belongsTo(models.${column.dataType.type.toLowerCase()}, {as: '${column.name}'});`;
           }
         }
         case '1-n': {
           if (column.dataType.isRelationHolder) {
-            return `    ${modelName}.hasMany(models.${column.dataType.type.toLowerCase()});`;
+            return `    ${modelName}.hasMany(models.${column.dataType.type.toLowerCase()}, {as: '${column.name}'});`;
           } else {
-            return `    ${modelName}.belongsTo(models.${column.dataType.type.toLowerCase()});`;
+            return `    ${modelName}.belongsTo(models.${column.dataType.type.toLowerCase()}, {as: '${column.name}'});`;
           }
         }
         case 'n-n': {
           if (modelName.localeCompare(column.dataType.type) > 0) {
-            return `    ${modelName}.belongsToMany(models.${column.dataType.type.toLowerCase()}, {through: '${utils.pluralize(modelName).toLowerCase()}_${utils.pluralize(column.dataType.type).toLowerCase()}'});`;
+            return `    ${modelName}.belongsToMany(models.${column.dataType.type.toLowerCase()}, {through: '${utils.pluralize(modelName).toLowerCase()}_${utils.pluralize(column.dataType.type).toLowerCase()}', as: '${column.name}'});`;
           } else {
-            return `    ${modelName}.belongsToMany(models.${column.dataType.type.toLowerCase()}, {through: '${utils.pluralize(column.dataType.type).toLowerCase()}_${utils.pluralize(modelName).toLowerCase()}'});`;
+            return `    ${modelName}.belongsToMany(models.${column.dataType.type.toLowerCase()}, {through: '${utils.pluralize(column.dataType.type).toLowerCase()}_${utils.pluralize(modelName).toLowerCase()}', as: '${column.name}'});`;
           }
         }
         default:

@@ -17,7 +17,7 @@
     "verify": "npm-run-all clean compile lint test doc",
     "commit": "git-cz"
   },
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Api generator",
   "license": "MIT",
   "repository": {

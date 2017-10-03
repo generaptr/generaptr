@@ -105,8 +105,8 @@ describe('Suite for testing SchemaUtil class', () => {
   });
 
   it('should get related Tables for a given Table', () => {
-    const related: string[] = schemaUtil.getRelatedTablesForTable(mocks.PROCESSED_SCHEMA_ONE_TO_ONE[0] as Table);
+    const related: Column[] = schemaUtil.getRelatedTablesForTable(mocks.PROCESSED_SCHEMA_ONE_TO_ONE[0] as Table);
     assert.equal(related.length, 1);
-    assert.equal(related[0], 'User');
+    assert.equal(related[0].dataType.type, 'User');
   });
 });
