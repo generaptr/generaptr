@@ -29,6 +29,10 @@ export class Utils {
   public toTableName(word: string): string {
     return this.pluralize(word.toLowerCase());
   }
+
+  public toColumnName(word: string): string {
+    return word.replace(/(?:Id|_id)\b/g, '');
+  }
   /**
    * Pluralizes a word.
    * @param {string} word - eg: user

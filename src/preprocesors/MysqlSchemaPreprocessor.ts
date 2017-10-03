@@ -79,9 +79,9 @@ export default class MysqlSchemaPreprocessor {
         return table;
       }
       table.columns.forEach((column: Column) => {
-        if (column.foreignKey && column.unique) {
+        if (column.foreignKey && column.unique && column.dataType.references) {
           const targetColumn: Column = {
-            name: column.name,
+            name: schemaUtil.relationIsAlias(column) ? utils.toColumnName(column.dataType.references.name) : column.name,
             primary: column.primary,
             unique: true,
             allowNull: false,
@@ -105,7 +105,7 @@ export default class MysqlSchemaPreprocessor {
           };
           updatedSchema = this.addColumnToTable(
             updatedSchema,
-            column.dataType.references ? column.dataType.references.table : '',
+            column.dataType.references.table,
             sourceColumn,
           );
           updatedSchema = this.addColumnToTable(
@@ -140,7 +140,7 @@ export default class MysqlSchemaPreprocessor {
       table.columns.forEach((column: Column) => {
         if (column.foreignKey && column.dataType.references) {
           const sourceColumn: Column = {
-            name: schemaUtil.relationIsAlias(column) ? column.dataType.references.name : column.name,
+            name: schemaUtil.relationIsAlias(column) ? utils.toColumnName(column.dataType.references.name) : column.name,
             primary: column.primary,
             unique: false,
             allowNull: false,
@@ -151,7 +151,7 @@ export default class MysqlSchemaPreprocessor {
             },
           };
           const targetColumn: Column = {
-            name: schemaUtil.relationIsAlias(column) ? `${table.name}_${column.dataType.references.name}` : table.name,
+            name: schemaUtil.relationIsAlias(column) ? `${table.name}_${utils.toColumnName(column.dataType.references.name)}` : table.name,
             primary: column.primary,
             unique: false,
             allowNull: true,

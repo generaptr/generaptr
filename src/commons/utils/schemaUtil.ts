@@ -64,9 +64,14 @@ export class SchemaUtil {
    * @return {boolean} true if a circular reference exists in the target table
    */
   public isCircularRelation(source: Table, column: Column, schema: Schema): boolean {
-    const target: Table | undefined = schema.find((table: Table) => table.name === utils.toTableName(column.name));
+    const target: Table | undefined = schema.find(
+      (table: Table) => table.name === utils.toTableName(column.name) || table.name === utils.toTableName(column.dataType.type),
+    );
     if (target) {
-      return target.columns.some((col: Column) => utils.toTableName(col.name) === source.name);
+      return target.columns.some(
+        (col: Column) =>
+          utils.toTableName(col.name) === source.name || utils.toTableName(col.dataType.type) === source.name,
+      );
     }
 
     return false;
@@ -81,9 +86,15 @@ export class SchemaUtil {
    * @return {boolean} true if a circular reference is required
    */
   public circularRelationIsRequired(source: Table, column: Column, schema: Schema): boolean {
-    const target: Table | undefined = schema.find((table: Table) => table.name === utils.toTableName(column.name));
+    const target: Table | undefined = schema.find(
+      (table: Table) => table.name === utils.toTableName(column.name) || table.name === utils.toTableName(column.dataType.type),
+    );
     if (target) {
-      return target.columns.some((col: Column) => utils.toTableName(col.name) === source.name && !col.allowNull);
+      return target.columns.some(
+        (col: Column) =>
+          (utils.toTableName(col.name) === source.name || utils.toTableName(col.dataType.type) === source.name) &&
+            !col.allowNull,
+      );
     }
 
     return false;
@@ -98,9 +109,15 @@ export class SchemaUtil {
    * @return {boolean} true if a circular reference is array
    */
   public circularRelationIsArray(source: Table, column: Column, schema: Schema): boolean {
-    const target: Table | undefined = schema.find((table: Table) => table.name === utils.toTableName(column.name));
+    const target: Table | undefined = schema.find(
+      (table: Table) => table.name === utils.toTableName(column.name) || table.name === utils.toTableName(column.dataType.type),
+    );
     if (target) {
-      return target.columns.some((col: Column) => utils.toTableName(col.name) === source.name && Boolean(col.dataType.isArray));
+      return target.columns.some(
+        (col: Column) =>
+          (utils.toTableName(col.name) === source.name || utils.toTableName(col.dataType.type) === source.name) &&
+            Boolean(col.dataType.isArray),
+      );
     }
 
     return false;
