@@ -1,7 +1,7 @@
 import * as chalk from 'chalk';
 import MysqlHandler from '../../../../handlers/MysqlHandler';
 import * as inquirer from 'inquirer';
-import * as mysql from 'mysql';
+import * as mysql from 'mysql2';
 import config from '../../../../configs/config';
 import { Schema } from '../../../../commons/types';
 export const questions: inquirer.Questions = [
@@ -54,8 +54,8 @@ export const questions: inquirer.Questions = [
   },
 ];
 
-export const handler: (data: mysql.IConnectionConfig) => Promise<Schema> =
-  async (data: mysql.IConnectionOptions): Promise<Schema> =>
+export const handler: (data: mysql.ConnectionOptions) => Promise<Schema> =
+  async (data: mysql.ConnectionOptions): Promise<Schema> =>
     new Promise<Schema>((resolve: (data: Schema) => void, reject: (reason: Error) => void): void => {
       try {
         const sqlHandler: MysqlHandler = new MysqlHandler(data);

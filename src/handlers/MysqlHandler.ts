@@ -1,4 +1,4 @@
-import * as mysql from 'mysql';
+import * as mysql from 'mysql2';
 import Utils from '../commons/utils/utils';
 import BaseHandler from './BaseHandler';
 import { Schema, Table, Column, MySqlColumnSchema, TableReference, RawTableReference } from '../commons/types';
@@ -18,22 +18,22 @@ export default class MysqlHandler extends BaseHandler {
    * @type {mysql.Connection}
    * @memberof MysqlHandler
    */
-  private connection: mysql.IConnection;
+  private connection: mysql.Connection;
 
   /**
    * Mysql connection options
    *
    * @private
-   * @type {mysql.IConnectionConfig}
+   * @type {mysql.ConnectionOptions}
    * @memberof MysqlHandler
    */
-  private options: mysql.IConnectionConfig;
+  private options: mysql.ConnectionOptions;
   /**
    * Constructor for the MySqlHandler.
    *
-   * @param {mysq.IConnectionConfig} options Connection parameters.
+   * @param {mysql.ConnectionOptions} options Connection parameters.
    */
-  public constructor(options: mysql.IConnectionConfig) {
+  public constructor(options: mysql.ConnectionOptions) {
     super('mysql');
 
     this.options = options;

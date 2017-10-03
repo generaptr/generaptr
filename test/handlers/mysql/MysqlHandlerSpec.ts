@@ -1,10 +1,10 @@
 import * as assert from 'assert';
-import * as mysql from 'mysql';
+import * as mysql from 'mysql2';
 import MysqlHandler from '../../../src/handlers/MysqlHandler';
 import config from '../../../src/configs/config';
 import { Schema, Table, TableReference } from '../../../src/commons/types';
 
-const validConnectionData: mysql.IConnectionConfig = config.CONNECTION_INFO.MYSQL[config.ENV];
+const validConnectionData: mysql.ConnectionOptions = config.CONNECTION_INFO.MYSQL[config.ENV];
 
 describe('Suite for testing MySqlHandler class', () => {
   let handler: MysqlHandler | undefined;
