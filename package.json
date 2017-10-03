@@ -17,7 +17,7 @@
     "verify": "npm-run-all clean compile lint test doc",
     "commit": "git-cz"
   },
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Api generator",
   "license": "MIT",
   "repository": {
@@ -51,7 +51,6 @@
     "@types/fs-extra": "^4.0.0",
     "@types/inquirer": "0.0.35",
     "@types/mocha": "^2.2.41",
-    "@types/mysql": "0.0.34",
     "@types/node": "^8.0.19",
     "@types/pluralize": "0.0.27",
     "assert": "^1.4.1",
@@ -73,7 +72,7 @@
     "get-env": "^0.5.10",
     "inquirer": "^3.0.6",
     "minimist": "^1.2.0",
-    "mysql": "^2.13.0",
+    "mysql2": "^1.4.2",
     "npm-run-all": "^4.0.2",
     "pluralize": "^7.0.0",
     "preferences": "^0.2.1",
