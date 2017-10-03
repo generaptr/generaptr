@@ -59,7 +59,7 @@
     "coveralls": "^3.0.0",
     "cz-conventional-changelog": "^2.0.0",
     "istanbul": "^0.4",
-    "mocha": "^3.4.0",
+    "mocha": "^4.0.0",
     "typings": "^2.1.1"
   },
   "dependencies": {
