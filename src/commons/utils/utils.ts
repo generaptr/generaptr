@@ -30,6 +30,12 @@ export class Utils {
     return this.pluralize(word.toLowerCase());
   }
 
+    /**
+     * Convert word to comply with the column name schema.
+     *
+     * @param {string} word
+     * @returns {string} eg: user_id
+     */
   public toColumnName(word: string): string {
     return word.replace(/(?:Id|_id)\b/g, '');
   }
@@ -111,6 +117,13 @@ export class Utils {
     return line;
   }
 
+    /**
+     * Find the common edit distance between two strings.
+     *
+     * @param {string} needle string which will be matched
+     * @param {string} haystack string to be matched against
+     * @returns {number} common edit distance between strings
+     */
   private editDistance(needle: string, haystack: string): number {
     needle = needle.toLowerCase();
     haystack = haystack.toLowerCase();
@@ -140,6 +153,13 @@ export class Utils {
     return costs[haystack.length];
   }
 
+    /**
+     * Finds the similarity between two strings
+     *
+     * @param {string} needle
+     * @param {string} haystack
+     * @returns {number} percentage of similarity as float
+     */
   public similarity(needle: string, haystack: string): number {
     let longer: string = needle;
     let shorter: string = haystack;

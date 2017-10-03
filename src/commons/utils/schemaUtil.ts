@@ -133,6 +133,12 @@ export class SchemaUtil {
     return table.columns.filter((column: Column) => column.dataType.relationType).map((column: Column) => column);
   }
 
+    /**
+     * Checks if a given column is an alias.
+     *
+     * @param {Column} column
+     * @returns {boolean} returns true if column name and referenced type are aliases.
+     */
   public relationIsAlias(column: Column): boolean {
     return Boolean(column.dataType.references && utils.similarity(column.dataType.references.name, column.dataType.references.table) < 0.5);
   }

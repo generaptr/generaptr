@@ -34,7 +34,7 @@ export default class SequelizeRepositoryGenerator {
    * @return {{name: string, content: string}}
    */
   public getRepositoryForTable(table: Table): string {
-    const related: {names: string[]; includes: string[]} = this.getRelatedEntites(table);
+    const related: {names: string[]; includes: string[]} = this.getRelatedEntities(table);
     const entity: string = utils.toTitleCase(table.name);
 
     return `const ${entity} = require('../models').${entity.toLowerCase()};
@@ -110,7 +110,13 @@ module.exports = new RepositoryFactory();
     };
   }
 
-  protected getRelatedEntites(table: Table): {names: string[]; includes: string[]} {
+    /**
+     * Format related entities.
+     *
+     * @param {Table} table
+     * @returns {{names: string[]; includes: string[]}}
+     */
+  protected getRelatedEntities(table: Table): {names: string[]; includes: string[]} {
     const relations: Column[] = schemaUtils.getRelatedTablesForTable(table);
 
     return {
