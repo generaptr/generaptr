@@ -18,3 +18,4 @@ typings
 build
 docs
 tempPublish
+npm-debug.log

@@ -11,11 +11,11 @@
     "importHelpers": true,
     "declaration": true,
     "sourceMap": false,
-    "target": "es5",
+    "target": "es6",
     "lib": ["es6"],
     "outDir": "../lib",
     "types": [
-      "assert", "faker", "figlet", "mocha", "node", "pluralize", "bunyan", "chalk", "fs-extra", "inquirer", "mysql"
+      "assert", "faker", "mocha", "node", "pluralize", "bunyan", "chalk", "fs-extra", "mysql2"
     ],
     "typeRoots": ["../typings/globals", "../typings/modules", "../node_modules/@types"]
   }

@@ -125,11 +125,8 @@ export class Utils {
      * @returns {number} common edit distance between strings
      */
   private editDistance(needle: string, haystack: string): number {
-    needle = needle.toLowerCase();
-    haystack = haystack.toLowerCase();
-
     const costs: number[] = new Array();
-    for (let i: number = 0; i <= needle.length; i++) {
+    for (let i: number = 0; i <= needle.toLowerCase().length; i++) {
       let lastValue: number = i;
       for (let j: number = 0; j <= haystack.length; j++) {
         if (i === 0) {
@@ -137,7 +134,7 @@ export class Utils {
         } else {
           if (j > 0) {
             let newValue: number = costs[j - 1];
-            if (needle.charAt(i - 1) !== haystack.charAt(j - 1)) {
+            if (needle.toLowerCase().charAt(i - 1) !== haystack.toLowerCase().charAt(j - 1)) {
               newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
             }
             costs[j - 1] = lastValue;
