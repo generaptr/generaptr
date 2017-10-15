@@ -15,7 +15,7 @@
     "lib": ["es6"],
     "outDir": "../build",
     "types": [
-      "assert", "faker", "figlet", "mocha", "node", "pluralize", "bunyan", "chalk", "fs-extra", "inquirer", "mysql2"
+      "assert", "faker", "mocha", "node", "pluralize", "bunyan", "chalk", "fs-extra", "mysql2"
     ],
     "typeRoots": ["../typings/globals", "../typings/modules", "../node_modules/@types"]
   },
