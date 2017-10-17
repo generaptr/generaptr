@@ -13,9 +13,9 @@ export class CommonsFileOperations {
   /**
    * Initialize UtilGenerator class
    * @param {string} filePath - file path where api will be generated
-   * @return {Promise<boolean>} - true if was successfully created
+   * @return {boolean} - true if was successfully created
    */
-  public async initializeUtil(filePath: string): Promise<boolean> {
+  public initializeUtil(filePath: string): boolean {
     return fileUtil.writeFile(
       fileUtil.joinPaths(filePath, DIRECTORY_STRUCTURE.API_STRUCTURE.COMMONS, 'util.js'),
       util.getUtil(),
@@ -25,9 +25,9 @@ export class CommonsFileOperations {
   /**
    * Initialize constants classes
    * @param {string} filePath - file path where api will be generated
-   * @return {Promise<boolean>} - true if was successfully created
+   * @return {boolean} - true if was successfully created
    */
-  public async initializeConstants(filePath: string): Promise<boolean> {
+  public initializeConstants(filePath: string): boolean {
     return fileUtil.writeFile(
       fileUtil.joinPaths(filePath, DIRECTORY_STRUCTURE.API_STRUCTURE.CONSTANTS, 'statusCode.js'),
       constants.getStatusCode(),

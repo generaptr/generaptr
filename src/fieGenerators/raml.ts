@@ -30,50 +30,43 @@ export default class RamlFileOperations {
 
   /**
    * Create directory structure for the application
-   * @returns {Promise<boolean[]>} created directory structure.
+   * @returns {boolean} created directory structure.
    */
-  public async createDirectoryStructure(): Promise<boolean[]> {
-    const promises: [Promise<boolean>] = [Promise.resolve(true)];
+  public createDirectoryStructure(): boolean {
     /* istanbul ignore next */
     if (!fileUtil.isDirectory(this.filePath)) {
-      return Promise.reject('Invalid directory path');
+      throw new Error('Invalid directory path');
     }
     Object.keys(DIRECTORY_STRUCTURE.RAML_STRUCTURE).map((directory: string) => {
-      promises.push(
-        fileUtil.createDirectory(
-          fileUtil.joinPaths(
-            this.filePath,
-            DIRECTORY_STRUCTURE.RAML_STRUCTURE[directory],
-          ),
+      fileUtil.createDirectory(
+        fileUtil.joinPaths(
+          this.filePath,
+          DIRECTORY_STRUCTURE.RAML_STRUCTURE[directory],
         ),
       );
     });
 
-    return Promise.all(promises);
+    return true;
   }
 
   /**
    * Create .raml type file for every table inside schema
    * @param {Schema} schema - schema tables(list of tables)
-   * @returns {Promise.<boolean[]>} generated type files.
+   * @returns {boolean} generated type files.
    */
-  public async generateSchemaTypeFiles(schema: Schema): Promise<boolean[]> {
-    const promises: [Promise<boolean>] = [Promise.resolve(true)];
-
+  public generateSchemaTypeFiles(schema: Schema): boolean {
     schema.map((table: Table) => {
-      promises.push(
-        fileUtil.writeFile(
-          fileUtil.joinPaths(
-            this.filePath,
-            DIRECTORY_STRUCTURE.RAML_STRUCTURE.TYPES,
-            `${utils.toTitleCase(table.name)}.raml`,
-          ),
-          typesGenerator.generateTypeContent(table),
+      fileUtil.writeFile(
+        fileUtil.joinPaths(
+          this.filePath,
+          DIRECTORY_STRUCTURE.RAML_STRUCTURE.TYPES,
+          `${utils.toTitleCase(table.name)}.raml`,
         ),
+        typesGenerator.generateTypeContent(table),
       );
     });
 
-    return Promise.all(promises);
+    return true;
   }
 
   /**
@@ -81,9 +74,9 @@ export default class RamlFileOperations {
    *
    * @param {Schema} schema - database schema
    * @param {RAMLApplicationInfo} options - application info
-   * @returns {Promise<boolean>} - true if spec generated
+   * @returns {boolean} - true if spec generated
    */
-  public async generateSchemaApiFiles(schema: Schema, options: RAMLApplicationInfo): Promise<boolean> {
+  public generateSchemaApiFiles(schema: Schema, options: RAMLApplicationInfo): boolean {
     return fileUtil.writeFile(
       fileUtil.joinPaths(this.filePath, 'api.raml'),
       specGenerator.generateContent(schema, options),
@@ -94,11 +87,9 @@ export default class RamlFileOperations {
    * Generate .json entity for every table from schema.
    * File will be saved on path: ./raml/types/entityName.json
    * @param {Schema} schema - schema containing tables.
-   * @return {Promise.<boolean[]>} generated examle files.
+   * @return {boolean} generated examle files.
    */
-  public async generateSchemaExampleFiles(schema: Schema): Promise<boolean[]> {
-    const promises: [Promise<boolean>] = [Promise.resolve(true)];
-
+  public generateSchemaExampleFiles(schema: Schema): boolean {
     schema.map((table: Table) => {
       const typeExampleGenerated: Example = examplesGenerator.generateTypeExampleContent(
         schema,
@@ -106,49 +97,43 @@ export default class RamlFileOperations {
         config.INITIAL_DEPTH_LEVEL,
       );
 
-      promises.push(
-        fileUtil.writeFile(
-          fileUtil.joinPaths(
-            this.filePath,
-            DIRECTORY_STRUCTURE.RAML_STRUCTURE.EXAMPLES,
-            `${typeExampleGenerated.type}.json`,
-          ),
-          utils.convertToJSON(typeExampleGenerated.data),
+      fileUtil.writeFile(
+        fileUtil.joinPaths(
+          this.filePath,
+          DIRECTORY_STRUCTURE.RAML_STRUCTURE.EXAMPLES,
+          `${typeExampleGenerated.type}.json`,
         ),
+        utils.convertToJSON(typeExampleGenerated.data),
       );
     });
 
-    return Promise.all(promises);
+    return true;
   }
 
   /**
    * Generate .json Array entity for every array of objects saved in cache
-   * @return {Promise.<boolean[]>} generated example files.
+   * @return {boolean} generated example files.
    */
-  public async generateSchemaExamplesFilesFromCache(): Promise<boolean[]> {
-    const promises: [Promise<boolean>] = [Promise.resolve(true)];
-
+  public generateSchemaExamplesFilesFromCache(): boolean {
     Object.keys(cacheUtil.getByPrimeKey(examplesGenerator.PRIME_KEY))
       .filter((key: string) => key.includes('[]'))
       .map((key: string) => {
-        promises.push(
-          fileUtil.writeFile(
-            fileUtil.joinPaths(
-              this.filePath,
-              DIRECTORY_STRUCTURE.RAML_STRUCTURE.EXAMPLES,
-              `${utils.pluraliseWordArray(key)}.json`,
-            ),
-            utils.convertToJSON(
-              cacheUtil.get(
-                examplesGenerator.PRIME_KEY,
-                key,
-              ),
+        fileUtil.writeFile(
+          fileUtil.joinPaths(
+            this.filePath,
+            DIRECTORY_STRUCTURE.RAML_STRUCTURE.EXAMPLES,
+            `${utils.pluraliseWordArray(key)}.json`,
+          ),
+          utils.convertToJSON(
+            cacheUtil.get(
+              examplesGenerator.PRIME_KEY,
+              key,
             ),
           ),
         );
       });
 
-    return Promise.all(promises);
+    return true;
   }
 
   /**

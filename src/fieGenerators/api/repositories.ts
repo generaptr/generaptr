@@ -15,25 +15,24 @@ export class RepositoriesFileOperations {
    *
    * @param {string} filePath - root api file path
    * @param {Schema} schema - source schema for api generation
-   * @return {Promise<boolean[]>}
+   * @return {boolean}
    * @memberof RepositoriesFileOperations
    */
-  public async initializeSequelizeRepositories(filePath: string, schema: Schema): Promise<boolean[]> {
-    const promises: [Promise<boolean>] = [Promise.resolve(true)];
+  public initializeSequelizeRepositories(filePath: string, schema: Schema): boolean {
     repositoriesGenerator.sequelize.getRepositories(schema).forEach((repository: {name: string; content: string}) => {
-      promises.push(fileUtil.writeFile(
+      fileUtil.writeFile(
         `${filePath}/${DIRECTORY_STRUCTURE.API_STRUCTURE.REPOSITORIES}/${repository.name}`,
         repository.content,
-      ));
+      );
     });
 
     const factory: {name: string; content: string} = repositoriesGenerator.sequelize.getRepositoryFactory(schema);
-    promises.push(fileUtil.writeFile(
+    fileUtil.writeFile(
       `${filePath}/${DIRECTORY_STRUCTURE.API_STRUCTURE.REPOSITORIES}/${factory.name}`,
       factory.content,
-    ));
+    );
 
-    return Promise.all(promises);
+    return true;
   }
 }
 

@@ -6,12 +6,12 @@ describe('Suite for testing FileUtil class', () => {
     assert.equal(fileUtil.normalizePath('./'), `${process.cwd()}/./`);
   });
 
-  it('should create a directory', (done: Function) => {
-    fileUtil.createDirectory('/').then(() => {
-      done();
-    }).catch((e: Error) => {
+  it('should create a directory', () => {
+    try {
+      assert.equal(fileUtil.createDirectory('/'), true);
+    } catch (error) {
       assert.fail('create directory failed');
-      console.log(e);
-    });
+      console.log(error);
+    }
   });
 });

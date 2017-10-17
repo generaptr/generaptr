@@ -34,26 +34,23 @@ export default class ApiFileOperations {
 
   /**
    * Create directory structure for the application
-   * @returns {Promise<boolean[]>} created directory structure.
+   * @returns {boolea} created directory structure.
    */
-  public async createDirectoryStructure(): Promise<boolean[]> {
-    const promises: [Promise<boolean>] = [Promise.resolve(true)];
+  public createDirectoryStructure(): boolean {
     /* istanbul ignore next */
     if (!fileUtil.isDirectory(this.filePath)) {
-      return Promise.reject('Invalid directory path');
+      throw new Error('Invalid directory path');
     }
     Object.keys(DIRECTORY_STRUCTURE.API_STRUCTURE).map((directory: string) => {
-      promises.push(
-        fileUtil.createDirectory(
-          fileUtil.joinPaths(
-            this.filePath,
-            DIRECTORY_STRUCTURE.API_STRUCTURE[directory],
-          ),
+      fileUtil.createDirectory(
+        fileUtil.joinPaths(
+          this.filePath,
+          DIRECTORY_STRUCTURE.API_STRUCTURE[directory],
         ),
       );
     });
 
-    return Promise.all(promises);
+    return true;
   }
 
   /**
@@ -61,9 +58,9 @@ export default class ApiFileOperations {
    *
    * @param {PackageJsonInfo} options - package json options
    * @param {string} dialect - database dialect
-   * @returns {Promise<boolean>} created package json
+   * @returns {boolean} created package json
    */
-  public async createPackageJson(options: PackageJsonInfo, dialect: string): Promise<boolean> {
+  public createPackageJson(options: PackageJsonInfo, dialect: string): boolean {
     console.log(`running: ${chalk.green('initialize package.json')}`);
 
     return fileUtil.writeFile(
@@ -126,31 +123,31 @@ export default class ApiFileOperations {
    * @returns {Promise<boolean[]>} - true if generated config
    * @memberOf ApiFileOperations
    */
-  public async initializeConfig(connection: ConnectionData, schema: Schema): Promise<boolean[]> {
+  public initializeConfig(connection: ConnectionData, schema: Schema): boolean {
     console.log(`running: ${chalk.green('initialize src/config files')}`);
 
-    return Promise.all([
-      configFileOperations.initializeConfig(this.filePath),
-      configFileOperations.initializeGetEnvBasedConfig(this.filePath),
-      configFileOperations.initializeDbConfig(connection, this.filePath),
-      configFileOperations.initializeCorsConfig(this.filePath),
-      configFileOperations.initializeExpressConfig(this.filePath),
-      configFileOperations.initializeRouterConfig(this.filePath, schema),
-      configFileOperations.initializeIndex(this.filePath),
-    ]);
+    configFileOperations.initializeConfig(this.filePath);
+    configFileOperations.initializeGetEnvBasedConfig(this.filePath);
+    configFileOperations.initializeDbConfig(connection, this.filePath);
+    configFileOperations.initializeCorsConfig(this.filePath);
+    configFileOperations.initializeExpressConfig(this.filePath);
+    configFileOperations.initializeRouterConfig(this.filePath, schema);
+    configFileOperations.initializeIndex(this.filePath);
+
+    return true;
   }
 
   /**
    * Initialize commons
-   * @return {Promise<boolean[]>}
+   * @return {boolean}
    */
-  public async initializeCommons(): Promise<boolean[]> {
+  public initializeCommons(): boolean {
     console.log(`running: ${chalk.green('initialize src/commons')}`);
 
-    return Promise.all([
-      commonsFileOperations.initializeUtil(this.filePath),
-      commonsFileOperations.initializeConstants(this.filePath),
-    ]);
+    commonsFileOperations.initializeUtil(this.filePath);
+    commonsFileOperations.initializeConstants(this.filePath);
+
+    return true;
   }
 
   /**
@@ -158,16 +155,16 @@ export default class ApiFileOperations {
    *
    * @param {string} dialect database dialect
    * @param {Schema} schema source schema for api generation
-   * @returns {Promise<boolean[]>} initialized odm
+   * @returns {boolean} initialized odm
    */
-  public async initializeModels(dialect: string, schema: Schema): Promise<boolean[]> {
+  public initializeModels(dialect: string, schema: Schema): boolean {
     console.log(`running: ${chalk.green(`initialize src/models for ${dialect}`)}`);
     switch (dialect) {
       case 'MySql': {
         return modelsFileOperations.initializeSequelizeModels(this.filePath, schema);
       }
       default:
-        return Promise.reject('Dialect not supported');
+        throw new Error('Dialect not supported');
     }
   }
 
@@ -176,25 +173,25 @@ export default class ApiFileOperations {
    *
    * @param {string} dialect database dialect
    * @param {Schema} schema source schema for api generation
-   * @returns {Promise<boolean[]>} initialized repositories
+   * @returns {boolean} initialized repositories
    */
-  public async initializeRepositories(dialect: string, schema: Schema): Promise<boolean[]> {
+  public initializeRepositories(dialect: string, schema: Schema): boolean {
     console.log(`running: ${chalk.green(`initialize src/repositories for ${dialect}`)}`);
     switch (dialect) {
       case 'MySql': {
         return repositoriesFileOperations.initializeSequelizeRepositories(this.filePath, schema);
       }
       default:
-        return Promise.reject('Dialect not supported');
+        throw new Error('Dialect not supported');
     }
   }
 
   /**
    * Initialize Services
    * @param schema
-   * @return {Promise<Promise<boolean[]>>}
+   * @return {boolean}
    */
-  public async initializeServices(schema: Schema): Promise<boolean[]> {
+  public initializeServices(schema: Schema): boolean {
     console.log(`running: ${chalk.green('initialize src/services')}`);
 
     return servicesFileOperations.initializeServices(this.filePath, schema);
@@ -203,9 +200,9 @@ export default class ApiFileOperations {
   /**
    * Initialize Controllers
    * @param schema
-   * @return {Promise<boolean[]>}
+   * @return {boolean}
    */
-  public async initializeControllers(schema: Schema): Promise<boolean[]> {
+  public initializeControllers(schema: Schema): boolean {
     console.log(`running: ${chalk.green('initialize src/controllers')}`);
 
     return controllersFileOperations.initializeControllers(this.filePath, schema);

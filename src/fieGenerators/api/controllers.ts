@@ -16,26 +16,25 @@ export class ControllersFileOperations {
    * Initialize all controller files
    * @param {String} filePath - file path where api will be generated
    * @param {Schema} schema -
-   * @return {Promise<boolean[]>}
+   * @return {boolean}
    */
-  public async initializeControllers(filePath: string, schema: Schema): Promise<boolean[]> {
-    const promises: [Promise<boolean>] = [Promise.resolve(true)];
+  public initializeControllers(filePath: string, schema: Schema): boolean {
 
-    promises.push(fileUtil.writeFile(
+    fileUtil.writeFile(
       fileUtil.joinPaths(filePath, DIRECTORY_STRUCTURE.API_STRUCTURE.CONTROLLERS, 'defaultController.js'),
       controller.getDefaultController(),
-    ));
+    );
 
     schema.forEach((table: Table) => {
       const model: string = utils.singular(table.name);
 
-      promises.push(fileUtil.writeFile(
+      fileUtil.writeFile(
         fileUtil.joinPaths(filePath, DIRECTORY_STRUCTURE.API_STRUCTURE.CONTROLLERS, `${model}Controller.js`),
         controller.getController(model),
-      ));
+      );
     });
 
-    return Promise.all(promises);
+    return true;
   }
 }
 

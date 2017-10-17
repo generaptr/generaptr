@@ -19,9 +19,9 @@ export class ConfigurationFileOperations {
   /**
    * Generate general configuration
    * @param {string} filePath - file path where api will be generated
-   * @return {Promise<boolean>}
+   * @return {boolean}
    */
-  public async initializeConfig(filePath: string): Promise<boolean> {
+  public initializeConfig(filePath: string): boolean {
     return fileUtil.writeFile(
       fileUtil.joinPaths(filePath, DIRECTORY_STRUCTURE.API_STRUCTURE.CONFIG, 'config.js'),
       config.getConfig(),
@@ -31,9 +31,9 @@ export class ConfigurationFileOperations {
   /**
    * Generate get env based config util class
    * @param {string} filePath - file path where api will be generated
-   * @return {Promise<boolean>}
+   * @return {boolean}
    */
-  public async initializeGetEnvBasedConfig(filePath: string): Promise<boolean> {
+  public initializeGetEnvBasedConfig(filePath: string): boolean {
     return fileUtil.writeFile(
       fileUtil.joinPaths(filePath, DIRECTORY_STRUCTURE.API_STRUCTURE.CONFIG, 'index.js'),
       config.getEnvBasedConfig(),
@@ -44,9 +44,9 @@ export class ConfigurationFileOperations {
    * Generate database configuration
    * @param {Connection data} connection - connection info
    * @param {string} filePath - file path where api will be generated
-   * @return {Promise<boolean>}
+   * @return {boolean}
    */
-  public async initializeDbConfig(connection: ConnectionData, filePath: string): Promise<boolean> {
+  public initializeDbConfig(connection: ConnectionData, filePath: string): boolean {
     let configContent: string = '';
     switch (connection.dialect) {
       case 'MySql':
@@ -63,9 +63,9 @@ export class ConfigurationFileOperations {
   /**
    * Initialize cors configuration
    * @param filePath - file path where api will be generated
-   * @return {Promise<boolean>} - true if cors file was successfully created
+   * @return {boolean} - true if cors file was successfully created
    */
-  public async initializeCorsConfig(filePath: string): Promise<boolean> {
+  public initializeCorsConfig(filePath: string): boolean {
     return fileUtil.writeFile(
       fileUtil.joinPaths(filePath, DIRECTORY_STRUCTURE.API_STRUCTURE.MIDDLEWARES, 'cors.js'),
       cors.getCorsConfig(),
@@ -75,9 +75,9 @@ export class ConfigurationFileOperations {
   /**
    * Initialize express configuration
    * @param filePath - file path where api will be generated
-   * @return {Promise<boolean>} - true if express file was successfully created
+   * @return {boolean} - true if express file was successfully created
    */
-  public async initializeExpressConfig(filePath: string): Promise<boolean> {
+  public initializeExpressConfig(filePath: string): boolean {
     return fileUtil.writeFile(
       fileUtil.joinPaths(filePath, DIRECTORY_STRUCTURE.API_STRUCTURE.CONFIG, 'express.js'),
       express.getExpressConfig(),
@@ -88,9 +88,9 @@ export class ConfigurationFileOperations {
    * Initialize express configuration
    * @param filePath - file path where api will be generated
    * @param schema - database schema table
-   * @return {Promise<boolean>}
+   * @return {boolean}
    */
-  public async initializeRouterConfig(filePath: string, schema: Schema): Promise<boolean> {
+  public initializeRouterConfig(filePath: string, schema: Schema): boolean {
     return fileUtil.writeFile(
       fileUtil.joinPaths(filePath, DIRECTORY_STRUCTURE.API_STRUCTURE.CONFIG, 'router.js'),
       router.getRouterConfig(schema),
@@ -100,9 +100,9 @@ export class ConfigurationFileOperations {
   /**
    * Initialize main index.js file
    * @param filePath - file path where api will be generated
-   * @return {Promise<boolean>} - true if index file was created
+   * @return {boolean} - true if index file was created
    */
-  public async initializeIndex(filePath: string): Promise<boolean> {
+  public initializeIndex(filePath: string): boolean {
     return fileUtil.writeFile(
       fileUtil.joinPaths(filePath, DIRECTORY_STRUCTURE.API_STRUCTURE.SRC, 'index.js'),
       index.getIndex(),

@@ -9,49 +9,45 @@ import apiMocks from '../../testUtils/apiMocks';
 describe('Suite for testing the CommonsFileOperations class', () => {
   it('should create util.js file', (done: Function) => {
     const apiFileOperations: ApiFileOperations = new ApiFileOperations('api.test');
-
-    commonsFileOperations.initializeUtil(apiFileOperations.getFilePath())
-      .then(async () => {
-        fs.readFile(
-          fileUtil.joinPaths(
-            apiFileOperations.getFilePath(),
-            DIRECTORY_STRUCTURE.API_STRUCTURE.COMMONS,
-            "util.js",
-          ),
-          (err: Error, data: Buffer) => {
-            assert.ifError(err);
-            assert(data, 'Content should not be empty');
-            assert.equal(data.toString(), apiMocks.VALID_UTIL_CLASS);
-            done();
-          });
-      })
-      .catch((ex: Error) => {
-        assert.fail(ex.message);
+    try {
+    commonsFileOperations.initializeUtil(apiFileOperations.getFilePath());
+    fs.readFile(
+      fileUtil.joinPaths(
+        apiFileOperations.getFilePath(),
+        DIRECTORY_STRUCTURE.API_STRUCTURE.COMMONS,
+        "util.js",
+      ),
+      (err: Error, data: Buffer) => {
+        assert.ifError(err);
+        assert(data, 'Content should not be empty');
+        assert.equal(data.toString(), apiMocks.VALID_UTIL_CLASS);
         done();
       });
+    } catch (error) {
+      assert.fail(error.message);
+      done();
+    }
   });
 
   it('should create statusCode.js file', (done: Function) => {
     const apiFileOperations: ApiFileOperations = new ApiFileOperations('api.test');
-
-    commonsFileOperations.initializeConstants(apiFileOperations.getFilePath())
-      .then(async () => {
-        fs.readFile(
-          fileUtil.joinPaths(
-            apiFileOperations.getFilePath(),
-            DIRECTORY_STRUCTURE.API_STRUCTURE.CONSTANTS,
-            'statusCode.js',
-          ),
-          (err: Error, data: Buffer) => {
-            assert.ifError(err);
-            assert(data, 'Content should not be empty');
-            assert.equal(data.toString(), apiMocks.VALID_STATUS_CODES_CONSTANTS);
-            done();
-          });
-      })
-      .catch((ex: Error) => {
-        assert.fail(ex.message);
+    try {
+      commonsFileOperations.initializeConstants(apiFileOperations.getFilePath())
+      fs.readFile(
+        fileUtil.joinPaths(
+          apiFileOperations.getFilePath(),
+          DIRECTORY_STRUCTURE.API_STRUCTURE.CONSTANTS,
+          'statusCode.js',
+        ),
+        (err: Error, data: Buffer) => {
+          assert.ifError(err);
+          assert(data, 'Content should not be empty');
+          assert.equal(data.toString(), apiMocks.VALID_STATUS_CODES_CONSTANTS);
+          done();
+        });
+    } catch (error) {
+        assert.fail(error.message);
         done();
-      });
+    }
   });
 });

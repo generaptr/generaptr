@@ -28,11 +28,10 @@ export class ORMFileOperations {
             return reject(err);
           }
 
-          return fileUtil.writeFile(
+          resolve(fileUtil.writeFile(
             `${filePath}/${DIRECTORY_STRUCTURE.API_STRUCTURE.MODELS}/index.js`,
             modelGenerator.sequelize.getModelsRegistry(),
-          )
-          .then(() => resolve(true));
+          ));
       });
     });
   }

@@ -16,21 +16,20 @@ export class ServicesFileOperations {
    * Initialize services files
    * @param {string} filePath - file path where api will be generated
    * @param {Schema} schema - schema information
-   * @return {Promise<boolean[]>} - an array of booleans with created status
+   * @return {boolean[]} - an array of booleans with created status
    */
-  public async initializeServices(filePath: string, schema: Schema): Promise<boolean[]> {
-    const promises: [Promise<boolean>] = [Promise.resolve(true)];
+  public initializeServices(filePath: string, schema: Schema): boolean {
 
     schema.forEach((table: Table) => {
       const model: string = utils.singular(table.name);
 
-      promises.push(fileUtil.writeFile(
+      fileUtil.writeFile(
         fileUtil.joinPaths(filePath, DIRECTORY_STRUCTURE.API_STRUCTURE.SERVICES, `${model}Service.js`),
         service.getService(model),
-      ));
+      );
     });
 
-    return Promise.all(promises);
+    return true;
   }
 }
 

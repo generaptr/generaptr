@@ -39,27 +39,18 @@ export class FileUtil {
   /**
    * Create directory if not exist
    * @param {string} filePath path where the directory should be created.
-   * @returns {Promise} directory created
+   * @returns {boolean} directory created
    */
-  public async createDirectory(filePath: string): Promise<boolean> {
+  public createDirectory(filePath: string): boolean {
     const normalizedFilePath: string = this.normalizePath(filePath);
+    try {
+      const stat: fs.Stats = fs.statSync(normalizedFilePath);
+      fse.ensureDirSync(normalizedFilePath);
 
-    return new Promise<boolean>((resolve: Function, reject: Function): void => {
-      fs.stat(normalizedFilePath, (err: Error, stat: fs.Stats) => {
-        if (err) {
-          /* istanbul ignore next */
-          fse.ensureDir(normalizedFilePath, (ensureDirErr: Error) => {
-            if (ensureDirErr) {
-              reject(ensureDirErr);
-            } else {
-              resolve(true);
-            }
-          });
-        } else {
-          resolve(Boolean(stat.isDirectory()));
-        }
-      });
-    });
+      return stat.isDirectory();
+    } catch (error) {
+      throw error;
+    }
   }
 
   /**
@@ -76,19 +67,16 @@ export class FileUtil {
    *
    * @param {string} filePath - destination file
    * @param {string} content - content to be written
-   * @returns {Promise} file written
+   * @returns {boolean} file written
    */
-  public async writeFile(filePath: string, content: string): Promise<boolean> {
-    return new Promise<boolean>((resolve: Function, reject: Function): void => {
-      fs.writeFile(filePath, content, {encoding: 'UTF-8'}, (err: Error) => {
-        if (err) {
-          /* istanbul ignore next */
-          reject(err);
-        } else {
-          resolve();
-        }
-      });
-    });
+  public writeFile(filePath: string, content: string): boolean {
+    try {
+        fs.writeFileSync(filePath, content, {encoding: 'UTF-8'});
+
+        return true;
+    } catch (error) {
+      throw  error;
+    }
   }
 }
 
