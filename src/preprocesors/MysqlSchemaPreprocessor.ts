@@ -1,6 +1,6 @@
-import typeUtil from '../commons/utils/typeUtil';
+import typeUtil from '../commons/utils/type';
 import utils from '../commons/utils/utils';
-import schemaUtil from '../commons/utils/schemaUtil';
+import schemaUtil from '../commons/utils/schema';
 import logger from '../commons/logger';
 import config from '../configs/config';
 import { Schema, Table, Column, MySqlColumnSchema } from '../commons/types';

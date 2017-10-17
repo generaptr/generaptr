@@ -1,5 +1,5 @@
-import ApiFileOperations from './fileOperations/ApiFileOperations';
-import RamlFileOperations from './fileOperations/RamlFileOperations';
+import ApiFileOperations from './fieGenerators/api';
+import RamlFileOperations from './fieGenerators/raml';
 import MysqlHandler from './handlers/MysqlHandler';
 import RamlHandler from './handlers/RamlHandler';
 

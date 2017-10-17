@@ -1,5 +1,5 @@
-import typeUtil from '../commons/utils/typeUtil';
-import schemaUtil from '../commons/utils/schemaUtil';
+import typeUtil from '../commons/utils/type';
+import schemaUtil from '../commons/utils/schema';
 import { RamlColumnSchema, Column, Schema, Table } from '../commons/types';
 
 /**
