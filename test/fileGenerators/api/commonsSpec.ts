@@ -32,7 +32,7 @@ describe('Suite for testing the CommonsFileOperations class', () => {
   it('should create statusCode.js file', (done: Function) => {
     const apiFileOperations: ApiFileOperations = new ApiFileOperations('api.test');
     try {
-      commonsFileOperations.initializeConstants(apiFileOperations.getFilePath())
+      commonsFileOperations.initializeConstants(apiFileOperations.getFilePath());
       fs.readFile(
         fileUtil.joinPaths(
           apiFileOperations.getFilePath(),

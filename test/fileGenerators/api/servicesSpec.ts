@@ -13,7 +13,7 @@ describe('Suite for testing the ServicesFileOperations class', () => {
   it('should create all services files for schema', (done: Function) => {
     const apiFileOperations: ApiFileOperations = new ApiFileOperations('api.test');
     try {
-      servicesFileOperations.initializeServices(apiFileOperations.getFilePath(), schemaMocks.PROCESSED_SCHEMA_ONE_TABLE)
+      servicesFileOperations.initializeServices(apiFileOperations.getFilePath(), schemaMocks.PROCESSED_SCHEMA_ONE_TABLE);
       const table: Table = schemaMocks.PROCESSED_SCHEMA_ONE_TABLE[0] as Table;
       const model: string = utils.singular(table.name);
 
