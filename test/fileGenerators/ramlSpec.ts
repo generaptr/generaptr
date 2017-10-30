@@ -70,7 +70,6 @@ describe('Suite for testing RamlFileOperation class', () => {
   it('should create raml type file', (done: Function) => {
     const ramlFileOperations: RamlFileOperations = new RamlFileOperations('raml.test');
     try {
-      
       ramlFileOperations.createDirectoryStructure();
       ramlFileOperations.generateSchemaTypeFiles([table]);
       fs.readFile(

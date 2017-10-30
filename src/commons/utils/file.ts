@@ -26,6 +26,7 @@ export class FileUtil {
    */
   public isDirectory(filePath: string): boolean {
     const normalizedFilePath: string = this.normalizePath(filePath);
+
     return Boolean(
       normalizedFilePath.substring(
         normalizedFilePath.lastIndexOf('/'),
@@ -42,9 +43,10 @@ export class FileUtil {
   public createDirectory(filePath: string): boolean {
     const normalizedFilePath: string = this.normalizePath(filePath);
     try {
-      if (!fs.existsSync(normalizedFilePath)){
+      if (!fs.existsSync(normalizedFilePath)) {
         fs.mkdirSync(normalizedFilePath);
       }
+
       return fs.existsSync(normalizedFilePath);
     } catch (error) {
       throw error;
