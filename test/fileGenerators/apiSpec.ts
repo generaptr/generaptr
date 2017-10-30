@@ -10,7 +10,7 @@ import { ConnectionData } from "../../src/commons/types";
 describe('Suite for testing ApiFileOperation class', () => {
 
   it('should throw an error if path provided is filePath', () => {
-    const apiFileOperations: ApiFileOperations = new ApiFileOperations('api.test');
+    const apiFileOperations: ApiFileOperations = new ApiFileOperations('');
     try {
         apiFileOperations.createDirectoryStructure();
     } catch (error) {

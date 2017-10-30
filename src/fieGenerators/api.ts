@@ -37,10 +37,10 @@ export default class ApiFileOperations {
    * @returns {boolea} created directory structure.
    */
   public createDirectoryStructure(): boolean {
-    /* istanbul ignore next */
     if (!fileUtil.isDirectory(this.filePath)) {
       throw new Error('Invalid directory path');
     }
+    fileUtil.createDirectory(this.filePath);
     Object.keys(DIRECTORY_STRUCTURE.API_STRUCTURE).map((directory: string) => {
       fileUtil.createDirectory(
         fileUtil.joinPaths(

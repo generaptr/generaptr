@@ -1,5 +1,4 @@
 import * as fs from 'fs';
-import * as fse from 'fs-extra';
 import * as path from 'path';
 
 /**
@@ -27,7 +26,6 @@ export class FileUtil {
    */
   public isDirectory(filePath: string): boolean {
     const normalizedFilePath: string = this.normalizePath(filePath);
-
     return Boolean(
       normalizedFilePath.substring(
         normalizedFilePath.lastIndexOf('/'),
@@ -44,10 +42,10 @@ export class FileUtil {
   public createDirectory(filePath: string): boolean {
     const normalizedFilePath: string = this.normalizePath(filePath);
     try {
-      const stat: fs.Stats = fs.statSync(normalizedFilePath);
-      fse.ensureDirSync(normalizedFilePath);
-
-      return stat.isDirectory();
+      if (!fs.existsSync(normalizedFilePath)){
+        fs.mkdirSync(normalizedFilePath);
+      }
+      return fs.existsSync(normalizedFilePath);
     } catch (error) {
       throw error;
     }
