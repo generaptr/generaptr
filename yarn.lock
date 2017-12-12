@@ -20,9 +20,15 @@
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/@types/faker/-/faker-4.1.0.tgz#751cd99436a71d7856f33f65f9c5e58e5bc2711e"
 
-"@types/fs-extra@4.0.0", "@types/fs-extra@^4.0.0":
+"@types/fs-extra@4.0.0":
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/@types/fs-extra/-/fs-extra-4.0.0.tgz#1dd742ad5c9bce308f7a52d02ebc01421bc9102f"
+  dependencies:
+    "@types/node" "*"
+
+"@types/fs-extra@5.0.0":
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/@types/fs-extra/-/fs-extra-5.0.0.tgz#d3e225b35eb5c6d3a5a782c28219df365c781413"
   dependencies:
     "@types/node" "*"
 
@@ -2225,9 +2231,9 @@ popsicle@^9.0.0:
     make-error-cause "^1.2.1"
     tough-cookie "^2.0.0"
 
-preferences@1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/preferences/-/preferences-1.0.0.tgz#c29c8427903a742a7951d7ab0886355975f93271"
+preferences@^1.0.0:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/preferences/-/preferences-1.0.2.tgz#50369937c669048a043ca17e444684436efc5945"
   dependencies:
     graceful-fs "^4.1.2"
     js-yaml "^3.10.0"
