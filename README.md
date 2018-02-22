@@ -2,6 +2,7 @@
 ========
 
 [![npm](https://badge.fury.io/js/generaptr.svg)](http://badge.fury.io/js/generaptr) [![Build Status](https://travis-ci.org/generaptr/generaptr.svg)](http://travis-ci.org/generaptr/generaptr) [![Join the chat at https://gitter.im/generaptr/generaptr](https://badges.gitter.im/generaptr/generaptr.svg)](https://gitter.im/generaptr/generaptr?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Coverage Status](https://coveralls.io/repos/github/generaptr/generaptr/badge.svg?branch=master)](https://coveralls.io/github/generaptr/generaptr?branch=master) [![dependencies](https://david-dm.org/cupsadarius/generaptr.svg?theme=shields.io)](https://david-dm.org/cupsadarius/generaptr) [![Greenkeeper badge](https://badges.greenkeeper.io/generaptr/generaptr.svg)](https://greenkeeper.io/)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fgeneraptr%2Fgeneraptr.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fgeneraptr%2Fgeneraptr?ref=badge_shield)
 
 Generaptr is a node package that helps when starting up a project by generating boilerplate code for Express api.
 
@@ -56,8 +57,10 @@ Add documentation for every API change. Feel free to send typo fixes and better 
 
 Copyright (c) 2017 Darius Cupsa (twitter: [@cupsadarius](https://twitter.com/cupsadarius))
 Licensed under the MIT license.
+
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fgeneraptr%2Fgeneraptr.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fgeneraptr%2Fgeneraptr?ref=badge_large)
+
 ## [References](#references)
 <a name="references"></a>
 * [RAML](http://raml.org)
 * [Express.js](https://expressjs.com)
-
