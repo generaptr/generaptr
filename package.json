@@ -60,7 +60,7 @@
   "dependencies": {
     "bunyan": "^1.8.9",
     "chalk": "^2.0.1",
-    "clear": "0.0.1",
+    "clear": "0.1.0",
     "clui": "^0.3.1",
     "faker": "^4.1.0",
     "fs-extra": "^5.0.0",
