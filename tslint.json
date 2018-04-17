@@ -30,8 +30,8 @@
     "max-line-length": [
       false
     ],
+    "no-submodule-imports": [true, "mysql2"],
 
-    // To implement at some point
     "strict-boolean-expressions": false,
     "ban": false,
     "ban-types": false,

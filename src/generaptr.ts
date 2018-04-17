@@ -1,14 +1,18 @@
-import ApiFileOperations from './fieGenerators/api';
-import RamlFileOperations from './fieGenerators/raml';
-import MysqlHandler from './handlers/MysqlHandler';
-import RamlHandler from './handlers/RamlHandler';
+import {default as MySql} from './handlers/mysql/Handler';
+import DataType from './types/DataType';
+import Column from './types/Column';
+import Table from './types/Table';
+import Schema from './types/Schema';
 
-export const operations: {api: Object; raml: Object} = {
-  api: ApiFileOperations,
-  raml: RamlFileOperations,
+export const Types = {
+  DataType,
+  Column,
+  Table,
+  Schema,
 };
 
-export const handlers: {MySql: Object; RAML: Object} = {
-  MySql: MysqlHandler,
-  RAML: RamlHandler,
+export const Handlers = {
+  MySql,
+  Postgres: '',
+  RAML: '',
 };
