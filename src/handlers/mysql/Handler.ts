@@ -100,7 +100,7 @@ export default class Handler implements HandlerInterface<RawMySqlColumn> {
           column
             .setForeignKey(foreignKey)
             .setType(column.getType().setType(toTitleCase(relation.table)))
-            .setName(toColumnName(relation.name));
+            .setName((rows as mysql.RowDataPacket[]).length === relations.length ? relation.name : toColumnName(relation.name));
         }
 
         return column;

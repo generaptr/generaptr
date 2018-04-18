@@ -26,6 +26,7 @@ export default class Parser implements ParserInterface<RawMySqlColumn> {
     
     normalized = this.normalizeOneToOne(normalized);
     normalized = this.normalizeOneToMany(normalized);
+    normalized = this.normalizeManyToMany(normalized);
 
     return schema;
   }
@@ -142,6 +143,49 @@ export default class Parser implements ParserInterface<RawMySqlColumn> {
 
   private normalizeManyToMany(schema: Schema): Schema {
     let normalized: Schema = schema;
+    for (const table of schema.getTables()) {
+      if (!table.isCrossReference()) {
+        continue;
+      }
+      
+      const source: Column = table.getColumns()[0];
+      const target: Column = table.getColumns()[1];
+
+      const sourceColumn: Column = (new Column())
+        .setName(toPlural((source.getForeignKey() as ForeignKey).getTarget().table))
+        .setPrimary(source.isPrimary())
+        .setUnique(source.isUnique())
+        .setNullable(true)
+        .setType(
+          (new DataType())
+            .setIsArray(true)
+            .setType(source.getType().getType())
+        )
+        .setForeignKey(
+          (new ForeignKey())
+            .setType('n-n')
+            .setOwned(true)
+        );
+
+      const targetColumn: Column = (new Column())
+        .setName(toPlural((target.getForeignKey() as ForeignKey).getTarget().table))
+        .setPrimary(target.isPrimary())
+        .setUnique(target.isUnique())
+        .setNullable(true)
+        .setType(
+          (new DataType())
+            .setIsArray(true)
+            .setType(target.getType().getType())
+        )
+        .setForeignKey(
+          (new ForeignKey())
+            .setType('n-n')
+            .setOwned(true)
+        );
+
+      normalized = normalized.addColumnToTable(sourceColumn, (target.getForeignKey() as ForeignKey).getTarget().table);
+      normalized = normalized.addColumnToTable(targetColumn, (source.getForeignKey() as ForeignKey).getTarget().table);
+    }
 
     return normalized;
   }

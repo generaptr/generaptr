@@ -19,7 +19,11 @@ export default class ForeignKey {
    */
   private target: {table: string; column: string};
 
-
+  /**
+   * Holds the source table and column of the relation.
+   *
+   * @property {{column: string;}} source - target table and column
+   */
   private source: {column: string};
 
   /**
