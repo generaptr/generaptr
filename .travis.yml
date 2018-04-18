@@ -10,7 +10,7 @@ notifications:
     on_start: never     
 
 node_js:
-  - "7.5"
+  - "9"
 
 services:
   - mysql
@@ -25,8 +25,6 @@ before_script: greenkeeper-lockfile-update
 script:
   - typings install
   - npm run lint
-  # yarn won't install latest typescript version.
-  - npm install typescript@2.4.2
   - npm run compile
   - npm run test:coverage
 
@@ -34,5 +32,4 @@ after_script: greenkeeper-lockfile-upload
 
 after_success:
   - npm run coveralls
-  - rm -rf ./raml.test
   - rm -rf ./api.test

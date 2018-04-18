@@ -33,9 +33,9 @@ Generaptr is a node package that helps when starting up a project by generating 
 <a name="documentation"></a>
 ### [Minimum Requirements](#minimum-requirements)
 <a name="minimum-requirements"></a>
-The package was developed under `node 7.5` so a minimum requirement would be:
-* `node >= v7.5.0`
-* `npm >= v3.10.10`
+The package was developed under `node 9` so a minimum requirement would be:
+* `node >= v9.0`
+* `npm >= v5.8.0`
 ### [Installation](#instalation)
 <a name="instalation"></a>
 
@@ -56,8 +56,5 @@ Add documentation for every API change. Feel free to send typo fixes and better 
 
 Copyright (c) 2017 Darius Cupsa (twitter: [@cupsadarius](https://twitter.com/cupsadarius))
 Licensed under the MIT license.
-## [References](#references)
-<a name="references"></a>
-* [RAML](http://raml.org)
-* [Express.js](https://expressjs.com)
+
 

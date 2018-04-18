@@ -15,7 +15,7 @@
     "ordered-imports": [false],
     "no-default-export": false,
     "prefer-function-over-method": false,
-    "no-unused-variable": false,
+    "no-unused-variable": true,
     "no-magic-numbers": false,
     "member-ordering": [
       false
