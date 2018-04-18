@@ -1,0 +1,14 @@
+module.exports = (sequelize, DataTypes) => {
+  const {{entity}} = sequelize.define('{{model}}', {
+    {{properties}}
+  }, {
+    tableName: '{{table}}',
+    timestamps: false,
+    underscored: true,
+  });
+
+  {{entity}}.associate = (models) => {
+    {{relations}}
+  };
+  return {{entity}};
+};

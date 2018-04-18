@@ -165,6 +165,7 @@ export default class Parser implements ParserInterface<RawMySqlColumn> {
           (new ForeignKey())
             .setType('n-n')
             .setOwned(true)
+            .setSource({table: table.getName(), column: target.getName()})
         );
 
       const targetColumn: Column = (new Column())
@@ -181,6 +182,7 @@ export default class Parser implements ParserInterface<RawMySqlColumn> {
           (new ForeignKey())
             .setType('n-n')
             .setOwned(true)
+            .setSource({table: table.getName(), column: source.getName()})
         );
 
       normalized = normalized.addColumnToTable(sourceColumn, (target.getForeignKey() as ForeignKey).getTarget().table);

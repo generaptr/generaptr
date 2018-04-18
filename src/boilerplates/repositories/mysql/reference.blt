@@ -1,0 +1,4 @@
+references: {
+  model: '{{model}}',
+  key: '{{column}}'
+},

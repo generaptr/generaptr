@@ -1,0 +1,9 @@
+{{entity}}.belongsToMany(models.{{target}}, {
+  through: {
+    model: models.{{crossReference}},
+    unique: false
+  },
+  foreignKey: '{{column}}',
+  as: '{{property}}',
+  constraints: false
+});

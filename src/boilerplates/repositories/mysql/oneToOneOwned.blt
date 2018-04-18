@@ -1,0 +1,1 @@
+{{entity}}.hasOne(models.{{target}}, {as: '{{property}}'});

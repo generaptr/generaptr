@@ -22,9 +22,9 @@ export default class ForeignKey {
   /**
    * Holds the source table and column of the relation.
    *
-   * @property {{column: string;}} source - target table and column
+   * @property {{table: string; column: string;}} source - target table and column
    */
-  private source: {column: string};
+  private source: {table: string; column: string;};
 
   /**
    * Used in the relation direction definition.
@@ -89,10 +89,10 @@ export default class ForeignKey {
    * Setter for `source` property.
    *
    * @memberOf ForeignKey
-   * @param {{column: string}} source - source table and column
+   * @param {{table: string; column: string;}} source - source table and column
    * @returns {ForeignKey} - instance of ForeignKey
    */
-  public setSource(source: {column: string}): ForeignKey {
+  public setSource(source: {table: string; column: string;}): ForeignKey {
     this.source = source;
 
     return this;
@@ -101,9 +101,9 @@ export default class ForeignKey {
    * Getter for `source` property.
    *
    * @memberOf ForeignKey
-   * @returns {{column: string}} - source column
+   * @returns {{table: string; column: string;}} - source column
    */
-  public getSource(): {column: string} {
+  public getSource(): {table: string; column: string;} {
     return this.source;
   }
 
