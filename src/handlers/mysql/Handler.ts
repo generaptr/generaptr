@@ -6,7 +6,7 @@ import Table from '../../types/Table';
 import Column from '../../types/Column';
 import ForeignKey from '../../types/ForeignKey';
 import { RawMySqlColumn, TableReference } from './types';
-import { toSingular, toTitleCase } from '../../utils/text';
+import { toTitleCase, similarity, toColumnName } from '../../utils/text';
 
 export default class Handler implements HandlerInterface<RawMySqlColumn> {
 
@@ -93,10 +93,14 @@ export default class Handler implements HandlerInterface<RawMySqlColumn> {
         );
         if (relation) {
           const foreignKey: ForeignKey = new ForeignKey();
-          foreignKey.setTarget({table: relation.table, column: relation.column});
-          column.setForeignKey(foreignKey);
-          column.setType(column.getType().setType(toTitleCase(relation.table)));
-          column.setName(toSingular(relation.table));
+          foreignKey
+            .setTarget({table: relation.table, column: relation.column})
+            .setSource({column: relation.name})
+            .setAlias(similarity(column.getName(), relation.table) < 0.5);
+          column
+            .setForeignKey(foreignKey)
+            .setType(column.getType().setType(toTitleCase(relation.table)))
+            .setName(toColumnName(relation.name));
         }
 
         return column;

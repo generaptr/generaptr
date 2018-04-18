@@ -123,4 +123,29 @@ export default class Table {
 
     return this;
   }
+
+  /**
+   * Add column to table.
+   * 
+   * @param {Column} column - column to be added
+   * @returns {Table} - instance of table
+   */
+  public addColumn(column: Column): Table {
+    this.removeColumn(column.getName());
+    this.columns.push(column);
+
+    return this;
+  }
+
+  /**
+   * Removes a column based on it's name.
+   * 
+   * @param name - name of the column to be removed
+   * @returns {Table} - instance of table
+   */
+  public removeColumn(name: string): Table {
+    this.columns = this.columns.filter((column: Column) => column.getName() !== name);
+
+    return this;
+  }
 }

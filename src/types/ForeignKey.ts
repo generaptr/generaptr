@@ -19,6 +19,9 @@ export default class ForeignKey {
    */
   private target: {table: string; column: string};
 
+
+  private source: {column: string};
+
   /**
    * Used in the relation direction definition.
    *
@@ -26,6 +29,12 @@ export default class ForeignKey {
    */
   private owned: boolean = false;
 
+  /**
+   * Used in the checking if source column differes from target table.
+   *
+   * @property {boolean} alias - flag
+   */
+  private alias: boolean = false;
   /**
    * Setter for `type` property.
    *
@@ -73,6 +82,28 @@ export default class ForeignKey {
   }
 
   /**
+   * Setter for `source` property.
+   *
+   * @memberOf ForeignKey
+   * @param {{column: string}} source - source table and column
+   * @returns {ForeignKey} - instance of ForeignKey
+   */
+  public setSource(source: {column: string}): ForeignKey {
+    this.source = source;
+
+    return this;
+  }
+  /** 
+   * Getter for `source` property.
+   *
+   * @memberOf ForeignKey
+   * @returns {{column: string}} - source column
+   */
+  public getSource(): {column: string} {
+    return this.source;
+  }
+
+  /**
    * Setter for `owned` property.
    *
    * @memberOf ForeignKey
@@ -93,5 +124,28 @@ export default class ForeignKey {
    */
   public isOwned(): boolean {
     return this.owned;
+  }
+
+  /**
+   * Setter for `alias` property.
+   *
+   * @memberOf ForeignKey
+   * @param {boolean} alias - true if relation is source column name differes from the target table name.
+   * @returns {ForeignKey} - instance of ForeignKey
+   */
+  public setAlias(alias: boolean): ForeignKey {
+    this.alias = alias;
+
+    return this;
+  }
+
+  /**
+   * Getter for `alias` property.
+   *
+   * @memberOf ForeignKey
+   * @returns {boolean} - relation direction
+   */
+  public isAlias(): boolean {
+    return this.alias;
   }
 }
