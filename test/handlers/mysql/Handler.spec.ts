@@ -24,7 +24,7 @@ describe('MySql Handler', async () => {
       const instance = new Handler({...options, password: 'not-the-right-password'});
       await instance.getSchema();
     } catch (error) {
-      assert.equal(error.message, `Access denied for user 'root'@'172.17.0.1' (using password: YES)`);
+      assert.equal(error.message.indexOf(`Access denied for user`) > -1, true);
     }
   });
 
