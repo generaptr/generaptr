@@ -1,0 +1,51 @@
+const {{instance}}Repository = require('../repositories/{{instance}}Repository');
+
+class {{entity}}Service {
+
+  async save(data) {
+    return await {{instance}}Repository.save(data);
+  }
+
+  async get(id) {
+    const instance = {{instance}}Repository.get(id);
+    if (!instance) {
+      throw new Error(`No {{entity}} found with id: ${id}`);
+    }
+
+    return instance;
+  }
+
+  async getAll(offset = 0, limit = 15) {
+    return {
+      meta: {
+        offset,
+        limit,
+        count: await {{instance}}Repository.count(),
+      },
+      data: await {{instance}}Repository.getAll(Number(offset), Number(limit))
+    };
+  }
+
+  async delete(id) {
+    const exists = await {{instance}}Repository.exists(id);
+  
+    if (!exists) {
+      throw new Error(`No {{entity}} found with id: ${id}`);
+    }
+    await {{instance}}Repository.delete(id);
+
+    return true;
+  }
+
+  async update(id, data) {
+    const exists = await {{instance}}Repository.exists(id);
+   
+    if (!exists) {
+      throw new Error(`No {{entity}} found with id: ${id}`);
+    }
+   
+    return await {{instance}}Repository.update(id, data);
+  }
+}
+
+module.exports = new {{entity}}Service();

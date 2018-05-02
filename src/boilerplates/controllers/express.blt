@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const {{entity}}Service = require('../services/{{entity}}Service');
-const { generateLocationUri } = require('../commons/util');
-const STATUS_CODE = require('../commons/constants/statusCode');
+const { generateLocationUri } = require('../utils');
+const STATUS_CODE = require('../utils/statusCode');
 
 router.post('/', async (request, response) => {
   try {
@@ -12,7 +12,9 @@ router.post('/', async (request, response) => {
       .status(STATUS_CODE.CREATED)
       .end();
   } catch (error) {
-    return response.status(error.status).json(error);
+    return response
+      .status(STATUS_CODE.INTERNAL_SERVER_ERROR)
+      .json({message: error.message});
   }
 });
 
@@ -20,49 +22,59 @@ router.get('/', async (request, response) => {
   try {
     const data = await {{entity}}Service.getAll(request.query.offset, request.query.limit);
     if (!data || data.length === 0) {
-      return response.status(STATUS_CODE.NO_CONTENT).end();
+      return response
+        .status(STATUS_CODE.NO_CONTENT)
+        .end();
     }
     return response
       .status(STATUS_CODE.OK)
       .json(data);
   } catch (error) {
-    return response.status(error.status).json(error);
+    return response
+      .status(STATUS_CODE.INTERNAL_SERVER_ERROR)
+      .json({message: error.message});
   }
 });
 
 router.get('/:id', async (request, response) => {
   {{entity}}Service.get(request.params.id)
     .then(data => {
-      response.status(STATUS_CODE.OK);
-      response.json(data);
+      response
+        .status(STATUS_CODE.OK)
+        .json(data);
     })
-    .catch(err => {
-      response.status(err.status);
-      response.json(err);
+    .catch(error => {
+      response
+        .status(STATUS_CODE.INTERNAL_SERVER_ERROR)
+        .json({message: error.message});
     });
 });
 
 router.delete('/:id', async (request, response) => {
   {{entity}}Service.delete(request.params.id)
     .then(() => {
-      response.status(STATUS_CODE.NO_CONTENT);
-      response.end();
+      response
+        .status(STATUS_CODE.NO_CONTENT)
+        .end();
     })
-    .catch(err => {
-      response.status(err.status);
-      response.json(err);
+    .catch(error => {
+      response
+        .status(STATUS_CODE.INTERNAL_SERVER_ERROR)
+        .json({message: error.message});
     });
 });
 
 router.put('/:id', async (request, response) => {
   {{entity}}Service.update(request.params.id, request.body)
     .then(data => {
-      response.status(STATUS_CODE.OK);
-      response.json(data);
+      response
+        .status(STATUS_CODE.OK)
+        .json(data);
     })
-    .catch(err => {
-      response.status(err.status);
-      response.json(err);
+    .catch(error => {
+      response
+        .status(STATUS_CODE.INTERNAL_SERVER_ERROR)
+        .json({message: error.message});
     });
 });
 

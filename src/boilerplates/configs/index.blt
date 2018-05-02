@@ -26,6 +26,5 @@ module.exports = {
   auth: {
   },
   domain: {
-    web: process.env.WEB_DOMAIN || "{{domain}}",
-  }
+  },
 };
