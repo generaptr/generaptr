@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "noImplicitAny": false,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noUnusedParameters": true,
+    "noUnusedLocals": true,
+    "strictNullChecks": true,
+    "importHelpers": true,
+    "declaration": true,
+    "sourceMap": false,
+    "target": "ES2017",
+    "lib": ["es2017"],
+    "outDir": "../build",
+    "types": [
+      "assert", "faker", "mocha", "node", "pluralize", "bunyan", "fs-extra", "mysql2"
+    ],
+    "typeRoots": ["../typings/globals", "../typings/modules", "../node_modules/@types"]
+  },
+  "include": [
+    "../src/**/*",
+    "**/*"
+  ]
+}

@@ -34,7 +34,7 @@ export const toTitleCase: (word: string) => string = (word: string): string =>
  * @returns {string} eg: user
  */
 export const toColumnName = (word: string): string => {
-    return word.replace(/(?:Id|_id)\b/g, '');
+    return word.replace(/(?:Id|_id|_Id)\b/g, '');
   }
 
 /**

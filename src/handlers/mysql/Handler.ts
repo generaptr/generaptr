@@ -95,7 +95,7 @@ export default class Handler implements HandlerInterface<RawMySqlColumn> {
           const foreignKey: ForeignKey = new ForeignKey();
           foreignKey
             .setTarget({table: relation.table, column: relation.column})
-            .setSource({column: relation.name})
+            .setSource({table: name, column: relation.name})
             .setAlias(similarity(column.getName(), relation.table) < 0.5);
           column
             .setForeignKey(foreignKey)

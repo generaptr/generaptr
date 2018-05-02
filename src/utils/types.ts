@@ -5,5 +5,5 @@
  * @returns {string[]} - array of string values
  */
 export const getValues: (raw?: string) => string[] = (raw?: string): string[] => {
-  return raw ? raw.substring(4).replace(/["'()]/g, '').replace(' ', '').split(',') : [];
+  return raw ? raw.replace(/["'()]/g, '').replace(' ', '').split(',') : [];
 }

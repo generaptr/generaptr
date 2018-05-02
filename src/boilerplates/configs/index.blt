@@ -1,0 +1,31 @@
+let db_host = process.env.DB_HOST || '{{host}}';
+let db_pass = process.env.DB_PASS || '{{password}}';
+let db_user = process.env.DB_USER || '{{user}}';
+let db_port = process.env.DB_PORT || '{{port}}';
+let db_name = process.env.DB_NAME || '{{database}}';
+module.exports = {
+  logger: {
+    source: process.env.LOGGER_SOURCE || 'api',
+    level: process.env.LOGGER_LEVEL || 'trace',
+    env: process.env.APP_ENV || 'dev',
+  },
+  database: {
+    username: db_user,
+    password: db_pass,
+    database: db_name,
+    host: db_host,
+    dialect: "{{dialect}}",
+    port: db_port,
+  },
+  app: {
+    port: process.env.PORT || 80,
+    token: process.env.TOKEN_SECRET || '{{token}}',
+  },
+  mailer: {
+  },
+  auth: {
+  },
+  domain: {
+    web: process.env.WEB_DOMAIN || "{{domain}}",
+  }
+};

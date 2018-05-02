@@ -1,0 +1,33 @@
+const bunyan = require('bunyan');
+const config = require('../configs/index');
+
+// set logger default values based on environment variables
+const log = bunyan.createLogger({
+  name: config.logger.source,
+  level: config.logger.level,
+  env: process.env.APP_ENV || 'dev',
+  streams: [
+    {
+      level: 'trace',
+      stream: process.stdout
+    },
+  ]
+});
+
+// make sure that uncaught exceptions are logged before exiting
+process.on('uncaughtException', function (err) {
+  log.fatal(err, 'Uncaught exception');
+});
+
+process.on('exit', (code) => {
+  log.error({exitCode: code}, `Exiting with status code: ${code}`);
+});
+
+process.on('warning', log.warn);
+
+process.on('unhandledRejection', (reason) => {
+  log.fatal(reason, `Unhandled rejection: ${reason.message}`);
+});
+
+// export the module
+module.exports = log;

@@ -19,7 +19,7 @@ export default class Table {
    *
    * @property {Column[]} name - array of columns
    */
-  private columns: Column[];
+  private columns: Column[] = [];
 
 
   /**

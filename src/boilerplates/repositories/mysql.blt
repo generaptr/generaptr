@@ -1,0 +1,44 @@
+{{imports}}
+
+class {{entyty}}Repository {
+  async get(id) {
+    return await {{entity}}.findOne({where: {id}, include: {{includes}}});
+  }
+
+  async getAll(offset, limit) {
+    return await {{entity}}.findAll({limit, offset, include: {{includes}}});
+  }
+
+  async save(data) {
+    const {id} = await {{entity}}.create(data);
+
+    return id;
+  }
+
+  async find(query) {
+    return await {{entity}}.findAll({...query, include: {{includes}}});
+  }
+
+  async update(id, data) {
+    const entity = await this.get(id);
+    if (!entity) {
+      throw new Error('Entity does not exist');
+    }
+
+    return await {{entity}}.update(data, {where: {id}});
+  }
+
+  async delete(id) {
+    return await {{entity}}.destroy({where: {id}});
+  }
+
+  async exists(id) {
+    reutrn Boolean(await this.get(id));
+  }
+
+  async count() {
+    return await {{entity}}.count();
+  }
+}
+
+module.exports = new {{entity}}Repository();

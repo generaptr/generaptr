@@ -1,0 +1,69 @@
+const router = require('express').Router();
+const {{entity}}Service = require('../services/{{entity}}Service');
+const { generateLocationUri } = require('../commons/util');
+const STATUS_CODE = require('../commons/constants/statusCode');
+
+router.post('/', async (request, response) => {
+  try {
+    const id = await {{entity}}Service.save(request.body);
+
+    return response
+      .header('Location', generateLocationUri(request, id))
+      .status(STATUS_CODE.CREATED)
+      .end();
+  } catch (error) {
+    return response.status(error.status).json(error);
+  }
+});
+
+router.get('/', async (request, response) => {
+  try {
+    const data = await {{entity}}Service.getAll(request.query.offset, request.query.limit);
+    if (!data || data.length === 0) {
+      return response.status(STATUS_CODE.NO_CONTENT).end();
+    }
+    return response
+      .status(STATUS_CODE.OK)
+      .json(data);
+  } catch (error) {
+    return response.status(error.status).json(error);
+  }
+});
+
+router.get('/:id', async (request, response) => {
+  {{entity}}Service.get(request.params.id)
+    .then(data => {
+      response.status(STATUS_CODE.OK);
+      response.json(data);
+    })
+    .catch(err => {
+      response.status(err.status);
+      response.json(err);
+    });
+});
+
+router.delete('/:id', async (request, response) => {
+  {{entity}}Service.delete(request.params.id)
+    .then(() => {
+      response.status(STATUS_CODE.NO_CONTENT);
+      response.end();
+    })
+    .catch(err => {
+      response.status(err.status);
+      response.json(err);
+    });
+});
+
+router.put('/:id', async (request, response) => {
+  {{entity}}Service.update(request.params.id, request.body)
+    .then(data => {
+      response.status(STATUS_CODE.OK);
+      response.json(data);
+    })
+    .catch(err => {
+      response.status(err.status);
+      response.json(err);
+    });
+});
+
+module.exports = router;
