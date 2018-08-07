@@ -3,7 +3,7 @@ const config = require('./configs');
 const router = require('./controllers');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const log = require('../middlewares/log.js');
+const log = require('../middlewares/log');
 
 let app = express();
 

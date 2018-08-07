@@ -60,6 +60,7 @@
     "typings": "^2.1.1"
   },
   "dependencies": {
+    "@types/mustache": "^0.8.31",
     "bunyan": "^1.8.12",
     "faker": "^4.1.0",
     "fs-extra": "^4.0.3",

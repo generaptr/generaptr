@@ -1,24 +1,9 @@
-import {default as MySql} from './handlers/mysql/Handler';
+import * as Handlers from './handlers';
+import * as Types from './types';
+import * as Generators from './generators';
 
-import Schema from './types/Schema';
-import Table from './types/Table';
-import Column from './types/Column';
-import DataType from './types/DataType';
-import ForeignKey from './types/ForeignKey';
-
-export const Types = {
-  Schema,
-  Table,
-  Column,
-  DataType,
-  ForeignKey,
-};
-
-export const Handlers = {
-  MySql,
-};
-
-export default {
+export {
   Handlers,
   Types,
+  Generators,
 };
