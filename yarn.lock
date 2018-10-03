@@ -2,9 +2,9 @@
 # yarn lockfile v1
 
 
-"@types/assert@0.0.31":
-  version "0.0.31"
-  resolved "https://registry.yarnpkg.com/@types/assert/-/assert-0.0.31.tgz#d1f70595a72d02555b7ecd28eb4c68f1b6918d6d"
+"@types/assert@1.4.0":
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/@types/assert/-/assert-1.4.0.tgz#95a469cbb1bb94b21e9deb5fd1939859c613a87f"
 
 "@types/bunyan@^1.8.0":
   version "1.8.0"
