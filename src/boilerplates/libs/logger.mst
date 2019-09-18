@@ -1,5 +1,6 @@
 const bunyan = require('bunyan');
 const config = require('../configs/index');
+const httpContext = require('express-http-context');
 
 // set logger default values based on environment variables
 const log = bunyan.createLogger({
@@ -8,15 +9,22 @@ const log = bunyan.createLogger({
   env: process.env.APP_ENV || 'dev',
   streams: [
     {
-      level: 'trace',
-      stream: process.stdout
+      type: 'raw',
+      level: config.logger.level,
+      stream: (() => ({
+        write: (log) => {
+          log.request_id = httpContext.get('request_id');
+
+          console.log(JSON.stringify(log, bunyan.safeCycles()));
+        }
+      }))()
     },
   ]
 });
 
 // make sure that uncaught exceptions are logged before exiting
-process.on('uncaughtException', function (err) {
-  log.fatal(err, 'Uncaught exception');
+process.on('uncaughtException', (err) => {
+  log.error({err: err.message}, 'Uncaught exception');
 });
 
 process.on('exit', (code) => {
@@ -26,7 +34,7 @@ process.on('exit', (code) => {
 process.on('warning', log.warn);
 
 process.on('unhandledRejection', (reason) => {
-  log.fatal(reason, `Unhandled rejection: ${reason.message}`);
+  log.error(reason, `Unhandled rejection: ${reason.message ? reason.message : reason}`);
 });
 
 // export the module

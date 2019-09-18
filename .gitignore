@@ -11,3 +11,4 @@ typings
 build
 docs
 npm-debug.log
+nyc_output

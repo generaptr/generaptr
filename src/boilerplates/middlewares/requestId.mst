@@ -1,0 +1,9 @@
+const uuid = require('uuid');
+const httpContext = require('express-http-context');
+
+module.exports = (req, res, next) => {
+  req.request_id = uuid.v4();
+  httpContext.set('request_id', req.request_id);
+  
+  next();
+};

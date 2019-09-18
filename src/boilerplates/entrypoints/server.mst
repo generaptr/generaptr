@@ -3,13 +3,14 @@ const config = require('./configs');
 const router = require('./controllers');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const log = require('../middlewares/log');
+const { requestId, log } = require('../middlewares');
 
 let app = express();
 
 app.use(cors({exposedHeaders: ['Location']}));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
+app.use(requestId);
 app.use(log);
 
 app.use('/', router);
