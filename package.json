@@ -71,7 +71,7 @@
     "pluralize": "^8.0.0",
     "preferences": "^1.0.0",
     "raml-1-parser": "^1.1.26",
-    "rimraf": "^2.6.1",
+    "rimraf": "^3.0.0",
     "tslint": "^5.5.0",
     "typedoc": "^0.11.0",
     "typescript": "^2.4.2"
