@@ -10,7 +10,7 @@ notifications:
     on_start: never     
 
 node_js:
-  - "7.5"
+  - "11"
 
 services:
   - mysql
