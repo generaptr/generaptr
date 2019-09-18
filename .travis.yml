@@ -25,8 +25,6 @@ before_script: greenkeeper-lockfile-update
 script:
   - typings install
   - npm run lint
-  # yarn won't install latest typescript version.
-  - npm install typescript@2.4.2
   - npm run compile
   - npm run test:coverage
 
