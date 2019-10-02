@@ -1,4 +1,4 @@
-import MysqlSchemaPreprocessor from '../../src/preprocesors/MysqlSchemaPreprocessor';
+import MysqlSchemaPreprocessor from '../../src/preprocesors/mysqlSchemaPreprocessor';
 import * as assert from 'assert';
 import mocks from '../testUtils/schemaMocks';
 import { MySqlColumnSchema, Column, Schema, Table } from '../../src/commons/types';

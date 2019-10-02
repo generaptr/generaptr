@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import * as mysql from 'mysql2';
-import MysqlHandler from '../../../src/handlers/MysqlHandler';
+import MysqlHandler from '../../../src/handlers/mysqlHandler';
 import config from '../../../src/configs/config';
 import { Schema, Table, TableReference } from '../../../src/commons/types';
 

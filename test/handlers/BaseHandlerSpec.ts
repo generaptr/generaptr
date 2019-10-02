@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import BaseHandler from '../../src/handlers/BaseHandler';
+import BaseHandler from '../../src/handlers/baseHandler';
 import { MySqlColumnSchema } from '../../src/commons/types';
 
 const handler: BaseHandler = new BaseHandler('');

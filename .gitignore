@@ -19,3 +19,4 @@ build
 docs
 tempPublish
 npm-debug.log
+.nyc_output

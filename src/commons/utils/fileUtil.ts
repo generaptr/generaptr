@@ -52,6 +52,7 @@ export class FileUtil {
             await fse.ensureDir(normalizedFilePath);
             resolve(true);
           } catch (ensureDirError) {
+            /* istanbul ignore next */
             reject(ensureDirError);
           }
         } else {

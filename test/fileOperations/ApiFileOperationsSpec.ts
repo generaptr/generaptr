@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import * as fs from 'fs';
 import * as path from 'path';
-import ApiFileOperations from '../../src/fileOperations/ApiFileOperations';
+import ApiFileOperations from '../../src/fileOperations/apiFileOperations';
 import DIRECTORY_STRUCTURE from '../../src/commons/constants/directoryStructure';
 import schemaMocks from '../testUtils/schemaMocks';
 import apiMocks from '../testUtils/apiMocks';

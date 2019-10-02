@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import fileUtil from '../../../src/commons/utils/fileUtil';
 import { ConnectionData } from "../../../src/commons/types";
 import DIRECTORY_STRUCTURE from '../../../src/commons/constants/directoryStructure';
-import ApiFileOperations from '../../../src/fileOperations/ApiFileOperations';
+import ApiFileOperations from '../../../src/fileOperations/apiFileOperations';
 import configurationsFileOperations from '../../../src/fileOperations/api/configurationsFileOperations';
 import apiMocks from '../../testUtils/apiMocks';
 import schemaMocks from '../../testUtils/schemaMocks';

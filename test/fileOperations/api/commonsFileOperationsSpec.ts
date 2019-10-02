@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import * as fs from 'fs';
 import fileUtil from '../../../src/commons/utils/fileUtil';
 import DIRECTORY_STRUCTURE from '../../../src/commons/constants/directoryStructure';
-import ApiFileOperations from '../../../src/fileOperations/ApiFileOperations';
+import ApiFileOperations from '../../../src/fileOperations/apiFileOperations';
 import commonsFileOperations from '../../../src/fileOperations/api/commonsFileOperations';
 import apiMocks from '../../testUtils/apiMocks';
 
