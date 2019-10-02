@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import * as mysql from 'mysql2';
-import MysqlHandler from '../../../src/handlers/MysqlHandler';
+import MysqlHandler from '../../../src/handlers/mysqlHandler';
 import config from '../../../src/configs/config';
 import { Schema, Table, TableReference } from '../../../src/commons/types';
 
@@ -25,7 +25,7 @@ describe('Suite for testing MySqlHandler class', () => {
     try {
       if (handler) {
         handler.getTables().then((tableNames: string[]) => {
-          assert.equal(tableNames.length, 5);
+          assert.strictEqual(tableNames.length, 5);
           done();
         }).catch((err: Error) => {
           console.log(err);
@@ -44,8 +44,8 @@ describe('Suite for testing MySqlHandler class', () => {
       if (handler) {
         handler.getTableSchema('users').then((table: Table) => {
 
-          assert.equal(table.name, 'users');
-          assert.equal(Object.keys(table.columns).length, 4);
+          assert.strictEqual(table.name, 'users');
+          assert.strictEqual(Object.keys(table.columns).length, 4);
 
           done();
         }).catch((err: Error) => {
@@ -66,9 +66,9 @@ describe('Suite for testing MySqlHandler class', () => {
         handler.getRelationsForTable('accounts').then((relations: TableReference[]) => {
           const relation: TableReference | undefined = relations.pop();
           if (relation) {
-            assert.equal(relation.table, 'users');
-            assert.equal(relation.column, 'id');
-            assert.equal(relation.name, 'user_id');
+            assert.strictEqual(relation.table, 'users');
+            assert.strictEqual(relation.column, 'id');
+            assert.strictEqual(relation.name, 'user_id');
           }
           done();
         }).catch((err: Error) => {
@@ -87,15 +87,15 @@ describe('Suite for testing MySqlHandler class', () => {
     try {
       if (handler) {
         handler.readSchema().then((schema: Schema) => {
-          assert.equal(schema.length, 4);
+          assert.strictEqual(schema.length, 4);
 
           const users: Table = schema.filter((table: Table) => table.name === 'users')[0];
           const accounts: Table = schema.filter((table: Table) => table.name === 'accounts')[0];
 
-          assert.equal(users.name, 'users');
-          assert.equal(Object.keys(users.columns).length, 7);
-          assert.equal(accounts.name, 'accounts');
-          assert.equal(Object.keys(accounts.columns).length, 4);
+          assert.strictEqual(users.name, 'users');
+          assert.strictEqual(Object.keys(users.columns).length, 7);
+          assert.strictEqual(accounts.name, 'accounts');
+          assert.strictEqual(Object.keys(accounts.columns).length, 4);
 
           done();
         }).catch((err: Error) => {

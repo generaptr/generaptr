@@ -13,15 +13,14 @@ const SECOND_INDEX: number = 1;
  * MySql schema pre processor.
  *
  * @export
- * @class MysqlSchemaPreprocessor
  */
 export default class MysqlSchemaPreprocessor {
 
   /**
    * Normalize the table schema.
    *
-   * @param {*} columnSchema column schema to be normalized
-   * @returns {{}} normalized column schema
+   * @param  columnSchema column schema to be normalized
+   * @returns  normalized column schema
    */
   public convertToStandardSchema(columnSchema: MySqlColumnSchema): Column {
     const column: Column = {
@@ -47,8 +46,8 @@ export default class MysqlSchemaPreprocessor {
   /**
    * Normalizes all foreign key relations, by creating the respective columns in the target tables.
    *
-   * @param {*} schema db schema
-   * @returns {*} normalized db schema
+   * @param  schema db schema
+   * @returns  normalized db schema
    */
   public normalizeSchemaRelations(schema: Schema): Schema {
     let normalizedSchema: Schema = schema;
@@ -69,8 +68,8 @@ export default class MysqlSchemaPreprocessor {
    * which have unique foreign keys, are not CrossReferenceTables(many to many)
    * and adds the foreign column on both sides of the relation.
    *
-   * @param {*} schema db schema
-   * @returns {*} normalized db schema
+   * @param  schema db schema
+   * @returns  normalized db schema
    */
   private normalizeOneToOneRelations(schema: Schema): Schema {
     let updatedSchema: Schema = schema;
@@ -128,8 +127,8 @@ export default class MysqlSchemaPreprocessor {
    * which have foreign keys, are not CrossReferenceTables(many to many)
    * and adds the foreign column on the holder.
    *
-   * @param {Schema} schema db schema
-   * @returns {Schema} normalized db schema
+   * @param  schema db schema
+   * @returns  normalized db schema
    */
   private normalizeOneToManyRelations(schema: Schema): Schema {
     let updatedSchema: Schema = schema;
@@ -190,8 +189,8 @@ export default class MysqlSchemaPreprocessor {
    * which are CrossReferenceTables(many to many)
    * and adds the foreign columns to the source and target tables.
    *
-   * @param {*} schema db schema
-   * @returns {*} normalized db schema
+   * @param  schema db schema
+   * @returns  normalized db schema
    */
   private normalizeManyToManyRelations(schema: Schema): Schema {
     let updatedSchema: Schema = schema;
@@ -250,8 +249,8 @@ export default class MysqlSchemaPreprocessor {
   /**
    * Strips tables with no columns from schema.
    *
-   * @param {*} schema db schema
-   * @returns {Array<*>} cleaned up schema
+   * @param  schema db schema
+   * @returns cleaned up schema
    */
   private stripEmptyTables(schema: Schema): Schema {
     return schema.filter((table: Table) => Boolean(Object.keys(table.columns).length));
@@ -260,8 +259,8 @@ export default class MysqlSchemaPreprocessor {
   /**
    * Checks if the table has any foreign key columns.
    *
-   * @param {*} table db table
-   * @returns {boolean} checked if it contains foreign keys.
+   * @param  table db table
+   * @returns  checked if it contains foreign keys.
    */
   private tableHasForeignKeys(table: Table): boolean {
     return Boolean(table.columns.filter((column: Column) => column.foreignKey).length);
@@ -270,8 +269,8 @@ export default class MysqlSchemaPreprocessor {
   /**
    * Checks if the table is a cross reference map(association table for many to many relations).
    *
-   * @param {*} table table schema
-   * @returns {boolean} checked if cross reference table.
+   * @param  table table schema
+   * @returns  checked if cross reference table.
    */
   private tableIsCrossReferenceTable(table: Table): boolean {
     return table.columns.filter((column: Column) => column.foreignKey).length === table.columns.length;
@@ -280,10 +279,10 @@ export default class MysqlSchemaPreprocessor {
   /**
    * Adds a column to a table in the schema.
    *
-   * @param {*} schema db schema
-   * @param {string} tableName table in which to add column
-   * @param {*} column column to be added
-   * @returns {Array|*} updated schema
+   * @param  schema db schema
+   * @param  tableName table in which to add column
+   * @param  column column to be added
+   * @returns updated schema
    */
   private addColumnToTable(schema: Schema, tableName: string, column: Column): Schema {
     return this.removeColumnFromTable(schema, tableName, column.name).map((table: Table) => {
@@ -299,10 +298,10 @@ export default class MysqlSchemaPreprocessor {
   /**
    * Removes a column from a table in the schema.
    *
-   * @param {*} schema db schema
-   * @param {string} tableName table from which we need to remove
-   * @param {string} columnName column to be removed
-   * @returns {Array|*} schema with removed column
+   * @param  schema db schema
+   * @param  tableName table from which we need to remove
+   * @param  columnName column to be removed
+   * @returns schema with removed column
    */
   private removeColumnFromTable(schema: Schema, tableName: string, columnName: string): Schema {
     return schema.map((table: Table) => {
@@ -318,8 +317,8 @@ export default class MysqlSchemaPreprocessor {
   /**
    * Remove unused properties from schema.
    *
-   * @param {*} schema db schema
-   * @returns {Array|*} cleaned up db schema
+   * @param  schema db schema
+   * @returns cleaned up db schema
    */
   private cleanupUnusedPropertiesFromColumns(schema: Schema): Schema {
     return schema.map((table: Table) => {

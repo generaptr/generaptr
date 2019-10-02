@@ -8,15 +8,14 @@ import service from '../../generators/api/services/service';
  * Class which implements the logic for service files initializer actions.
  *
  * @export
- * @class ServicesFileOperations
  */
 export class ServicesFileOperations {
 
   /**
    * Initialize services files
-   * @param {string} filePath - file path where api will be generated
-   * @param {Schema} schema - schema information
-   * @return {Promise<boolean[]>} - an array of booleans with created status
+   * @param  filePath - file path where api will be generated
+   * @param  schema - schema information
+   * @return  - an array of booleans with created status
    */
   public async initializeServices(filePath: string, schema: Schema): Promise<boolean[]> {
     const promises: [Promise<boolean>] = [Promise.resolve(true)];

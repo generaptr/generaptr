@@ -1,4 +1,4 @@
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 import { exec } from 'child_process';
 import fileUtil from '../commons/utils/fileUtil';
 import DIRECTORY_STRUCTURE from '../commons/constants/directoryStructure';
@@ -15,18 +15,15 @@ import { PackageJsonInfo, ConnectionData, Schema } from '../commons/types';
  * Class which implements the logic for implementing api generation file related actions.
  *
  * @export
- * @class ApiFileOperations
  */
 export default class ApiFileOperations {
 
   /**
    * Path to the folder where the api will be generated.
    *
-   * @private
-   * @type {string}
    * @memberOf ApiFileOperations
    */
-  private filePath: string;
+  private readonly filePath: string;
 
   public constructor(filePath: string) {
     this.filePath = fileUtil.normalizePath(filePath);
@@ -34,7 +31,7 @@ export default class ApiFileOperations {
 
   /**
    * Create directory structure for the application
-   * @returns {Promise<boolean[]>} created directory structure.
+   * @returns  created directory structure.
    */
   public async createDirectoryStructure(): Promise<boolean[]> {
     const promises: [Promise<boolean>] = [Promise.resolve(true)];
@@ -42,16 +39,17 @@ export default class ApiFileOperations {
     if (!fileUtil.isDirectory(this.filePath)) {
       return Promise.reject('Invalid directory path');
     }
-    Object.keys(DIRECTORY_STRUCTURE.API_STRUCTURE).map((directory: string) => {
-      promises.push(
-        fileUtil.createDirectory(
-          fileUtil.joinPaths(
-            this.filePath,
-            DIRECTORY_STRUCTURE.API_STRUCTURE[directory],
+    Object.keys(DIRECTORY_STRUCTURE.API_STRUCTURE)
+      .map((directory: string) => {
+        promises.push(
+          fileUtil.createDirectory(
+            fileUtil.joinPaths(
+              this.filePath,
+              DIRECTORY_STRUCTURE.API_STRUCTURE[directory],
+            ),
           ),
-        ),
-      );
-    });
+        );
+      });
 
     return Promise.all(promises);
   }
@@ -59,9 +57,9 @@ export default class ApiFileOperations {
   /**
    * Creates package json
    *
-   * @param {PackageJsonInfo} options - package json options
-   * @param {string} dialect - database dialect
-   * @returns {Promise<boolean>} created package json
+   * @param options - package json options
+   * @param dialect - database dialect
+   * @returns created package json
    */
   public async createPackageJson(options: PackageJsonInfo, dialect: string): Promise<boolean> {
     console.log(`running: ${chalk.green('initialize package.json')}`);
@@ -75,8 +73,8 @@ export default class ApiFileOperations {
   /**
    * Install dependencies for api stub
    *
-   * @param {string} dialect database type
-   * @return {Promise<boolean>} installed dependencies
+   * @param dialect database type
+   * @return installed dependencies
    */
   public async installDependencies(dialect: string): Promise<boolean> {
     return new Promise<boolean>((resolve: (value: boolean) => void, reject: (reason: Error) => void): void => {
@@ -106,8 +104,8 @@ export default class ApiFileOperations {
   /**
    * Initialize ODM
    *
-   * @param {string} dialect database dialect
-   * @returns {Promise<boolean>} initialized orm
+   * @param dialect database dialect
+   * @returns initialized orm
    */
   public async initializeORM(dialect: string): Promise<boolean> {
     switch (dialect) {
@@ -121,9 +119,9 @@ export default class ApiFileOperations {
 
   /**
    * Generate config
-   * @param {ConnectionData} connection - connection info
-   * @param {Schema} schema - database schema tables
-   * @returns {Promise<boolean[]>} - true if generated config
+   * @param connection - connection info
+   * @param schema - database schema tables
+   * @returns  - true if generated config
    * @memberOf ApiFileOperations
    */
   public async initializeConfig(connection: ConnectionData, schema: Schema): Promise<boolean[]> {
@@ -142,7 +140,6 @@ export default class ApiFileOperations {
 
   /**
    * Initialize commons
-   * @return {Promise<boolean[]>}
    */
   public async initializeCommons(): Promise<boolean[]> {
     console.log(`running: ${chalk.green('initialize src/commons')}`);
@@ -156,9 +153,9 @@ export default class ApiFileOperations {
   /**
    * Initialize ODM
    *
-   * @param {string} dialect database dialect
-   * @param {Schema} schema source schema for api generation
-   * @returns {Promise<boolean[]>} initialized odm
+   * @param dialect database dialect
+   * @param schema source schema for api generation
+   * @returns  initialized odm
    */
   public async initializeModels(dialect: string, schema: Schema): Promise<boolean[]> {
     console.log(`running: ${chalk.green(`initialize src/models for ${dialect}`)}`);
@@ -174,9 +171,9 @@ export default class ApiFileOperations {
   /**
    * Initialize Repositories
    *
-   * @param {string} dialect database dialect
-   * @param {Schema} schema source schema for api generation
-   * @returns {Promise<boolean[]>} initialized repositories
+   * @param dialect database dialect
+   * @param schema source schema for api generation
+   * @returns  initialized repositories
    */
   public async initializeRepositories(dialect: string, schema: Schema): Promise<boolean[]> {
     console.log(`running: ${chalk.green(`initialize src/repositories for ${dialect}`)}`);
@@ -191,8 +188,6 @@ export default class ApiFileOperations {
 
   /**
    * Initialize Services
-   * @param schema
-   * @return {Promise<Promise<boolean[]>>}
    */
   public async initializeServices(schema: Schema): Promise<boolean[]> {
     console.log(`running: ${chalk.green('initialize src/services')}`);
@@ -202,8 +197,6 @@ export default class ApiFileOperations {
 
   /**
    * Initialize Controllers
-   * @param schema
-   * @return {Promise<boolean[]>}
    */
   public async initializeControllers(schema: Schema): Promise<boolean[]> {
     console.log(`running: ${chalk.green('initialize src/controllers')}`);
@@ -214,8 +207,8 @@ export default class ApiFileOperations {
   /**
    * Get required dependencies based on database type
    *
-   * @param {string} databaseType database type
-   * @return {string} required dependencies for the database type
+   * @param databaseType database type
+   * @return required dependencies for the database type
    */
   private getDependenciesForDb(dialect: string): string {
     switch (dialect) {
@@ -231,7 +224,7 @@ export default class ApiFileOperations {
   /**
    * Returns file path.
    *
-   * @returns {string} file path
+   * @returns file path
    */
   public getFilePath(): string {
     return this.filePath;

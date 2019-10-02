@@ -8,15 +8,13 @@ import { Schema, Table } from "../../commons/types";
  * Class which generates all controller files
  *
  * @export
- * @class ControllersFileOperations
  */
 export class ControllersFileOperations {
 
   /**
    * Initialize all controller files
-   * @param {String} filePath - file path where api will be generated
-   * @param {Schema} schema -
-   * @return {Promise<boolean[]>}
+   * @param  filePath - file path where api will be generated
+   * @param  schema -
    */
   public async initializeControllers(filePath: string, schema: Schema): Promise<boolean[]> {
     const promises: [Promise<boolean>] = [Promise.resolve(true)];

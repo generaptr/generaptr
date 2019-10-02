@@ -1,6 +1,0 @@
-{
-  "name": "generaptr",
-  "devDependencies": {
-    "mysql2": "registry:npm/mysql2#1.1.1+20170314181009"
-  }
-}

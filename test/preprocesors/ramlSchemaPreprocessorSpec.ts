@@ -1,4 +1,4 @@
-import RamlSchemaPreprocessor from '../../src/preprocesors/RamlSchemaPreprocessor';
+import RamlSchemaPreprocessor from '../../src/preprocesors/ramlSchemaPreprocessor';
 import * as assert from 'assert';
 import { RamlColumnSchema, Column } from '../../src/commons/types';
 const preProcessor: RamlSchemaPreprocessor = new RamlSchemaPreprocessor();
@@ -9,17 +9,17 @@ describe('Suite for testing RamlPreProcessor class', () => {
       name: 'users',
       displayName: 'users',
       typePropertyKind: 'TYPE_EXPRESSION',
-      type: [ 'array' ],
+      type: ['array'],
       required: false,
       items: 'User',
     };
     const processed: Column = preProcessor.convertToStandardSchema(colSchema);
-    assert.equal(processed.name, 'users');
-    assert.equal(processed.primary, false);
-    assert.equal(processed.allowNull, true);
-    assert.equal(processed.unique, false);
-    assert.equal(processed.dataType.type, 'User');
-    assert.equal(processed.dataType.isArray, true);
+    assert.strictEqual(processed.name, 'users');
+    assert.strictEqual(processed.primary, false);
+    assert.strictEqual(processed.allowNull, true);
+    assert.strictEqual(processed.unique, false);
+    assert.strictEqual(processed.dataType.type, 'User');
+    assert.strictEqual(processed.dataType.isArray, true);
   });
 
   it('should convert enum column to valid schema', () => {
@@ -27,19 +27,19 @@ describe('Suite for testing RamlPreProcessor class', () => {
       name: 'active',
       displayName: 'active',
       typePropertyKind: 'TYPE_EXPRESSION',
-      type: [ 'Yes | No' ],
+      type: ['Yes | No'],
       required: false,
       items: '',
     };
     const processed: Column = preProcessor.convertToStandardSchema(colSchema);
-    assert.equal(processed.name, 'active');
-    assert.equal(processed.primary, false);
-    assert.equal(processed.allowNull, true);
-    assert.equal(processed.unique, false);
-    assert.equal(processed.dataType.type, 'enum');
-    assert.equal(processed.dataType.isArray, false);
+    assert.strictEqual(processed.name, 'active');
+    assert.strictEqual(processed.primary, false);
+    assert.strictEqual(processed.allowNull, true);
+    assert.strictEqual(processed.unique, false);
+    assert.strictEqual(processed.dataType.type, 'enum');
+    assert.strictEqual(processed.dataType.isArray, false);
     if (processed.dataType.values) {
-      assert.equal(processed.dataType.values.length, 2);
+      assert.strictEqual(processed.dataType.values.length, 2);
     } else {
       assert.fail('values not proceesed');
     }
@@ -50,17 +50,17 @@ describe('Suite for testing RamlPreProcessor class', () => {
       name: 'id',
       displayName: 'id',
       typePropertyKind: 'TYPE_EXPRESSION',
-      type: [ 'number' ],
+      type: ['number'],
       required: true,
       items: '',
     };
     const processed: Column = preProcessor.convertToStandardSchema(colSchema);
-    assert.equal(processed.name, 'id');
-    assert.equal(processed.primary, true);
-    assert.equal(processed.allowNull, false);
-    assert.equal(processed.unique, true);
-    assert.equal(processed.dataType.type, 'number');
-    assert.equal(processed.dataType.isArray, false);
+    assert.strictEqual(processed.name, 'id');
+    assert.strictEqual(processed.primary, true);
+    assert.strictEqual(processed.allowNull, false);
+    assert.strictEqual(processed.unique, true);
+    assert.strictEqual(processed.dataType.type, 'number');
+    assert.strictEqual(processed.dataType.isArray, false);
   });
 
   it('should cover empty type when converting to standard schema', () => {
@@ -73,11 +73,11 @@ describe('Suite for testing RamlPreProcessor class', () => {
       items: '',
     };
     const processed: Column = preProcessor.convertToStandardSchema(colSchema);
-    assert.equal(processed.name, 'id');
-    assert.equal(processed.primary, true);
-    assert.equal(processed.allowNull, false);
-    assert.equal(processed.unique, true);
-    assert.equal(processed.dataType.type, '');
-    assert.equal(processed.dataType.isArray, false);
+    assert.strictEqual(processed.name, 'id');
+    assert.strictEqual(processed.primary, true);
+    assert.strictEqual(processed.allowNull, false);
+    assert.strictEqual(processed.unique, true);
+    assert.strictEqual(processed.dataType.type, '');
+    assert.strictEqual(processed.dataType.isArray, false);
   });
 });

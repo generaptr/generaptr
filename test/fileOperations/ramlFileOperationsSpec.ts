@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import * as fs from 'fs';
 import * as path from 'path';
-import RamlFileOperations from '../../src/fileOperations/RamlFileOperations';
+import RamlFileOperations from '../../src/fileOperations/ramlFileOperations';
 import DIRECTORY_STRUCTURE from '../../src/commons/constants/directoryStructure';
 import typesGenerator from '../../src/generators/spec/types';
 import utils from '../../src/commons/utils/utils';
@@ -44,7 +44,7 @@ describe('Suite for testing RamlFileOperation class', () => {
         done();
       })
       .catch((exception: Error) => {
-        assert.equal(exception, 'Invalid directory path');
+        assert.strictEqual(exception, 'Invalid directory path');
         done();
       });
   });
@@ -64,7 +64,7 @@ describe('Suite for testing RamlFileOperation class', () => {
               if (err) {
                 assert.fail(err.message);
               }
-              assert.equal(stat.isDirectory(), true);
+              assert.strictEqual(stat.isDirectory(), true);
             });
         });
       })
@@ -77,8 +77,8 @@ describe('Suite for testing RamlFileOperation class', () => {
     const ramlFileOperations: RamlFileOperations = new RamlFileOperations('raml.test');
 
     ramlFileOperations.createDirectoryStructure()
-      .then(async () => ramlFileOperations.generateSchemaTypeFiles([table]))
-      .then(async () => {
+      .then(() => ramlFileOperations.generateSchemaTypeFiles([table]))
+      .then(() => {
         fs.readFile(
           path.join(
             ramlFileOperations.getFilePath(),
@@ -88,7 +88,7 @@ describe('Suite for testing RamlFileOperation class', () => {
           (err: Error, data: Buffer) => {
             assert.ifError(err);
             assert(data, 'Content should not be empty');
-            assert.equal(data, typesGenerator.generateTypeContent(table), 'Content should be the same');
+            assert.strictEqual(data.toString('ascii'), typesGenerator.generateTypeContent(table), 'Content should be the same');
 
             done();
           });
@@ -102,8 +102,8 @@ describe('Suite for testing RamlFileOperation class', () => {
   it('should create entity.json files', (done: Function) => {
     const ramlFileOperations: RamlFileOperations = new RamlFileOperations('raml.test');
     ramlFileOperations.createDirectoryStructure()
-      .then(async () => ramlFileOperations.generateSchemaExampleFiles(schema))
-      .then(async () => {
+      .then(() => ramlFileOperations.generateSchemaExampleFiles(schema))
+      .then(() => {
         fs.readFile(
           path.join(
             ramlFileOperations.getFilePath(),
@@ -113,7 +113,7 @@ describe('Suite for testing RamlFileOperation class', () => {
           (err: Error, data: Buffer) => {
             assert.ifError(err);
             assert(data, 'Content should not be empty');
-            assert.equal(
+            assert.strictEqual(
               Object.keys(JSON.parse(data.toString())).length,
               schema[0].columns.length,
               'Number of attributes should be the same',
@@ -133,9 +133,9 @@ describe('Suite for testing RamlFileOperation class', () => {
     const ramlFileOperations: RamlFileOperations = new RamlFileOperations('raml.test');
 
     ramlFileOperations.createDirectoryStructure()
-      .then(async () => ramlFileOperations.generateSchemaExampleFiles(schema))
-      .then(async () => ramlFileOperations.generateSchemaExamplesFilesFromCache())
-      .then(async () => {
+      .then(() => ramlFileOperations.generateSchemaExampleFiles(schema))
+      .then(() => ramlFileOperations.generateSchemaExamplesFilesFromCache())
+      .then(() => {
         fs.readFile(
           path.join(
             ramlFileOperations.getFilePath(),
@@ -145,10 +145,10 @@ describe('Suite for testing RamlFileOperation class', () => {
           (err: Error, data: Buffer) => {
             assert.ifError(err);
             assert(data, 'Countent should not be empty');
-            assert.equal(JSON.parse(data.toString()).length, 2, 'Number of entities should be 2');
+            assert.strictEqual(JSON.parse(data.toString()).length, 2, 'Number of entities should be 2');
 
             for (const entity of JSON.parse(data.toString())) {
-              assert.equal(Object.keys(entity).length, 4, 'Number of attributes for every entity should be 4');
+              assert.strictEqual(Object.keys(entity).length, 4, 'Number of attributes for every entity should be 4');
             }
           });
 
@@ -164,10 +164,10 @@ describe('Suite for testing RamlFileOperation class', () => {
     const ramlFileOperations: RamlFileOperations = new RamlFileOperations('raml.test');
 
     ramlFileOperations.generateSchemaApiFiles(
-      [{name: 'users', columns: []}],
-      {name: 'Test Test', version: 'v1', url: '/', output: ramlFileOperations.getFilePath()},
+      [{ name: 'users', columns: [] }],
+      { name: 'Test Test', version: 'v1', url: '/', output: ramlFileOperations.getFilePath() },
     )
-      .then(async () => {
+      .then(() => {
         fs.readFile(
           path.join(ramlFileOperations.getFilePath(), 'api.raml'), (err: Error, data: Buffer) => {
             assert.ifError(err);

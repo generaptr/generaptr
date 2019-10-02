@@ -6,15 +6,14 @@ import { RamlColumnSchema, Column, Schema, Table } from '../commons/types';
  * Raml schema pre processor.
  *
  * @export
- * @class RamlSchemaPreprocessor
  */
 export default class RamlSchemaPreprocessor {
 
   /**
    * Normalize the table schema.
    *
-   * @param {RamlColumnSchema} columnSchema column schema to be normalized
-   * @returns {Column} normalized column schema
+   * @param columnSchema column schema to be normalized
+   * @returns  normalized column schema
    */
   public convertToStandardSchema(columnSchema: RamlColumnSchema): Column {
     return {
@@ -32,8 +31,8 @@ export default class RamlSchemaPreprocessor {
   /**
    * Normalize schema relations.
    *
-   * @param {Schema} schema - schema which needs to be normalized
-   * @returns {Schema} normalized schema
+   * @param  schema - schema which needs to be normalized
+   * @returns  normalized schema
    */
   public normalizeSchemaRelations(schema: Schema): Schema {
     let normalizedSchema: Schema = schema;
@@ -48,20 +47,20 @@ export default class RamlSchemaPreprocessor {
   /**
    * Adds the relation type to schema.
    *
-   * @param {Schema} schema - schema which needs normalization
-   * @return {Schema} normalized schema
+   * @param  schema - schema which needs normalization
+   * @return  normalized schema
    */
   private normalizeOneToOneRelation(schema: Schema): Schema {
     const updatedSchema: Schema = schema;
     updatedSchema.map((table: Table) => {
       table.columns.map((column: Column) => {
         if (
-            !column.allowNull &&
-            !column.dataType.isArray &&
-            schemaUtil.isCircularRelation(table, column, schema) &&
-            !schemaUtil.circularRelationIsRequired(table, column, schema) &&
-            !schemaUtil.circularRelationIsArray(table, column, schema) &&
-            !typeUtil.isDefaultType(column.dataType.type)
+          !column.allowNull &&
+          !column.dataType.isArray &&
+          schemaUtil.isCircularRelation(table, column, schema) &&
+          !schemaUtil.circularRelationIsRequired(table, column, schema) &&
+          !schemaUtil.circularRelationIsArray(table, column, schema) &&
+          !typeUtil.isDefaultType(column.dataType.type)
         ) {
           column.dataType.relationType = '1-1';
         } else if (
@@ -71,10 +70,10 @@ export default class RamlSchemaPreprocessor {
           schemaUtil.circularRelationIsRequired(table, column, schema) &&
           !schemaUtil.circularRelationIsArray(table, column, schema) &&
           !typeUtil.isDefaultType(column.dataType.type)
-      ) {
-        column.dataType.relationType = '1-1';
-        column.dataType.isRelationHolder = true;
-      }
+        ) {
+          column.dataType.relationType = '1-1';
+          column.dataType.isRelationHolder = true;
+        }
 
         return column;
       });
@@ -88,20 +87,20 @@ export default class RamlSchemaPreprocessor {
   /**
    * Adds the relation type to schema.
    *
-   * @param {Schema} schema - schema which needs normalization
-   * @return {Schema} normalized schema
+   * @param  schema - schema which needs normalization
+   * @return  normalized schema
    */
   private normalizeOneToManyRelation(schema: Schema): Schema {
     const updatedSchema: Schema = schema;
     updatedSchema.map((table: Table) => {
       table.columns.map((column: Column) => {
         if (
-            column.allowNull &&
-            column.dataType.isArray &&
-            schemaUtil.isCircularRelation(table, column, schema) &&
-            schemaUtil.circularRelationIsRequired(table, column, schema) &&
-            !schemaUtil.circularRelationIsArray(table, column, schema) &&
-            !typeUtil.isDefaultType(column.dataType.type)
+          column.allowNull &&
+          column.dataType.isArray &&
+          schemaUtil.isCircularRelation(table, column, schema) &&
+          schemaUtil.circularRelationIsRequired(table, column, schema) &&
+          !schemaUtil.circularRelationIsArray(table, column, schema) &&
+          !typeUtil.isDefaultType(column.dataType.type)
         ) {
           column.dataType.relationType = '1-n';
           column.dataType.isRelationHolder = true;
@@ -128,20 +127,20 @@ export default class RamlSchemaPreprocessor {
   /**
    * Adds the relation type to schema.
    *
-   * @param {Schema} schema - schema which needs normalization
-   * @return {Schema} normalized schema
+   * @param  schema - schema which needs normalization
+   * @return  normalized schema
    */
   private normalizeManyToManyRelation(schema: Schema): Schema {
     const updatedSchema: Schema = schema;
     updatedSchema.map((table: Table) => {
       table.columns.map((column: Column) => {
         if (
-            column.allowNull &&
-            column.dataType.isArray &&
-            schemaUtil.isCircularRelation(table, column, schema) &&
-            schemaUtil.circularRelationIsArray(table, column, schema) &&
-            !schemaUtil.circularRelationIsRequired(table, column, schema) &&
-            !typeUtil.isDefaultType(column.dataType.type)
+          column.allowNull &&
+          column.dataType.isArray &&
+          schemaUtil.isCircularRelation(table, column, schema) &&
+          schemaUtil.circularRelationIsArray(table, column, schema) &&
+          !schemaUtil.circularRelationIsRequired(table, column, schema) &&
+          !typeUtil.isDefaultType(column.dataType.type)
         ) {
           column.dataType.relationType = 'n-n';
           column.dataType.isRelationHolder = true;

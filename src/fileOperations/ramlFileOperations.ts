@@ -12,17 +12,12 @@ import { Schema, Table, RAMLApplicationInfo, Example } from '../commons/types';
  * Class which implements the logic for implementing raml generation file related actions.
  *
  * @export
- * @class RamlFileOperations
  */
 export default class RamlFileOperations {
   /**
    * Path to the folder where the raml will be generated.
-   *
-   * @private
-   * @type {string}
-   * @memberof ApiFileOperations
    */
-  private filePath: string;
+  private readonly filePath: string;
 
   public constructor(filePath: string) {
     this.filePath = fileUtil.normalizePath(filePath);
@@ -30,7 +25,7 @@ export default class RamlFileOperations {
 
   /**
    * Create directory structure for the application
-   * @returns {Promise<boolean[]>} created directory structure.
+   * @returns  created directory structure.
    */
   public async createDirectoryStructure(): Promise<boolean[]> {
     const promises: [Promise<boolean>] = [Promise.resolve(true)];
@@ -54,8 +49,8 @@ export default class RamlFileOperations {
 
   /**
    * Create .raml type file for every table inside schema
-   * @param {Schema} schema - schema tables(list of tables)
-   * @returns {Promise.<boolean[]>} generated type files.
+   * @param  schema - schema tables(list of tables)
+   * @returns generated type files.
    */
   public async generateSchemaTypeFiles(schema: Schema): Promise<boolean[]> {
     const promises: [Promise<boolean>] = [Promise.resolve(true)];
@@ -79,9 +74,9 @@ export default class RamlFileOperations {
   /**
    * Generate api.raml spec for the whole api.
    *
-   * @param {Schema} schema - database schema
-   * @param {RAMLApplicationInfo} options - application info
-   * @returns {Promise<boolean>} - true if spec generated
+   * @param  schema - database schema
+   * @param options - application info
+   * @returns  - true if spec generated
    */
   public async generateSchemaApiFiles(schema: Schema, options: RAMLApplicationInfo): Promise<boolean> {
     return fileUtil.writeFile(
@@ -93,8 +88,8 @@ export default class RamlFileOperations {
   /**
    * Generate .json entity for every table from schema.
    * File will be saved on path: ./raml/types/entityName.json
-   * @param {Schema} schema - schema containing tables.
-   * @return {Promise.<boolean[]>} generated examle files.
+   * @param  schema - schema containing tables.
+   * @return generated examle files.
    */
   public async generateSchemaExampleFiles(schema: Schema): Promise<boolean[]> {
     const promises: [Promise<boolean>] = [Promise.resolve(true)];
@@ -123,7 +118,7 @@ export default class RamlFileOperations {
 
   /**
    * Generate .json Array entity for every array of objects saved in cache
-   * @return {Promise.<boolean[]>} generated example files.
+   * @return  generated example files.
    */
   public async generateSchemaExamplesFilesFromCache(): Promise<boolean[]> {
     const promises: [Promise<boolean>] = [Promise.resolve(true)];
@@ -154,7 +149,7 @@ export default class RamlFileOperations {
   /**
    * Returns file path.
    *
-   * @returns {string} file path
+   * @returns  file path
    */
   public getFilePath(): string {
     return this.filePath;

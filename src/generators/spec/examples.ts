@@ -9,18 +9,14 @@ import { Schema, Table, Column, Example, Everything } from '../../commons/types'
  * Class which holds the logic for generating example data.
  *
  * @export
- * @class ExamplesGenerator
  */
 export class ExamplesGenerator {
 
   /**
    * Array of default raml types supported.
    *
-   * @private
-   * @type {string[]}
-   * @memberof ExamplesGenerator
    */
-  private defaultRamlTypes: string[] = [
+  private readonly defaultRamlTypes: string[] = [
     'number', 'boolean', 'string', 'date-only', 'datetime',
     'time-only', 'datetime-only', 'file', 'nil', 'union', 'enum',
   ];
@@ -28,18 +24,15 @@ export class ExamplesGenerator {
   /**
    * Key used in storing and searching for cached elements.
    *
-   * @public
-   * @type {string}
-   * @memberof ExamplesGenerator
    */
   public PRIME_KEY: string = 'raml';
 
   /**
    * Generate type example for a certain table
-   * @param {*} schema - entire collection of tables
-   * @param {*} table - table information
-   * @param {int} depthLevel - columns depth level to be computed
-   * @return {Example} object containing - type name(with titleCase)
+   * @param  schema - entire collection of tables
+   * @param  table - table information
+   * @param  depthLevel - columns depth level to be computed
+   * @return  object containing - type name(with titleCase)
    *                                       - table content object to be stringified
    */
   public generateTypeExampleContent(schema: Schema, table: Table, depthLevel: number): Example {

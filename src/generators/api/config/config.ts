@@ -2,12 +2,11 @@
  * Class which generated string content for configuration file (based on env variable)
  *
  * @export
- * @class Config
  */
 export class Config {
   /**
    * Generate config file string content based on env variable
-   * @return {string} - string generated content
+   * @return  - string generated content
    */
   public getConfig(): string {
     return `module.exports = {
@@ -24,7 +23,7 @@ export class Config {
 
   /**
    * Generate index file string content from /config folder which returns Environment variables by ENV key
-   * @return {string} - string generated content
+   * @return  - string generated content
    */
   public getEnvBasedConfig(): string {
     return `const config = require('./config');

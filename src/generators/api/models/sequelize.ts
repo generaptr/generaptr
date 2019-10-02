@@ -6,15 +6,13 @@ import { ConnectionData, SequleizeConfig, Schema, Table, Column, DataType } from
  * Class which implements the logic for generating valid sequelize files.
  *
  * @export
- * @class SequelizeModelGenerator
  */
 export default class SequelizeModelGenerator {
 
   /**
    * Returns the string version of the code which will manage the sequelzie models.
    *
-   * @returns {string} - sequelize models registry
-   * @memberof SequelizeModelGenerator
+   * @returns  - sequelize models registry
    */
   public getModelsRegistry(): string {
     return `'use strict';
@@ -55,9 +53,8 @@ module.exports = db;
   /**
    * Returns the sequelize config
    *
-   * @param {ConnectionData} connection - connection data
-   * @returns {string} - connection string
-   * @memberof SequelizeModelGenerator
+   * @param  connection - connection data
+   * @returns  - connection string
    */
   public getConfig(connection: ConnectionData): string {
     const config: SequleizeConfig = {
@@ -87,11 +84,10 @@ module.exports = db;
   /**
    * Generate models for a given schema.
    *
-   * @param {Schema} schema - api schema
-   * @return {{name: string, content: string}[]}
+   * @param  schema - api schema
    */
-  public getModels(schema: Schema): {name: string; content: string}[] {
-    const models: {name: string; content: string}[] = [];
+  public getModels(schema: Schema): { name: string; content: string }[] {
+    const models: { name: string; content: string }[] = [];
     schema.forEach((table: Table) => {
       models.push({
         name: `${utils.toTitleCase(table.name)}.js`,
@@ -105,8 +101,8 @@ module.exports = db;
   /**
    * Generate contents for each model based on the table schema.
    *
-   * @param {Table} table - source
-   * @return {string} content of sequelize model as string.
+   * @param  table - source
+   * @return  content of sequelize model as string.
    */
   private getModelForTable(table: Table): string {
     return `module.exports = (sequelize, DataTypes) => {
@@ -126,8 +122,8 @@ ${this.getRelations(table)}
 
   /**
    * Generate contents for the basic data types.
-   * @param {Table} table - source
-   * @return {string} generated content.
+   * @param  table - source
+   * @return  generated content.
    */
   private getBasicDataTypes(table: Table): string {
     let dataTypes: string = '';
@@ -150,8 +146,8 @@ ${this.getRelations(table)}
 
   /**
    * Returns the string version of the sequelize type.
-   * @param {DataType} type source
-   * @return {string} sequelize type
+   * @param  type source
+   * @return  sequelize type
    */
   private getType(type: DataType): string {
     switch (type.type) {
@@ -169,8 +165,8 @@ ${this.getRelations(table)}
 
   /**
    * Generate association methods for types.
-   * @param {Table} table source
-   * @return {string} - generated content
+   * @param  table source
+   * @return  - generated content
    */
   private getRelations(table: Table): string {
     const modelName: string = utils.toTitleCase(table.name);
@@ -180,23 +176,23 @@ ${this.getRelations(table)}
         case '1-1': {
           if (column.dataType.isRelationHolder) {
             return `    ${modelName}.hasOne(models.${column.dataType.type.toLowerCase()}, {as: '${column.name}'});`;
-          } else {
-            return `    ${modelName}.belongsTo(models.${column.dataType.type.toLowerCase()}, {as: '${column.name}'});`;
           }
+
+          return `    ${modelName}.belongsTo(models.${column.dataType.type.toLowerCase()}, {as: '${column.name}'});`;
         }
         case '1-n': {
           if (column.dataType.isRelationHolder) {
             return `    ${modelName}.hasMany(models.${column.dataType.type.toLowerCase()}, {as: '${column.name}'});`;
-          } else {
-            return `    ${modelName}.belongsTo(models.${column.dataType.type.toLowerCase()}, {as: '${column.name}'});`;
           }
+
+          return `    ${modelName}.belongsTo(models.${column.dataType.type.toLowerCase()}, {as: '${column.name}'});`;
         }
         case 'n-n': {
           if (modelName.localeCompare(column.dataType.type) > 0) {
             return `    ${modelName}.belongsToMany(models.${column.dataType.type.toLowerCase()}, {through: '${utils.pluralize(modelName).toLowerCase()}_${utils.pluralize(column.dataType.type).toLowerCase()}', as: '${column.name}'});`;
-          } else {
-            return `    ${modelName}.belongsToMany(models.${column.dataType.type.toLowerCase()}, {through: '${utils.pluralize(column.dataType.type).toLowerCase()}_${utils.pluralize(modelName).toLowerCase()}', as: '${column.name}'});`;
           }
+
+          return `    ${modelName}.belongsToMany(models.${column.dataType.type.toLowerCase()}, {through: '${utils.pluralize(column.dataType.type).toLowerCase()}_${utils.pluralize(modelName).toLowerCase()}', as: '${column.name}'});`;
         }
         default:
           return '';

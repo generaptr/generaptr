@@ -5,14 +5,13 @@ import utils from '../../../commons/utils/utils';
  * Class which generates string content for router.js configuration file
  *
  * @export
- * @class Router
  */
 export class Router {
 
   /**
    * Generate router.js content file
    * @param schema - database schema definition
-   * @return {string} - string generated content
+   * @return  - string generated content
    */
   public getRouterConfig(schema: Schema): string {
     return `const router = require('express').Router();
@@ -24,8 +23,8 @@ module.exports = router;`;
 
   /**
    * Generate controllers imports data
-   * @param {Schema} schema - tables array
-   * @return {string} - multiple lines data
+   * @param  schema - tables array
+   * @return  - multiple lines data
    */
   private generateImportControllersData(schema: Schema): string {
     let importData: string = '';
@@ -42,8 +41,8 @@ module.exports = router;`;
 
   /**
    * Generate router.use data for every schema table
-   * @param {Schema] schema - tables array
-   * @return {string} - multiple lines data, each line having one router.use('/models', modelController);
+   * @param schema - tables array
+   * @return  - multiple lines data, each line having one router.use('/models', modelController);
    */
   private generateRouterUseData(schema: Schema): string {
     let routerData: string = '';
