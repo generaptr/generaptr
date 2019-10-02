@@ -24,6 +24,7 @@
     "prefer-function-over-method": false,
     "no-unused-variable": false,
     "no-magic-numbers": false,
+    "no-floating-promises": false,
     "member-ordering": [
       false
     ],
