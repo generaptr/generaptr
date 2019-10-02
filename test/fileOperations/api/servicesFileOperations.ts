@@ -14,7 +14,7 @@ describe('Suite for testing the ServicesFileOperations class', () => {
     const apiFileOperations: ApiFileOperations = new ApiFileOperations('api.test');
 
     servicesFileOperations.initializeServices(apiFileOperations.getFilePath(), schemaMocks.PROCESSED_SCHEMA_ONE_TABLE)
-      .then(async () => {
+      .then(() => {
         const table: Table = schemaMocks.PROCESSED_SCHEMA_ONE_TABLE[0] as Table;
         const model: string = utils.singular(table.name);
 
@@ -28,7 +28,7 @@ describe('Suite for testing the ServicesFileOperations class', () => {
           (err: Error, data: Buffer) => {
             assert.ifError(err);
             assert(data, 'Content should not be empty');
-            assert.equal(data.toString(), apiMocks.VALID_SERVICE_ONE_MODEL);
+            assert.strictEqual(data.toString(), apiMocks.VALID_SERVICE_ONE_MODEL);
 
             done();
           });

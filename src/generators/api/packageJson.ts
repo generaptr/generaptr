@@ -4,17 +4,15 @@ import { PackageJson, PackageJsonInfo, MapOfStrings } from '../../commons/types'
  * Class which implements the logic for generating valid package.json files.
  *
  * @export
- * @class PackageJsonGenerator
  */
 export class PackageJsonGenerator {
 
   /**
    * Generates content of package json
    *
-   * @param {PackageJsonInfo} options - package json info
-   * @param {string} dialect - database types
-   * @returns {PackageJson} - package json content
-   * @memberof PackageJsonGenerator
+   * @param options - package json info
+   * @param  dialect - database types
+   * @returns  - package json content
    */
   public getPackageJson(options: PackageJsonInfo, dialect: string): PackageJson {
     const packageJson: PackageJson = {
@@ -39,10 +37,9 @@ export class PackageJsonGenerator {
   /**
    * Generate package.json as string
    *
-   * @param {PackageJsonInfo} options - package json info
-   * @param {string} dialect - database type
-   * @returns {string} - package json as string
-   * @memberof PackageJsonGenerator
+   * @param options - package json info
+   * @param  dialect - database type
+   * @returns  - package json as string
    */
   public getPackageJsonAsString(options: PackageJsonInfo, dialect: string): string {
     return JSON.stringify(this.getPackageJson(options, dialect), undefined, 2);
@@ -51,10 +48,8 @@ export class PackageJsonGenerator {
   /**
    * Based on database type generates some helpfull scripts for it
    *
-   * @private
-   * @param {string} databaseType - database type
-   * @returns {MapOfStrings} - map of helpull scripts
-   * @memberof PackageJsonGenerator
+   * @param  databaseType - database type
+   * @returns  - map of helpull scripts
    */
   private getScriptsForDb(databaseType: string): MapOfStrings {
     switch (databaseType) {

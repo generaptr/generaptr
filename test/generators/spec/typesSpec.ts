@@ -59,7 +59,7 @@ describe('Suite for testing RamlTypesGenerator', () => {
 
   it('should create raml type content', () => {
     const expectedResponse: string =
-`#%RAML 1.0 DataType
+      `#%RAML 1.0 DataType
 type: object
 properties:
   id:
@@ -75,12 +75,12 @@ properties:
 
     const typeContent: string = typesGenerator.generateTypeContent(table);
 
-    assert.equal(typeContent, expectedResponse);
+    assert.strictEqual(typeContent, expectedResponse);
   });
 
-  it ('should create raml type content for enum', () => {
+  it('should create raml type content for enum', () => {
     const expectedResponse: string =
-`#%RAML 1.0 DataType
+      `#%RAML 1.0 DataType
 type: object
 properties:
   isActive:
@@ -89,6 +89,6 @@ properties:
 `;
 
     const typeContent: string = typesGenerator.generateTypeContent(enumTable);
-    assert.equal(typeContent, expectedResponse);
+    assert.strictEqual(typeContent, expectedResponse);
   });
 });

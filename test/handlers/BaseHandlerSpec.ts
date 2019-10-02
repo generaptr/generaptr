@@ -18,15 +18,15 @@ describe('Suite for testing BaseHandler class', () => {
     try {
       handler.normalizeColumnSchema(colSchema);
     } catch (e) {
-      assert.equal(e.message, 'Input source not not supported.');
+      assert.strictEqual(e.message, 'Input source not not supported.');
     }
   });
 
   it('should throw an error for unknown driver when normalizing db schema', () => {
     try {
-      handler.normalizeRelations([{name: 'users', columns: []}]);
+      handler.normalizeRelations([{ name: 'users', columns: [] }]);
     } catch (e) {
-      assert.equal(e.message, 'Input source not not supported.');
+      assert.strictEqual(e.message, 'Input source not not supported.');
     }
   });
 });

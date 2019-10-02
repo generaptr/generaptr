@@ -1,10 +1,15 @@
-
 {
   "lintOptions": {
     "typeCheck": true
   },
   "extends": "tslint:all",
   "rules": {
+    "newline-per-chained-call": false,
+    "completed-docs": [
+      "classes",
+      "functions",
+      "methods"
+    ],
     "quotemark": [
       "single"
     ],
@@ -12,7 +17,9 @@
       "log"
     ],
     "object-literal-sort-keys": false,
-    "ordered-imports": [false],
+    "ordered-imports": [
+      false
+    ],
     "no-default-export": false,
     "prefer-function-over-method": false,
     "no-unused-variable": false,
@@ -30,11 +37,10 @@
     "max-line-length": [
       false
     ],
-
-    // To implement at some point
     "strict-boolean-expressions": false,
     "ban": false,
     "ban-types": false,
-    "no-unsafe-any": false
+    "no-unsafe-any": false,
+    "no-default-import": false
   }
 }

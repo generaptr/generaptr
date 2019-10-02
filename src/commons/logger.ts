@@ -5,14 +5,11 @@ import bunyan from '../configs/logger';
  * Logger class used in the project.
  *
  * @export
- * @class Logger
  */
 export class Logger {
 
   /**
    * Log error message
-   * @param {string} message
-   * @memberof Logger
    */
   /* istanbul ignore next */
   public error(message: string): void {
@@ -24,8 +21,6 @@ export class Logger {
   /**
    * Logs info message.
    *
-   * @param {string} message
-   * @memberof Logger
    */
   /* istanbul ignore next */
   public info(message: string): void {
@@ -37,8 +32,6 @@ export class Logger {
   /**
    * Log warn message.
    *
-   * @param {string} message
-   * @memberof Logger
    */
   /* istanbul ignore next */
   public warn(message: string): void {

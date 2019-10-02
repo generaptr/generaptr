@@ -11,7 +11,7 @@ describe('Suite for testing the CommonsFileOperations class', () => {
     const apiFileOperations: ApiFileOperations = new ApiFileOperations('api.test');
 
     commonsFileOperations.initializeUtil(apiFileOperations.getFilePath())
-      .then(async () => {
+      .then(() => {
         fs.readFile(
           fileUtil.joinPaths(
             apiFileOperations.getFilePath(),
@@ -21,7 +21,7 @@ describe('Suite for testing the CommonsFileOperations class', () => {
           (err: Error, data: Buffer) => {
             assert.ifError(err);
             assert(data, 'Content should not be empty');
-            assert.equal(data.toString(), apiMocks.VALID_UTIL_CLASS);
+            assert.strictEqual(data.toString(), apiMocks.VALID_UTIL_CLASS);
             done();
           });
       })
@@ -35,7 +35,7 @@ describe('Suite for testing the CommonsFileOperations class', () => {
     const apiFileOperations: ApiFileOperations = new ApiFileOperations('api.test');
 
     commonsFileOperations.initializeConstants(apiFileOperations.getFilePath())
-      .then(async () => {
+      .then(() => {
         fs.readFile(
           fileUtil.joinPaths(
             apiFileOperations.getFilePath(),
@@ -45,7 +45,7 @@ describe('Suite for testing the CommonsFileOperations class', () => {
           (err: Error, data: Buffer) => {
             assert.ifError(err);
             assert(data, 'Content should not be empty');
-            assert.equal(data.toString(), apiMocks.VALID_STATUS_CODES_CONSTANTS);
+            assert.strictEqual(data.toString(), apiMocks.VALID_STATUS_CODES_CONSTANTS);
             done();
           });
       })

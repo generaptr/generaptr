@@ -5,44 +5,49 @@ import config from '../../configs/config';
  * Export utils class.
  *
  * @export
- * @class Utils
  */
 export class Utils {
 
   /**
    * Convert data type name to 'Object' naming
-   * @param {string} word - eg: users
-   * @returns {string} eg: User
+   * @param  word - eg: users
+   * @returns  eg: User
    */
   public toTitleCase(word: string): string {
     const initialPosition: number = 0;
     const secondWord: number = 1;
 
-    return pluralize.singular(word.charAt(initialPosition).toUpperCase() + word.substring(secondWord));
+    return pluralize
+      .singular(
+        word
+          .charAt(initialPosition)
+          .toUpperCase() +
+        word
+          .substring(secondWord),
+      );
   }
 
   /**
    * Convert word to it's table name
-   * @param {string} word = eg: User
-   * @return {string} eg: users
+   * @param  word = eg: User
+   * @return  eg: users
    */
   public toTableName(word: string): string {
     return this.pluralize(word.toLowerCase());
   }
 
-    /**
-     * Convert word to comply with the column name schema.
-     *
-     * @param {string} word
-     * @returns {string} eg: user_id
-     */
+  /**
+   * Convert word to comply with the column name schema.
+   *
+   * @returns  eg: user_id
+   */
   public toColumnName(word: string): string {
     return word.replace(/(?:Id|_id)\b/g, '');
   }
   /**
    * Pluralizes a word.
-   * @param {string} word - eg: user
-   * @return {string} eg: users
+   * @param  word - eg: user
+   * @return  eg: users
    */
   public pluralize(word: string): string {
     return pluralize.plural(word);
@@ -50,8 +55,8 @@ export class Utils {
 
   /**
    * Convert plural word into singular
-   * @param {string} word - word to be singularized
-   * @returns {string} - singularized word
+   * @param  word - word to be singularized
+   * @returns  - singularized word
    */
   public singular(word: string): string {
     return pluralize.singular(word);
@@ -59,8 +64,8 @@ export class Utils {
 
   /**
    * Pluralise a word that contains [] at the end
-   * @param {string} word - string object
-   * @return {string} - Example: input: User[]; output: Users
+   * @param  word - string object
+   * @return  - Example: input: User[]; output: Users
    */
   public pluraliseWordArray(word: string): string {
     const initialPosition: number = 0;
@@ -70,8 +75,8 @@ export class Utils {
 
   /**
    * Convert js plain object into JSON string
-   * @param {{}} object - object to be converted
-   * @return {string} stringy version of js object
+   * @param  object - object to be converted
+   * @return  stringy version of js object
    */
   public convertToJSON(object: Object): string {
     return JSON.stringify(object, undefined, '\t');
@@ -79,9 +84,9 @@ export class Utils {
 
   /**
    * IndexOf implementation with ignore case
-   * @param {string[]} haystack - array of strings
-   * @param {string} needle - query string
-   * @return {number} key of the query inside the array
+   * @param  haystack - array of strings
+   * @param  needle - query string
+   * @return  key of the query inside the array
    */
   public indexOfIgnoreCase(haystack: string[], needle: string): number {
     return haystack.findIndex((item: string) => needle.toLowerCase() === item.toLowerCase());
@@ -89,9 +94,9 @@ export class Utils {
 
   /**
    * Returns an array of a certain length with same object
-   * @param {{}} object - js plain object
-   * @param {int} length - length of returned array
-   * @return {Array.<{}>} filled array
+   * @param  object - js plain object
+   * @param  length - length of returned array
+   * @return  filled array
    */
   public fillArray(object: Object, length: number): Object[] {
     const start: number = 0;
@@ -102,14 +107,14 @@ export class Utils {
   /**
    * Formats the line for spec.
    *
-   * @param {string} initialIndentation - holds the initial indentation
-   * @param {number} tabs - holds how many tabs should prepend to the line
-   * @param {string} message - holds the actual content of the line
-   * @return {string} - returns the formatted line
+   * @param  initialIndentation - holds the initial indentation
+   * @param  tabs - holds how many tabs should prepend to the line
+   * @param  message - holds the actual content of the line
+   * @return  - returns the formatted line
    */
   public formatLine(initialIndentation: string, tabs: number, message: string): string {
     let line: string = `${initialIndentation}`;
-    for (let i: number = 0; i < tabs; i++) {
+    for (let i: number = 0; i < tabs; i += 1) {
       line += `${config.DEFAULT_INDENTATION}`;
     }
     line += `${message}${config.END_OF_LINE}`;
@@ -117,24 +122,31 @@ export class Utils {
     return line;
   }
 
-    /**
-     * Find the common edit distance between two strings.
-     *
-     * @param {string} needle string which will be matched
-     * @param {string} haystack string to be matched against
-     * @returns {number} common edit distance between strings
-     */
+  /**
+   * Find the common edit distance between two strings.
+   *
+   * @param  needle string which will be matched
+   * @param  haystack string to be matched against
+   * @returns  common edit distance between strings
+   */
   private editDistance(needle: string, haystack: string): number {
     const costs: number[] = new Array();
-    for (let i: number = 0; i <= needle.toLowerCase().length; i++) {
+    for (let i: number = 0; i <= needle.toLowerCase().length; i += 1) {
       let lastValue: number = i;
-      for (let j: number = 0; j <= haystack.length; j++) {
+      for (let j: number = 0; j <= haystack.length; j += 1) {
         if (i === 0) {
           costs[j] = j;
         } else {
           if (j > 0) {
             let newValue: number = costs[j - 1];
-            if (needle.toLowerCase().charAt(i - 1) !== haystack.toLowerCase().charAt(j - 1)) {
+            if (
+              needle
+                .toLowerCase()
+                .charAt(i - 1) !==
+              haystack
+                .toLowerCase()
+                .charAt(j - 1)
+            ) {
               newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
             }
             costs[j - 1] = lastValue;
@@ -150,13 +162,11 @@ export class Utils {
     return costs[haystack.length];
   }
 
-    /**
-     * Finds the similarity between two strings
-     *
-     * @param {string} needle
-     * @param {string} haystack
-     * @returns {number} percentage of similarity as float
-     */
+  /**
+   * Finds the similarity between two strings
+   *
+   * @returns  percentage of similarity as float
+   */
   public similarity(needle: string, haystack: string): number {
     let longer: string = needle;
     let shorter: string = haystack;

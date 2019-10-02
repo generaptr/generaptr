@@ -12,14 +12,12 @@ import { ConnectionData, Schema } from '../../commons/types';
  * Class which implements logic for creating configuration files
  *
  * @export
- * @class ConfigurationFileOperations
  */
 export class ConfigurationFileOperations {
 
   /**
    * Generate general configuration
-   * @param {string} filePath - file path where api will be generated
-   * @return {Promise<boolean>}
+   * @param  filePath - file path where api will be generated
    */
   public async initializeConfig(filePath: string): Promise<boolean> {
     return fileUtil.writeFile(
@@ -30,8 +28,7 @@ export class ConfigurationFileOperations {
 
   /**
    * Generate get env based config util class
-   * @param {string} filePath - file path where api will be generated
-   * @return {Promise<boolean>}
+   * @param  filePath - file path where api will be generated
    */
   public async initializeGetEnvBasedConfig(filePath: string): Promise<boolean> {
     return fileUtil.writeFile(
@@ -42,9 +39,8 @@ export class ConfigurationFileOperations {
 
   /**
    * Generate database configuration
-   * @param {Connection data} connection - connection info
-   * @param {string} filePath - file path where api will be generated
-   * @return {Promise<boolean>}
+   * @param  connection - connection info
+   * @param  filePath - file path where api will be generated
    */
   public async initializeDbConfig(connection: ConnectionData, filePath: string): Promise<boolean> {
     let configContent: string = '';
@@ -63,7 +59,7 @@ export class ConfigurationFileOperations {
   /**
    * Initialize cors configuration
    * @param filePath - file path where api will be generated
-   * @return {Promise<boolean>} - true if cors file was successfully created
+   * @return  - true if cors file was successfully created
    */
   public async initializeCorsConfig(filePath: string): Promise<boolean> {
     return fileUtil.writeFile(
@@ -75,7 +71,7 @@ export class ConfigurationFileOperations {
   /**
    * Initialize express configuration
    * @param filePath - file path where api will be generated
-   * @return {Promise<boolean>} - true if express file was successfully created
+   * @return  - true if express file was successfully created
    */
   public async initializeExpressConfig(filePath: string): Promise<boolean> {
     return fileUtil.writeFile(
@@ -88,7 +84,6 @@ export class ConfigurationFileOperations {
    * Initialize express configuration
    * @param filePath - file path where api will be generated
    * @param schema - database schema table
-   * @return {Promise<boolean>}
    */
   public async initializeRouterConfig(filePath: string, schema: Schema): Promise<boolean> {
     return fileUtil.writeFile(
@@ -100,7 +95,7 @@ export class ConfigurationFileOperations {
   /**
    * Initialize main index.js file
    * @param filePath - file path where api will be generated
-   * @return {Promise<boolean>} - true if index file was created
+   * @return  - true if index file was created
    */
   public async initializeIndex(filePath: string): Promise<boolean> {
     return fileUtil.writeFile(

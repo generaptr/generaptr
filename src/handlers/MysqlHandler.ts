@@ -1,37 +1,29 @@
 import * as mysql from 'mysql2';
 import Utils from '../commons/utils/utils';
-import BaseHandler from './BaseHandler';
+import BaseHandler from './baseHandler';
 import { Schema, Table, Column, MySqlColumnSchema, TableReference, RawTableReference } from '../commons/types';
 
 /**
  * MySql Handler.
  *
  * @export
- * @class MysqlHandler
- * @extends {BaseHandler}
  */
 export default class MysqlHandler extends BaseHandler {
   /**
    * Mysql connection object.
    *
-   * @private
-   * @type {mysql.Connection}
-   * @memberof MysqlHandler
    */
-  private connection: mysql.Connection;
+  private readonly connection: mysql.Connection;
 
   /**
    * Mysql connection options
    *
-   * @private
-   * @type {mysql.ConnectionOptions}
-   * @memberof MysqlHandler
    */
-  private options: mysql.ConnectionOptions;
+  private readonly options: mysql.ConnectionOptions;
   /**
    * Constructor for the MySqlHandler.
    *
-   * @param {mysql.ConnectionOptions} options Connection parameters.
+   * @param options Connection parameters.
    */
   public constructor(options: mysql.ConnectionOptions) {
     super('mysql');
@@ -57,7 +49,7 @@ export default class MysqlHandler extends BaseHandler {
   /**
    * Reads the database schema, processes it and returns a normalized version of it.
    *
-   * @returns {Promise<Schema>} database schema
+   * @returns database schema
    */
   public async readSchema(): Promise<Schema> {
     return new Promise<Schema>((resolve: (schema: Schema) => void, reject: (reason: Error) => void): void => {
@@ -74,18 +66,18 @@ export default class MysqlHandler extends BaseHandler {
   /**
    * Reads the information schema and returns an array of tables.
    *
-   * @returns {Promise<string[]>} array of table names.
+   * @returns array of table names.
    */
   public async getTables(): Promise<string[]> {
     return new Promise<string[]>((resolve: (tables: string[]) => void, reject: (reason: Error) => void): void => {
       this.connection.query(
         `SELECT TABLE_NAME FROM TABLES WHERE TABLE_SCHEMA = '${this.options.database}';`,
-        (err: Error, results: [{TABLE_NAME: string}]) => {
+        (err: Error, results: [{ TABLE_NAME: string }]) => {
           /* istanbul ignore next */
           if (err) {
             return reject(err);
           }
-          const tables: string[] = results.map((result: {TABLE_NAME: string}) => result.TABLE_NAME);
+          const tables: string[] = results.map((result: { TABLE_NAME: string }) => result.TABLE_NAME);
 
           return resolve(tables);
         },
@@ -96,8 +88,8 @@ export default class MysqlHandler extends BaseHandler {
   /**
    * Reads the schema for a given table.
    *
-   * @param {string} tableName table name
-   * @returns {Promise<Table>} table schema
+   * @param  tableName table name
+   * @returns table schema
    */
   public async getTableSchema(tableName: string): Promise<Table> {
     return new Promise<Table>((resolve: (table: Table) => void, reject: (reason: Error) => void): void => {
@@ -145,42 +137,42 @@ export default class MysqlHandler extends BaseHandler {
   /**
    * Reads all the relations for a given table.
    *
-   * @param {string} table table name
-   * @return {Promise<TableReference[]>} foreign key relations
+   * @param  table table name
+   * @return  foreign key relations
    */
   public async getRelationsForTable(table: string): Promise<TableReference[]> {
     return new Promise<TableReference[]>(
       (resolve: (references: TableReference[]) => void, reject: (reason: Error) => void): void => {
         this.connection.query(
-        `SELECT
+          `SELECT
           COLUMN_NAME,
           rc.REFERENCED_TABLE_NAME,
           REFERENCED_COLUMN_NAME
         FROM REFERENTIAL_CONSTRAINTS rc JOIN
           KEY_COLUMN_USAGE cu ON cu.CONSTRAINT_NAME = rc.CONSTRAINT_NAME
         WHERE rc.CONSTRAINT_SCHEMA = '${this.options.database}' AND rc.TABLE_NAME = '${table}'`,
-        (err: Error, relations: RawTableReference[]) => {
-          /* istanbul ignore next */
-          if (err) {
-            return reject(err);
-          }
+          (err: Error, relations: RawTableReference[]) => {
+            /* istanbul ignore next */
+            if (err) {
+              return reject(err);
+            }
 
-          const references: TableReference[] = relations.map((relation: RawTableReference) => {
-            const reference: TableReference = {
-              name: relation.COLUMN_NAME,
-              table: relation.REFERENCED_TABLE_NAME,
-              column: relation.REFERENCED_COLUMN_NAME,
-            };
+            const references: TableReference[] = relations.map((relation: RawTableReference) => {
+              const reference: TableReference = {
+                name: relation.COLUMN_NAME,
+                table: relation.REFERENCED_TABLE_NAME,
+                column: relation.REFERENCED_COLUMN_NAME,
+              };
 
-            return reference;
-          });
+              return reference;
+            });
 
-          resolve(references);
-        },
-      );
-    },
-  );
-}
+            resolve(references);
+          },
+        );
+      },
+    );
+  }
 
   /**
    * Closes the MySql connection.

@@ -7,13 +7,12 @@ import constants from '../../generators/api/commons/constants';
  * Class which implements the logic for commons / constants files initializer actions.
  *
  * @export
- * @class CommonsFileOperations
  */
 export class CommonsFileOperations {
   /**
    * Initialize Util class
-   * @param {string} filePath - file path where api will be generated
-   * @return {Promise<boolean>} - true if was successfully created
+   * @param  filePath - file path where api will be generated
+   * @return  - true if was successfully created
    */
   public async initializeUtil(filePath: string): Promise<boolean> {
     return fileUtil.writeFile(
@@ -24,8 +23,8 @@ export class CommonsFileOperations {
 
   /**
    * Initialize constants classes
-   * @param {string} filePath - file path where api will be generated
-   * @return {Promise<boolean>} - true if was successfully created
+   * @param  filePath - file path where api will be generated
+   * @return  - true if was successfully created
    */
   public async initializeConstants(filePath: string): Promise<boolean> {
     return fileUtil.writeFile(

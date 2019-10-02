@@ -6,21 +6,21 @@ import { Table, Column, Schema } from '../../src/commons/types';
 describe('Suite for testing SchemaUtil class', () => {
 
   it('should get normalized table by type', () => {
-    const table: Table | undefined = schemaUtil.getNormalizedTableByType([{name: 'users', columns: []}], 'User');
+    const table: Table | undefined = schemaUtil.getNormalizedTableByType([{ name: 'users', columns: [] }], 'User');
     if (!table) {
       assert.fail('table not found in schema.');
     } else {
-      assert.equal(table.name, 'users');
+      assert.strictEqual(table.name, 'users');
     }
   });
 
   it('should return false if nothing found', () => {
-    const table: Table | undefined = schemaUtil.getNormalizedTableByType([{name: 'users', columns: []}], 'Account');
-    assert.equal(table, undefined);
+    const table: Table | undefined = schemaUtil.getNormalizedTableByType([{ name: 'users', columns: [] }], 'Account');
+    assert.strictEqual(table, undefined);
   });
 
   it('should know how to convert enum values', () => {
-    assert.equal(
+    assert.strictEqual(
       Number(schemaUtil.convertValues(
         {
           name: '',
@@ -42,13 +42,13 @@ describe('Suite for testing SchemaUtil class', () => {
 
     const ramlValues: string = schemaUtil.valuesToRamlDataType(values);
     assert(ramlValues);
-    assert.equal(ramlValues.length, 8);
-    assert.equal(ramlValues, 'Yes | No');
-    assert.equal(schemaUtil.valuesToRamlDataType([]), '');
+    assert.strictEqual(ramlValues.length, 8);
+    assert.strictEqual(ramlValues, 'Yes | No');
+    assert.strictEqual(schemaUtil.valuesToRamlDataType([]), '');
   });
 
   it('should detect if relation is circular', () => {
-    assert.equal(
+    assert.strictEqual(
       schemaUtil.isCircularRelation(
         mocks.PROCESSED_SCHEMA_ONE_TO_ONE[0] as Table,
         mocks.PROCESSED_SCHEMA_ONE_TO_ONE[0].columns[2] as Column,
@@ -56,7 +56,7 @@ describe('Suite for testing SchemaUtil class', () => {
       ),
       true,
     );
-    assert.equal(
+    assert.strictEqual(
       schemaUtil.isCircularRelation(
         mocks.PROCESSED_SCHEMA_ONE_TO_ONE[0] as Table,
         mocks.PROCESSED_SCHEMA_ONE_TO_ONE[0].columns[1] as Column,
@@ -67,7 +67,7 @@ describe('Suite for testing SchemaUtil class', () => {
   });
 
   it('should detect if refferenced column is required', () => {
-    assert.equal(
+    assert.strictEqual(
       schemaUtil.circularRelationIsRequired(
         mocks.PROCESSED_SCHEMA_ONE_TO_ONE[1] as Table,
         mocks.PROCESSED_SCHEMA_ONE_TO_ONE[1].columns[4] as Column,
@@ -75,7 +75,7 @@ describe('Suite for testing SchemaUtil class', () => {
       ),
       true,
     );
-    assert.equal(
+    assert.strictEqual(
       schemaUtil.circularRelationIsRequired(
         mocks.PROCESSED_SCHEMA_ONE_TO_ONE[0] as Table,
         mocks.PROCESSED_SCHEMA_ONE_TO_ONE[0].columns[1] as Column,
@@ -86,7 +86,7 @@ describe('Suite for testing SchemaUtil class', () => {
   });
 
   it('should detect if refferenced column is array', () => {
-    assert.equal(
+    assert.strictEqual(
       schemaUtil.circularRelationIsArray(
         mocks.PROCESSED_SCHEMA_MANY_TO_ONE[1] as Table,
         mocks.PROCESSED_SCHEMA_MANY_TO_ONE[1].columns[2] as Column,
@@ -94,7 +94,7 @@ describe('Suite for testing SchemaUtil class', () => {
       ),
       true,
     );
-    assert.equal(
+    assert.strictEqual(
       schemaUtil.circularRelationIsArray(
         mocks.PROCESSED_SCHEMA_MANY_TO_ONE[0] as Table,
         mocks.PROCESSED_SCHEMA_MANY_TO_ONE[0].columns[1] as Column,
@@ -106,7 +106,7 @@ describe('Suite for testing SchemaUtil class', () => {
 
   it('should get related Tables for a given Table', () => {
     const related: Column[] = schemaUtil.getRelatedTablesForTable(mocks.PROCESSED_SCHEMA_ONE_TO_ONE[0] as Table);
-    assert.equal(related.length, 1);
-    assert.equal(related[0].dataType.type, 'User');
+    assert.strictEqual(related.length, 1);
+    assert.strictEqual(related[0].dataType.type, 'User');
   });
 });

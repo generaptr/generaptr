@@ -2,13 +2,12 @@
  * Class which generates string content for express.js configuration file
  *
  * @export
- * @class Express
  */
 export class Express {
 
   /**
    * Generate string content for express.js configuration file
-   * @return {string} - string generated content
+   * @return  - string generated content
    */
   public getExpressConfig(): string {
     return `const bodyParser = require('body-parser');

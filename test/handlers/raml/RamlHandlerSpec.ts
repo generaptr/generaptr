@@ -8,7 +8,7 @@ describe('Suite for testing RamlHandler class', () => {
     try {
       const handler: RamlHandler = new RamlHandler({path: './test/handlers/raml/data/api.raml'});
       handler.parseSchema().then((schema: Schema) => {
-        assert.equal(schema.length, 4);
+        assert.strictEqual(schema.length, 4);
         done();
       }).catch((err: Error) => {
         console.log(err);
@@ -23,7 +23,7 @@ describe('Suite for testing RamlHandler class', () => {
     try {
       const handler: RamlHandler = new RamlHandler({path: './index.js'});
       handler.parseSchema().catch((e: Error) => {
-        assert.equal(e.message, 'Incorrect RAML file!');
+        assert.strictEqual(e.message, 'Incorrect RAML file!');
         done();
       });
     } catch (e) {

@@ -7,16 +7,15 @@ import { StringMapOfStrings } from '../types';
  * Class which holds helper tools when working with ramls.
  *
  * @export
- * @class RamlUtil
  */
 export class RamlUtil {
 
   /**
    * Generate fake data for a field name
-   * @param {string} field - field name
-   * @param {string} type - data raml type: can be number / string / Boolean / date etc
-   * @param {?string[]} values - default values for attributes (eg. enum: 'Yes' | 'No')
-   * @return {*} fake data
+   * @param  field - field name
+   * @param  type - data raml type: can be number / string / Boolean / date etc
+   * @param  values - default values for attributes (eg. enum: 'Yes' | 'No')
+   * @return  fake data
    */
   public generateFakeData(field: string, type: string, values?: string[]): string | number | boolean {
     if (values && values.length) {
@@ -45,9 +44,9 @@ export class RamlUtil {
 
   /**
    * Parse object value to a custom raml type
-   * @param {*} value - value to be parsed
-   * @param {string} type - raml type
-   * @return {*} parsed value
+   * @param  value - value to be parsed
+   * @param  type - raml type
+   * @return  parsed value
    */
   public parseRamlValue(value: string, type: string): number | string | boolean {
     const base: number = 10;
@@ -65,8 +64,8 @@ export class RamlUtil {
 
   /**
    * Generate id/_id field value
-   * @param {string} type - can be number / string / boolean
-   * @return {*} random id
+   * @param  type - can be number / string / boolean
+   * @return  random id
    */
   public generateId(type: string): number | string {
     switch (type) {
