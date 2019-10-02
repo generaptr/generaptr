@@ -7,15 +7,14 @@ import { Table, Column } from '../../commons/types';
  * Class which holds the logic for generating raml types.
  *
  * @export
- * @class RamlContentGenerator
  */
 export class RamlContentGenerator {
 
   /**
    * Generate type file content.
    *
-   * @param {Table} table - table schema
-   * @return {string} raml content
+   * @param  table - table schema
+   * @return  raml content
    */
   public generateTypeContent(table: Table): string {
     let objectContent: string = '#%RAML 1.0 DataType\ntype: object\nproperties:\n';

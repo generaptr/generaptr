@@ -1,23 +1,19 @@
-import MysqlSchemaPreprocessor from '../preprocesors/MysqlSchemaPreprocessor';
-import RamlSchemaPreprocessor from '../preprocesors/RamlSchemaPreprocessor';
+import MysqlSchemaPreprocessor from '../preprocesors/mysqlSchemaPreprocessor';
+import RamlSchemaPreprocessor from '../preprocesors/ramlSchemaPreprocessor';
 import { RamlColumnSchema, MySqlColumnSchema, Column, Schema } from '../commons/types';
 
 /**
  * Base Handler.
  *
  * @export
- * @class BaseHandler
  */
 export default class BaseHandler {
 
   /**
    * Holds the driver name.
    *
-   * @private
-   * @type {string}
-   * @memberof BaseHandler
    */
-  private driver: string;
+  private readonly driver: string;
 
   public constructor(driver: string) {
     this.driver = driver;
@@ -26,8 +22,8 @@ export default class BaseHandler {
   /**
    * Normalize column schema.
    *
-   * @param {*} columnSchema sql column schema
-   * @returns {*} normalized column schema
+   * @param  columnSchema sql column schema
+   * @returns  normalized column schema
    */
   public normalizeColumnSchema(columnSchema: RamlColumnSchema | MySqlColumnSchema): Column {
     switch (this.driver) {
@@ -46,8 +42,8 @@ export default class BaseHandler {
   /**
    * Normalize relations between tables inside the schema.
    *
-   * @param {*} schema database schema
-   * @returns {*} normalized database schema
+   * @param  schema database schema
+   * @returns  normalized database schema
    */
   public normalizeRelations(schema: Schema): Schema {
     switch (this.driver) {

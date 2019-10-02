@@ -6,16 +6,15 @@ import { Schema, Table, RAMLApplicationInfo } from '../../commons/types';
  * Class which holds the logic for generating raml spec.
  *
  * @export
- * @class SpecGenerator
  */
 export class SpecGenerator {
 
   /**
    * Generates the api spec for the whole schema.
    *
-   * @param {Schema} schema - entire collection of tables
-   * @param {RAMLApplicationInfo} options - holds the title of the app, the version and the base url
-   * @return {string} - returns the api spec
+   * @param  schema - entire collection of tables
+   * @param  options - holds the title of the app, the version and the base url
+   * @return  - returns the api spec
    */
   public generateContent(schema: Schema, options: RAMLApplicationInfo): string {
     let spec: string = this.addHeaderContent(options) + this.addDataTypes(schema);
@@ -29,8 +28,8 @@ export class SpecGenerator {
   /**
    * Generates the header content
    *
-   * @param {RAMLApplicationInfo} options - holds the title of the app, the version and the base url
-   * @return {string} returns the formatted header
+   * @param  options - holds the title of the app, the version and the base url
+   * @return  returns the formatted header
    */
   public addHeaderContent(options: RAMLApplicationInfo): string {
     return utils.formatLine('', config.TABS.LEVEL_0, '#%RAML 1.0') +
@@ -43,8 +42,8 @@ export class SpecGenerator {
   /**
    * Adds the data types based on schema
    *
-   * @param {Schema} schema - entire collection of tables
-   * @return {string} returns the formatted data types
+   * @param  schema - entire collection of tables
+   * @return  returns the formatted data types
    */
   public addDataTypes(schema: Schema): string {
     let types: string = `types:${config.END_OF_LINE}`;
@@ -63,8 +62,8 @@ export class SpecGenerator {
   /**
    * Generates the get all spec
    *
-   * @param {Table} entity - holds the entity definition
-   * @return {string} - returns the formatted spec for the entity
+   * @param  entity - holds the entity definition
+   * @return  - returns the formatted spec for the entity
    */
   public addSpecForEntity(entity: Table): string {
     let spec: string = `/${entity.name}:${config.END_OF_LINE}`;
@@ -81,9 +80,9 @@ export class SpecGenerator {
   /**
    * Generates the get all spec
    *
-   * @param {string} initialIndentation - holds the initial indentation
-   * @param {Table} entity - holds the entity definition
-   * @return {string} - returns the formatted get all spec
+   * @param  initialIndentation - holds the initial indentation
+   * @param  entity - holds the entity definition
+   * @return  - returns the formatted get all spec
    */
   public addGetAllSpec(initialIndentation: string, entity: Table): string {
     return utils.formatLine(initialIndentation, config.TABS.LEVEL_0, 'get:') +
@@ -103,9 +102,9 @@ export class SpecGenerator {
   /**
    * Generates the create spec
    *
-   * @param {string} initialIndentation - holds the initial indentation
-   * @param {Table} entity - holds the entity definition
-   * @return {string} - returns the formatted create spec
+   * @param  initialIndentation - holds the initial indentation
+   * @param  entity - holds the entity definition
+   * @return  - returns the formatted create spec
    */
   public addCreateSpec(initialIndentation: string, entity: Table): string {
     return utils.formatLine(initialIndentation, config.TABS.LEVEL_0, 'post:') +
@@ -131,9 +130,9 @@ export class SpecGenerator {
   /**
    * Generates the get one spec
    *
-   * @param {string} initialIndentation - holds the initial indentation
-   * @param {Table} entity - holds the entity definition
-   * @return {string} - returns the formatted get one spec
+   * @param  initialIndentation - holds the initial indentation
+   * @param  entity - holds the entity definition
+   * @return  - returns the formatted get one spec
    */
   public addGetOneSpec(initialIndentation: string, entity: Table): string {
     return utils.formatLine(initialIndentation, config.TABS.LEVEL_1, 'get:') +
@@ -156,9 +155,9 @@ export class SpecGenerator {
   /**
    * Generates the update spec
    *
-   * @param {string} initialIndentation - holds the initial indentation
-   * @param {Table} entity - holds the entity definition
-   * @return {string} - returns the formatted update spec
+   * @param  initialIndentation - holds the initial indentation
+   * @param  entity - holds the entity definition
+   * @return  - returns the formatted update spec
    */
   public addUpdateSpec(initialIndentation: string, entity: Table): string {
     return utils.formatLine(initialIndentation, config.TABS.LEVEL_1, 'put:') +
@@ -184,9 +183,9 @@ export class SpecGenerator {
   /**
    * Generates the delete spec
    *
-   * @param {string} initialIndentation - holds the initial indentation
-   * @param {Table} entity - holds the entity definition
-   * @return {string} - returns the formatted delete spec
+   * @param  initialIndentation - holds the initial indentation
+   * @param  entity - holds the entity definition
+   * @return  - returns the formatted delete spec
    */
   public addDeleteSpec(initialIndentation: string, entity: Table): string {
     return utils.formatLine(initialIndentation, config.TABS.LEVEL_1, 'delete:') +

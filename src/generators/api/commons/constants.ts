@@ -2,13 +2,11 @@
  * Class which contains all constants generated content.
  *
  * @export
- * @class Constants
  */
 export class Constants {
 
   /**
    * Generate StatusCode string content class
-   * @return {string}
    */
   public getStatusCode(): string {
     const statuses: Object = {

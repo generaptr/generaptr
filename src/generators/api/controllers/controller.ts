@@ -2,12 +2,11 @@
  * Class which generates string content for API controller files
  *
  * @export
- * @class Controller
  */
 export class Controller {
   /**
    * Generate default controller string content
-   * @return {string} - default controller content
+   * @return  - default controller content
    */
   public getDefaultController(): string {
     return `const defaultRoute = require('express').Router();
@@ -21,8 +20,8 @@ module.exports = defaultRoute;`;
 
   /**
    * Generate controller content for one model.
-   * @param {String} model - model string value. e.g: User
-   * @return {string} - string content for generated controller
+   * @param  model - model string value. e.g: User
+   * @return  - string content for generated controller
    */
   public getController(model: string): string {
     return `const ${model}Route = require('express').Router();

@@ -4,14 +4,13 @@ import utils from '../../../commons/utils/utils';
  * Class which generates string content for API services files
  *
  * @export
- * @class Service
  */
 export class Service {
 
   /**
    * Generate String content for one service file using model
-   * @param {string} model - model name. e.g: User
-   * @return {string} - string content for generated service
+   * @param  model - model name. e.g: User
+   * @return  - string content for generated service
    */
   public getService(model: string): string {
     const modelTitleCase: string = utils.toTitleCase(model);

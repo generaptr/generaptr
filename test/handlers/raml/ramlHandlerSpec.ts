@@ -1,14 +1,14 @@
 import * as assert from 'assert';
-import RamlHandler from '../../../src/handlers/RamlHandler';
+import RamlHandler from '../../../src/handlers/ramlHandler';
 import { Schema } from '../../../src/commons/types';
 
 describe('Suite for testing RamlHandler class', () => {
 
   it('should return an valid schema', (done: Function) => {
     try {
-      const handler: RamlHandler = new RamlHandler({path: './test/handlers/raml/data/api.raml'});
+      const handler: RamlHandler = new RamlHandler({ path: './test/handlers/raml/data/api.raml' });
       handler.parseSchema().then((schema: Schema) => {
-        assert.equal(schema.length, 4);
+        assert.strictEqual(schema.length, 4);
         done();
       }).catch((err: Error) => {
         console.log(err);
@@ -21,9 +21,9 @@ describe('Suite for testing RamlHandler class', () => {
   });
   it('should throw an error if invalid schema', (done: Function) => {
     try {
-      const handler: RamlHandler = new RamlHandler({path: './index.js'});
+      const handler: RamlHandler = new RamlHandler({ path: './index.js' });
       handler.parseSchema().catch((e: Error) => {
-        assert.equal(e.message, 'Incorrect RAML file!');
+        assert.strictEqual(e.message, 'Incorrect RAML file!');
         done();
       });
     } catch (e) {

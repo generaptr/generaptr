@@ -12,11 +12,23 @@
     "declaration": true,
     "sourceMap": false,
     "target": "es6",
-    "lib": ["es6"],
+    "lib": [
+      "es6"
+    ],
     "outDir": "../lib",
     "types": [
-      "assert", "faker", "mocha", "node", "pluralize", "bunyan", "chalk", "fs-extra", "mysql2"
+      "assert",
+      "faker",
+      "mocha",
+      "node",
+      "pluralize",
+      "bunyan",
+      "chalk",
+      "fs-extra",
+      "mysql2"
     ],
-    "typeRoots": ["../typings/globals", "../typings/modules", "../node_modules/@types"]
+    "typeRoots": [
+      "../node_modules/@types"
+    ]
   }
 }

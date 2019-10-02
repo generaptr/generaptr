@@ -1,4 +1,4 @@
-import MysqlSchemaPreprocessor from '../../src/preprocesors/MysqlSchemaPreprocessor';
+import MysqlSchemaPreprocessor from '../../src/preprocesors/mysqlSchemaPreprocessor';
 import * as assert from 'assert';
 import mocks from '../testUtils/schemaMocks';
 import { MySqlColumnSchema, Column, Schema, Table } from '../../src/commons/types';
@@ -15,23 +15,23 @@ describe('Suite for testing MySqlPreProcessor class', () => {
       CHARACTER_MAXIMUM_LENGTH: '255',
     };
     const processed: Column = preProcessor.convertToStandardSchema(colSchema);
-    assert.equal(processed.name, 'test');
-    assert.equal(processed.primary, true);
-    assert.equal(processed.allowNull, false);
-    assert.equal(processed.foreignKey, false);
-    assert.equal(processed.unique, true);
-    assert.equal(processed.dataType.type, 'string');
-    assert.equal(processed.dataType.size, 255);
+    assert.strictEqual(processed.name, 'test');
+    assert.strictEqual(processed.primary, true);
+    assert.strictEqual(processed.allowNull, false);
+    assert.strictEqual(processed.foreignKey, false);
+    assert.strictEqual(processed.unique, true);
+    assert.strictEqual(processed.dataType.type, 'string');
+    assert.strictEqual(processed.dataType.size, 255);
   });
 
   it('should process values for enum data type', () => {
     const processedSchema: Column = preProcessor.convertToStandardSchema(mocks.RAW_ENUM_DATA);
 
     assert.ok(processedSchema.dataType);
-    assert.equal(processedSchema.dataType.type, "enum");
+    assert.strictEqual(processedSchema.dataType.type, "enum");
     assert.ok(processedSchema.dataType.values);
     assert(processedSchema.dataType.values);
-    assert.deepEqual(processedSchema.dataType.values, ['No', 'Yes']);
+    assert.deepStrictEqual(processedSchema.dataType.values, ['No', 'Yes']);
   });
 
   it('should clean up table schema', () => {
@@ -39,8 +39,8 @@ describe('Suite for testing MySqlPreProcessor class', () => {
     const valid: Table = schema[0];
     const processed: Table | undefined = preProcessor.normalizeSchemaRelations(mocks.SCHEMA_ONE_TABLE).pop();
     if (processed) {
-      assert.equal(processed.name, valid.name);
-      assert.equal(processed.columns.length, valid.columns.length);
+      assert.strictEqual(processed.name, valid.name);
+      assert.strictEqual(processed.columns.length, valid.columns.length);
     } else {
       assert.fail('table schema not cleaned up.');
     }
@@ -53,10 +53,10 @@ describe('Suite for testing MySqlPreProcessor class', () => {
     const processed: Schema = preProcessor.normalizeSchemaRelations(mocks.SCHEMA_ONE_TO_ONE);
     const processedAccounts: Table = processed[0];
     const processedUsers: Table = processed[1];
-    assert.equal(processedAccounts.name, validAccounts.name);
-    assert.equal(processedAccounts.columns.length, validAccounts.columns.length);
-    assert.equal(processedUsers.name, validUsers.name);
-    assert.equal(processedUsers.columns.length, validUsers.columns.length);
+    assert.strictEqual(processedAccounts.name, validAccounts.name);
+    assert.strictEqual(processedAccounts.columns.length, validAccounts.columns.length);
+    assert.strictEqual(processedUsers.name, validUsers.name);
+    assert.strictEqual(processedUsers.columns.length, validUsers.columns.length);
   });
 
   it('should normalize many to one relations', () => {
@@ -66,10 +66,10 @@ describe('Suite for testing MySqlPreProcessor class', () => {
     const processedAccounts: Table = processed[0];
     const processedApplications: Table = processed[1];
 
-    assert.equal(processedAccounts.name, validAccounts.name);
-    assert.equal(processedAccounts.columns.length, validAccounts.columns.length);
-    assert.equal(processedApplications.name, validApplications.name);
-    assert.equal(processedApplications.columns.length, validApplications.columns.length);
+    assert.strictEqual(processedAccounts.name, validAccounts.name);
+    assert.strictEqual(processedAccounts.columns.length, validAccounts.columns.length);
+    assert.strictEqual(processedApplications.name, validApplications.name);
+    assert.strictEqual(processedApplications.columns.length, validApplications.columns.length);
   });
 
   it('should normalize many to many relations', () => {
@@ -79,9 +79,9 @@ describe('Suite for testing MySqlPreProcessor class', () => {
     const processedGroups: Table = processed[0];
     const processedUsers: Table = processed[1];
 
-    assert.equal(processedGroups.name, validGroups.name);
-    assert.equal(processedGroups.columns.length, validGroups.columns.length);
-    assert.equal(processedUsers.name, validUsers.name);
-    assert.equal(processedUsers.columns.length, validUsers.columns.length);
+    assert.strictEqual(processedGroups.name, validGroups.name);
+    assert.strictEqual(processedGroups.columns.length, validGroups.columns.length);
+    assert.strictEqual(processedUsers.name, validUsers.name);
+    assert.strictEqual(processedUsers.columns.length, validUsers.columns.length);
   });
 });

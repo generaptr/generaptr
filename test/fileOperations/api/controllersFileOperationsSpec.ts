@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import fileUtil from '../../../src/commons/utils/fileUtil';
 import utils from '../../../src/commons/utils/utils';
 import DIRECTORY_STRUCTURE from '../../../src/commons/constants/directoryStructure';
-import ApiFileOperations from '../../../src/fileOperations/ApiFileOperations';
+import ApiFileOperations from '../../../src/fileOperations/apiFileOperations';
 import controllersFileOperations from '../../../src/fileOperations/api/controllersFileOperations';
 import apiMocks from '../../testUtils/apiMocks';
 import schemaMocks from '../../testUtils/schemaMocks';
@@ -14,7 +14,7 @@ describe('Suite for testing the ControllersFileOperations class', () => {
     const apiFileOperations: ApiFileOperations = new ApiFileOperations('api.test');
 
     controllersFileOperations.initializeControllers(apiFileOperations.getFilePath(), schemaMocks.PROCESSED_SCHEMA_ONE_TABLE)
-      .then(async () => {
+      .then(() => {
         const table: Table = schemaMocks.PROCESSED_SCHEMA_ONE_TABLE[0] as Table;
         const model: string = utils.singular(table.name);
 
@@ -28,7 +28,7 @@ describe('Suite for testing the ControllersFileOperations class', () => {
           (err: Error, data: Buffer) => {
             assert.ifError(err);
             assert(data, 'Content should not be empty');
-            assert.equal(data.toString(), apiMocks.VALID_CONTROLLER_ONE_MODEL);
+            assert.strictEqual(data.toString(), apiMocks.VALID_CONTROLLER_ONE_MODEL);
 
             // Read default controller content
             fs.readFile(
@@ -40,7 +40,7 @@ describe('Suite for testing the ControllersFileOperations class', () => {
               (error: Error, d: Buffer) => {
                 assert.ifError(error);
                 assert(data, 'Content should not be empty');
-                assert.equal(d.toString(), apiMocks.VALID_DEFAULT_CONTROLLER);
+                assert.strictEqual(d.toString(), apiMocks.VALID_DEFAULT_CONTROLLER);
 
                 done();
               });

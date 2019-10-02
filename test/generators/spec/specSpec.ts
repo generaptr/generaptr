@@ -68,31 +68,31 @@ const VALID_DELETE: string =
 describe('Suite for testing RamlSpecGeneratorr', () => {
 
   it('should generate a valid get all spec', () => {
-    assert.equal(specGenerator.addGetAllSpec('  ', {name: 'users', columns: []}), VALID_GET_ALL);
+    assert.strictEqual(specGenerator.addGetAllSpec('  ', {name: 'users', columns: []}), VALID_GET_ALL);
   });
 
   it('should generate a valid create spec', () => {
-    assert.equal(specGenerator.addCreateSpec('  ', {name: 'users', columns: []}), VALID_CREATE);
+    assert.strictEqual(specGenerator.addCreateSpec('  ', {name: 'users', columns: []}), VALID_CREATE);
   });
 
   it('should generate a valid get one spec', () => {
-    assert.equal(specGenerator.addGetOneSpec('  ', {name: 'users', columns: []}), VALID_GET_ONE);
+    assert.strictEqual(specGenerator.addGetOneSpec('  ', {name: 'users', columns: []}), VALID_GET_ONE);
   });
 
   it('should generate a valid update spec', () => {
-    assert.equal(specGenerator.addUpdateSpec('  ', {name: 'users', columns: []}), VALID_UPDATE);
+    assert.strictEqual(specGenerator.addUpdateSpec('  ', {name: 'users', columns: []}), VALID_UPDATE);
   });
 
   it('should generate a valid delete spec', () => {
-    assert.equal(specGenerator.addDeleteSpec('  ', {name: 'users', columns: []}), VALID_DELETE);
+    assert.strictEqual(specGenerator.addDeleteSpec('  ', {name: 'users', columns: []}), VALID_DELETE);
   });
 
   it('should add the data types', () => {
-    assert.equal(specGenerator.addDataTypes([{name: 'users', columns: []}]), VALID_DATA_TYPES);
+    assert.strictEqual(specGenerator.addDataTypes([{name: 'users', columns: []}]), VALID_DATA_TYPES);
   });
 
   it('should add the generic info', () => {
-    assert.equal(
+    assert.strictEqual(
       specGenerator.addHeaderContent(
         {name: 'Test Title', version: 'v1', url: '/', output: ''},
       ),

@@ -6,18 +6,16 @@ import { Schema, Table, Column } from '../../../commons/types';
  * Class which implements the logic for generating valid sequelize repositories.
  *
  * @export
- * @class SequelizeRepositoryGenerator
  */
 export default class SequelizeRepositoryGenerator {
 
   /**
    * Generate repositories for a given schema.
    *
-   * @param {Schema} schema - api schema
-   * @return {{name: string, content: string}[]}
+   * @param  schema - api schema
    */
-  public getRepositories(schema: Schema): {name: string; content: string}[] {
-    const repositories: {name: string; content: string}[] = [];
+  public getRepositories(schema: Schema): { name: string; content: string }[] {
+    const repositories: { name: string; content: string }[] = [];
     schema.forEach((table: Table) => {
       repositories.push({
         name: `${utils.toTitleCase(table.name)}Repository.js`,
@@ -30,11 +28,10 @@ export default class SequelizeRepositoryGenerator {
   /**
    * Generate repository for a given table.
    *
-   * @param {Table} table - schema for table
-   * @return {{name: string, content: string}}
+   * @param  table - schema for table
    */
   public getRepositoryForTable(table: Table): string {
-    const related: {names: string[]; includes: string[]} = this.getRelatedEntities(table);
+    const related: { names: string[]; includes: string[] } = this.getRelatedEntities(table);
     const entity: string = utils.toTitleCase(table.name);
 
     return `const ${entity} = require('../models').${entity.toLowerCase()};
@@ -83,10 +80,9 @@ module.exports = new ${entity}Repository();
   /**
    * Generate repositories factory.
    *
-   * @param {Schema} schema - api schema
-   * @return {{name: string, content: string}}
+   * @param  schema - api schema
    */
-  public getRepositoryFactory(schema: Schema): {name: string; content: string} {
+  public getRepositoryFactory(schema: Schema): { name: string; content: string } {
     const models: string[] = schema.map((table: Table) => utils.toTitleCase(table.name));
 
     return {
@@ -110,13 +106,10 @@ module.exports = new RepositoryFactory();
     };
   }
 
-    /**
-     * Format related entities.
-     *
-     * @param {Table} table
-     * @returns {{names: string[]; includes: string[]}}
-     */
-  protected getRelatedEntities(table: Table): {names: string[]; includes: string[]} {
+  /**
+   * Format related entities.
+   */
+  protected getRelatedEntities(table: Table): { names: string[]; includes: string[] } {
     const relations: Column[] = schemaUtils.getRelatedTablesForTable(table);
 
     return {

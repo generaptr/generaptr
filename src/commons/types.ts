@@ -1,5 +1,4 @@
-export type MapOfStrings = {[key: string]: string};
-
+export type MapOfStrings = { [key: string]: string };
 export type RamlColumnSchema = {
   name: string;
   displayName: string;
@@ -66,7 +65,7 @@ export type Table = {
 
 export type Schema = Table[];
 
-export type StringMapOfStrings = {[key: string]: string[]};
+export type StringMapOfStrings = { [key: string]: string[] };
 
 export type Everything = string | number | Object | string[] | number[] | Object[] | {};
 
@@ -125,7 +124,7 @@ export type PackageJson = {
   version: string;
   description: string;
   main: string;
-  scripts: {[key: string]: string};
+  scripts: { [key: string]: string };
   author: string;
   license: string;
   dependencies: MapOfStrings;
