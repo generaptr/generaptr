@@ -107,30 +107,6 @@ describe('Suite for testing the ConfigurationsFileOperations class', () => {
       });
   });
 
-  it('should create express.js file from config folder', (done: Function) => {
-    const apiFileOperations: ApiFileOperations = new ApiFileOperations('api.test');
-
-    configurationsFileOperations.initializeExpressConfig(apiFileOperations.getFilePath())
-      .then(() => {
-        fs.readFile(
-          fileUtil.joinPaths(
-            apiFileOperations.getFilePath(),
-            DIRECTORY_STRUCTURE.API_STRUCTURE.CONFIG,
-            'express.js',
-          ),
-          (err: Error, data: Buffer) => {
-            assert.ifError(err);
-            assert(data, 'Content should not be empty');
-            assert.strictEqual(data.toString(), apiMocks.VALID_EXPRESS_CONFIG);
-            done();
-          });
-      })
-      .catch((err: Error) => {
-        assert.fail(err.message);
-        done();
-      });
-  });
-
   it('should create router.js file from config folder', (done: Function) => {
     const apiFileOperations: ApiFileOperations = new ApiFileOperations('api.test');
 

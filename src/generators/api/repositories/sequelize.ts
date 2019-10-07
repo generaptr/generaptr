@@ -38,37 +38,35 @@ export default class SequelizeRepositoryGenerator {
 ${related.names.map((name: string) => `const ${name} = require('../models').${name.toLowerCase()};`).join('\n')}
 
 class ${entity}Repository {
-  get(id) {
+  async get(id) {
     return ${entity}.findOne({where: {id}, include: [${related.includes.join(', ')}]});
   }
 
-  getAll(offset, limit) {
+  async getAll(offset, limit) {
     return ${entity}.findAll({limit, offset, include: [${related.includes.join(', ')}]});
   }
 
-  save(data) {
-    return ${entity}.create(data).then((created) => {
-      return created.id;
-    });
+  async save(data) {
+    const created = await ${entity}.create(data);
+    return created.id;
   }
 
-  update(id, data) {
-    return ${entity}.findOne({where: {id}}).then(
-      (${entity}) => {
-        return ${entity}.update(data, {where: {id}});
-      }
-    )
+  async update(id, data) {
+    const exists = ${entity}.findOne({where: {id}});
+    if (exists) {
+      return ${entity}.update(data, {where: {id}});
+    }
   }
 
-  delete(id) {
+  async delete(id) {
     return ${entity}.destroy({where: {id}});
   }
 
-  exists(id) {
-    return ${entity}.count({where: {id}}).then((count) => Boolean(count));
+  async exists(id) {
+    return Boolean(await ${entity}.count({where: {id}}));
   }
 
-  count() {
+  async count() {
     return ${entity}.count();
   }
 }

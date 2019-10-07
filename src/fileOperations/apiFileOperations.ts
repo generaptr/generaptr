@@ -132,7 +132,6 @@ export default class ApiFileOperations {
       configFileOperations.initializeGetEnvBasedConfig(this.filePath),
       configFileOperations.initializeDbConfig(connection, this.filePath),
       configFileOperations.initializeCorsConfig(this.filePath),
-      configFileOperations.initializeExpressConfig(this.filePath),
       configFileOperations.initializeRouterConfig(this.filePath, schema),
       configFileOperations.initializeIndex(this.filePath),
     ]);

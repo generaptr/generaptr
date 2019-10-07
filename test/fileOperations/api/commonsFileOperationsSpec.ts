@@ -31,6 +31,30 @@ describe('Suite for testing the CommonsFileOperations class', () => {
       });
   });
 
+  it('should create AppError.js file', (done: Function) => {
+    const apiFileOperations: ApiFileOperations = new ApiFileOperations('api.test');
+
+    commonsFileOperations.initializeAppError(apiFileOperations.getFilePath())
+      .then(() => {
+        fs.readFile(
+          fileUtil.joinPaths(
+            apiFileOperations.getFilePath(),
+            DIRECTORY_STRUCTURE.API_STRUCTURE.COMMONS,
+            "AppError.js",
+          ),
+          (err: Error, data: Buffer) => {
+            assert.ifError(err);
+            assert(data, 'Content should not be empty');
+            assert.strictEqual(data.toString(), apiMocks.VALID_APP_ERROR_CLASS);
+            done();
+          });
+      })
+      .catch((ex: Error) => {
+        assert.fail(ex.message);
+        done();
+      });
+  });
+
   it('should create statusCode.js file', (done: Function) => {
     const apiFileOperations: ApiFileOperations = new ApiFileOperations('api.test');
 

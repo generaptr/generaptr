@@ -24,78 +24,74 @@ module.exports = defaultRoute;`;
    * @return  - string content for generated controller
    */
   public getController(model: string): string {
-    return `const ${model}Route = require('express').Router();
+    return `const router = require('express').Router();
 const ${model}Service = require('../services/${model}Service');
-const Util = require('../commons/util');
+const { generateLocationUri } = require('../commons/util');
 const STATUS_CODE = require('../commons/constants/statusCode');
 
-${model}Route.post('/', (request, response) => {
-  ${model}Service.save(request.body)
-    .then(id => {
-      response.header('Location', Util.generateLocationUri(request, id));
-      response.status(STATUS_CODE.CREATED);
-      response.end();
-    })
-    .catch(err => {
-      response.status(err.status);
-      response.json(err);
-    });
+router.get('/', async (request, response, next) => {
+  try {
+    const data = await ${model}Service.getAll(request.query.offset, request.query.limit);
+    if (!data || data.length === 0) {
+      response
+        .status(STATUS_CODE.NO_CONTENT)
+        .json({success: true});
+    } else {
+      response
+        .status(STATUS_CODE.OK)
+        .json({success: true, data});
+    }
+  } catch (error) {
+    next(error);
+  }
 });
 
-${model}Route.get('/:id', (request, response) => {
-  ${model}Service.get(request.params.id)
-    .then(data => {
-      response.status(STATUS_CODE.OK);
-      response.json(data);
-    })
-    .catch(err => {
-      response.status(err.status);
-      response.json(err);
-    });
+router.post('/', async (request, response, next) => {
+  try {
+    const id = await ${model}Service.save(request.body);
+    response
+      .header('Location', generateLocationUri(request, id))
+      .status(STATUS_CODE.CREATED)
+      .json({success: true});
+  } catch (error) {
+    next(error);
+  }
 });
 
-${model}Route.delete('/:id', (request, response) => {
-  ${model}Service.delete(request.params.id)
-    .then(() => {
-      response.status(STATUS_CODE.NO_CONTENT);
-      response.end();
-    })
-    .catch(err => {
-      response.status(err.status);
-      response.json(err);
-    });
+router.get('/:id', async (request, response, next) => {
+  try {
+    const data = await ${model}Service.get(request.params.id);
+    response
+      .status(STATUS_CODE.OK)
+      .json({success: true, data});
+  } catch (error) {
+    next(error);
+  }
 });
 
-${model}Route.put('/:id', (request, response) => {
-  ${model}Service.update(request.params.id, request.body)
-    .then(data => {
-      response.status(STATUS_CODE.OK);
-      response.json(data);
-    })
-    .catch(err => {
-      response.status(err.status);
-      response.json(err);
-    });
+router.delete('/:id', async (request, response, next) => {
+  try {
+    await ${model}Service.delete(request.params.id)
+    response
+      .status(STATUS_CODE.NO_CONTENT)
+      .json({success: true});
+  } catch(error) {
+    next(error);
+  }
 });
 
-${model}Route.get('/', (request, response) => {
-  ${model}Service.getAll(request.query.offset, request.query.limit)
-    .then(data => {
-      if (!data || data.size === 0) {
-        response.status(STATUS_CODE.NO_CONTENT);
-        response.end();
-      } else {
-        response.status(STATUS_CODE.OK);
-        response.json(data);
-      }
-    })
-    .catch(err => {
-      response.status(err.status);
-      response.json(err);
-    });
+router.put('/:id', async (request, response, next) => {
+  try {
+    const data = await ${model}Service.update(request.params.id, request.body);
+    response
+      .status(STATUS_CODE.OK)
+      .json({success: true, data});
+  } catch(error) {
+    next(error);
+  }
 });
 
-module.exports = ${model}Route;`;
+module.exports = router;`;
   }
 }
 

@@ -16,6 +16,7 @@ export class Service {
     const modelTitleCase: string = utils.toTitleCase(model);
 
     return `const repositoryFactory = require('../repositories/repositoryFactory');
+const AppError = require('../commons/AppError');
 const STATUS_CODE = require('../commons/constants/statusCode');
 
 class ${modelTitleCase}Service {
@@ -23,95 +24,70 @@ class ${modelTitleCase}Service {
     this.repository = repositoryFactory.getRepositoryForModel('${modelTitleCase}');
   }
 
-  save(data) {
-    return new Promise((resolve, reject) => {
-      this.repository.save(data)
-        .then(id => {
-          resolve(id);
-        })
-        .catch(err => {
-          reject({'status': STATUS_CODE.INTERNAL_SERVER_ERROR, 'message': err.message});
-        });
-    });
+  async save(data) {
+    try {
+      return this.repository.save(data);
+    catch (error) {
+      throw new AppError(error.message, STATUS_CODE.INTERNAL_SERVER_ERROR);
+    }
   }
 
-  get(id) {
-    return new Promise((resolve, reject) => {
-      this.repository.get(id)
-        .then(data => {
-          if (!data) {
-            return reject({'status': STATUS_CODE.NOT_FOUND, 'message': 'No ${modelTitleCase} found with id ' + id});
-          }
-          resolve(data);
-        })
-        .catch(err => {
-          reject({'status': STATUS_CODE.INTERNAL_SERVER_ERROR, 'message': err.message});
-        });
-    });
+  async get(id) {
+    try {
+      const data = await this.repository.get(id);
+      if (!data) {
+        throw new AppError('No ${modelTitleCase} found with id ' + id}, STATUS_CODE.NOT_FOUND);
+      }
+
+      return data;
+    catch (error) {
+      throw new AppError(error.message, STATUS_CODE.INTERNAL_SERVER_ERROR);
+    }
   }
 
-  getAll(offset = 0, limit = 15) {
-     const result = {
-      meta: {
-        offset: offset,
-        limit: limit,
-        count: 0
-      },
-      data: []
-     };
+  async getAll(offset = 0, limit = 15) {
+    try {
+      const result = {
+        meta: {
+          offset: offset,
+          limit: limit,
+          count: 0
+        },
+        data: []
+      };
 
-     return new Promise((resolve, reject) => {
-      this.repository.getAll(Number(offset), Number(limit))
-        .then(data => {
-          result.data = data;
+      const data = await this.repository.getAll(Number(offset), Number(limit));
+      const count = await this.repository.count();
 
-          return this.repository.count();
-        })
-        .then(count => {
-          result.meta.count = count;
-
-          resolve(result);
-        })
-        .catch(err => {
-          reject({'status': STATUS_CODE.INTERNAL_SERVER_ERROR, 'message': err.message});
-        });
-     });
+      result.data = data;
+      result.meta.count = count;
+    } catch (error) {
+      throw new AppError(error.message, STATUS_CODE.INTERNAL_SERVER_ERROR);
+    }
   }
 
-  delete(id) {
-    return new Promise((resolve, reject) => {
-      this.repository.exists(id)
-        .then(exists => {
-          if (!exists) {
-            return reject({'status': STATUS_CODE.NOT_FOUND, 'message': 'No ${modelTitleCase} found with id: ' + id});
-          }
-          return this.repository.delete(id);
-        })
-        .then(affected${modelTitleCase} => {
-          resolve(true);
-        })
-        .catch(err => {
-          reject({'status': STATUS_CODE.INTERNAL_SERVER_ERROR, 'message': err.message});
-        });
-    });
+  async delete(id) {
+    try{
+      const exists = await this.repository.exists(id);
+      if (!exists) {
+        throw new AppError('No ${modelTitleCase} found with id: ' + id, STATUS_CODE.NOT_FOUND);
+      }
+      return this.repository.delete(id);
+    } catch (error) {
+      throw new AppError(error.message, STATUS_CODE.INTERNAL_SERVER_ERROR);
+    }
   }
 
-  update(id, data) {
-    return new Promise((resolve, reject) => {
-      this.repository.exists(id)
-        .then(exists => {
-          if (!exists) {
-            return reject({'status': STATUS_CODE.NOT_FOUND, 'message': 'No ${modelTitleCase} found with id ' + id});
-          }
-          return this.repository.update(id, data);
-        })
-        .then(data => {
-          resolve(data);
-        })
-        .catch(err => {
-          reject({'status': STATUS_CODE.INTERNAL_SERVER_ERROR, 'message': err.message});
-        });
-    });
+  async update(id, data) {
+    try {
+      const exists = await this.repository.exists(id);
+      if (!exists) {
+        throw new AppError('No ${modelTitleCase} found with id: ' + id, STATUS_CODE.NOT_FOUND);
+      }
+      return this.repository.update(id, data);
+    } catch (error) {
+      throw new AppError(error.message, STATUS_CODE.INTERNAL_SERVER_ERROR);
+    }
   }
 }
 
