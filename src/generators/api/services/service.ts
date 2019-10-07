@@ -27,7 +27,7 @@ class ${modelTitleCase}Service {
   async save(data) {
     try {
       return this.repository.save(data);
-    catch (error) {
+    } catch (error) {
       throw new AppError(error.message, STATUS_CODE.INTERNAL_SERVER_ERROR);
     }
   }
@@ -36,11 +36,11 @@ class ${modelTitleCase}Service {
     try {
       const data = await this.repository.get(id);
       if (!data) {
-        throw new AppError('No ${modelTitleCase} found with id ' + id}, STATUS_CODE.NOT_FOUND);
+        throw new AppError('No ${modelTitleCase} found with id ' + id, STATUS_CODE.NOT_FOUND);
       }
 
       return data;
-    catch (error) {
+    } catch (error) {
       throw new AppError(error.message, STATUS_CODE.INTERNAL_SERVER_ERROR);
     }
   }
@@ -61,13 +61,15 @@ class ${modelTitleCase}Service {
 
       result.data = data;
       result.meta.count = count;
+
+      return result;
     } catch (error) {
       throw new AppError(error.message, STATUS_CODE.INTERNAL_SERVER_ERROR);
     }
   }
 
   async delete(id) {
-    try{
+    try {
       const exists = await this.repository.exists(id);
       if (!exists) {
         throw new AppError('No ${modelTitleCase} found with id: ' + id, STATUS_CODE.NOT_FOUND);
@@ -84,7 +86,9 @@ class ${modelTitleCase}Service {
       if (!exists) {
         throw new AppError('No ${modelTitleCase} found with id: ' + id, STATUS_CODE.NOT_FOUND);
       }
-      return this.repository.update(id, data);
+      await this.repository.update(id, data);
+
+      return this.get(id);
     } catch (error) {
       throw new AppError(error.message, STATUS_CODE.INTERNAL_SERVER_ERROR);
     }

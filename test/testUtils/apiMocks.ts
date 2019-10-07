@@ -141,7 +141,7 @@ const AppError = require('./commons/AppError');
 const profile = require('./configs/index.js').getEnvBasedConfig();
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
-const cors = require('../middlewares/cors');
+const cors = require('./middlewares/cors');
 const router = require('./configs/router.js');
 
 const app = express();
@@ -149,6 +149,8 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(morgan(profile.morgan));
 app.use(cors);
+
+app.use('/', router);
 
 app.use((error, req, res, next) => {
   if (error) {
@@ -166,8 +168,6 @@ app.use((error, req, res, next) => {
     next();
   }
 });
-
-app.use('/', router);
 
 app.listen(profile.APP_PORT, () => {
   console.log('App started on port: ' + profile.APP_PORT);
@@ -193,7 +193,7 @@ class UserService {
   async save(data) {
     try {
       return this.repository.save(data);
-    catch (error) {
+    } catch (error) {
       throw new AppError(error.message, STATUS_CODE.INTERNAL_SERVER_ERROR);
     }
   }
@@ -202,11 +202,11 @@ class UserService {
     try {
       const data = await this.repository.get(id);
       if (!data) {
-        throw new AppError('No User found with id ' + id}, STATUS_CODE.NOT_FOUND);
+        throw new AppError('No User found with id ' + id, STATUS_CODE.NOT_FOUND);
       }
 
       return data;
-    catch (error) {
+    } catch (error) {
       throw new AppError(error.message, STATUS_CODE.INTERNAL_SERVER_ERROR);
     }
   }
@@ -227,13 +227,15 @@ class UserService {
 
       result.data = data;
       result.meta.count = count;
+
+      return result;
     } catch (error) {
       throw new AppError(error.message, STATUS_CODE.INTERNAL_SERVER_ERROR);
     }
   }
 
   async delete(id) {
-    try{
+    try {
       const exists = await this.repository.exists(id);
       if (!exists) {
         throw new AppError('No User found with id: ' + id, STATUS_CODE.NOT_FOUND);
@@ -250,7 +252,9 @@ class UserService {
       if (!exists) {
         throw new AppError('No User found with id: ' + id, STATUS_CODE.NOT_FOUND);
       }
-      return this.repository.update(id, data);
+      await this.repository.update(id, data);
+
+      return this.get(id);
     } catch (error) {
       throw new AppError(error.message, STATUS_CODE.INTERNAL_SERVER_ERROR);
     }

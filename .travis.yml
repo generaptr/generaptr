@@ -33,3 +33,4 @@ after_success:
   - npm run coveralls
   - rm -rf ./raml.test
   - rm -rf ./api.test
+  - rm -rf ./nyc_output
