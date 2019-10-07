@@ -22,6 +22,18 @@ export class CommonsFileOperations {
   }
 
   /**
+   * Initialize AppError class
+   * @param  filePath - file path where api will be generated
+   * @return  - true if was successfully created
+   */
+  public async initializeAppError(filePath: string): Promise<boolean> {
+    return fileUtil.writeFile(
+      fileUtil.joinPaths(filePath, DIRECTORY_STRUCTURE.API_STRUCTURE.COMMONS, 'AppError.js'),
+      util.getAppError(),
+    );
+  }
+
+  /**
    * Initialize constants classes
    * @param  filePath - file path where api will be generated
    * @return  - true if was successfully created

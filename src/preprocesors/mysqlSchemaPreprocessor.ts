@@ -1,7 +1,6 @@
 import typeUtil from '../commons/utils/typeUtil';
 import utils from '../commons/utils/utils';
 import schemaUtil from '../commons/utils/schemaUtil';
-import logger from '../commons/logger';
 import config from '../configs/config';
 import { Schema, Table, Column, MySqlColumnSchema } from '../commons/types';
 
@@ -56,8 +55,6 @@ export default class MysqlSchemaPreprocessor {
     normalizedSchema = this.normalizeManyToManyRelations(normalizedSchema);
     normalizedSchema = this.cleanupUnusedPropertiesFromColumns(normalizedSchema);
     normalizedSchema = this.stripEmptyTables(normalizedSchema);
-
-    logger.info(JSON.stringify(normalizedSchema));
 
     return normalizedSchema;
   }

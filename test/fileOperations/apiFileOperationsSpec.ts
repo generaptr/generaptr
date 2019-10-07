@@ -55,7 +55,7 @@ describe('Suite for testing ApiFileOperation class', () => {
         const promises: [Promise<boolean>] = [Promise.resolve(true)];
 
         // Config folder
-        ['config.js', 'index.js', 'database.js', 'express.js', 'router.js'].forEach((file: string) => {
+        ['config.js', 'index.js', 'database.js', 'router.js'].forEach((file: string) => {
           promises.push(new Promise((resolve: Function, reject: Function): void => {
             fs.stat(
               path.join(

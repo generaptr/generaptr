@@ -99,13 +99,19 @@ module.exports = db;
   "INTERNAL_SERVER_ERROR": 500,
   "BAD_GATEWAY": 502
 };`,
-  VALID_UTIL_CLASS: `class Util {
-  generateLocationUri(request, id) {
-    return request.protocol + '://' + request.get('host') + request.originalUrl + '/' + id;
-  }
-}
+  VALID_UTIL_CLASS: `module.exports.generateLocationUri = (request, id) => request.protocol + '://' + request.get('host') + request.originalUrl + '/' + id;`,
+  VALID_APP_ERROR_CLASS: `module.exports = class AppError extends Error {
 
-module.exports = new Util();`,
+  constructor(message, status = 400, type, data) {
+    super(message);
+    this.name = this.constructor.name;
+    Error.captureStackTrace(this, this.constructor);
+    this.status = status;
+    this.type = type;
+    this.data = data;
+  }
+
+};`,
   VALID_CONFIG_VALUE: `module.exports = {
   development: {
     morgan: 'dev',
@@ -130,28 +136,38 @@ module.exports = {
 
     next();
 };`,
-  VALID_EXPRESS_CONFIG: `const bodyParser = require('body-parser');
-const morgan = require('morgan');
-const cors = require('../middlewares/cors');
-const profile = require('./index.js').getEnvBasedConfig();
-
-module.exports = (app) => {
-  app.use(bodyParser.json());
-  app.use(bodyParser.urlencoded({extended: false}));
-  app.use(morgan(profile.morgan));
-  app.use(cors);
-
-  return app;
-};`,
   VALID_INDEX_FILE: `const express = require('express');
+const AppError = require('./commons/AppError');
 const profile = require('./configs/index.js').getEnvBasedConfig();
-const loadExpressConfig = require('./configs/express.js');
+const bodyParser = require('body-parser');
+const morgan = require('morgan');
+const cors = require('./middlewares/cors');
 const router = require('./configs/router.js');
 
-let app = express();
-app = loadExpressConfig(app);
+const app = express();
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: false}));
+app.use(morgan(profile.morgan));
+app.use(cors);
 
 app.use('/', router);
+
+app.use((error, req, res, next) => {
+  if (error) {
+    const response = {
+    success: false,
+    message: error.message || 'Something went wrong. Please try again later',
+  };
+  if (error instanceof AppError) {
+    response.type = error.type;
+    response.data = error.data || [];
+  }
+
+  res.status(error.status || 500).json(response);
+  } else {
+    next();
+  }
+});
 
 app.listen(profile.APP_PORT, () => {
   console.log('App started on port: ' + profile.APP_PORT);
@@ -166,6 +182,7 @@ router.use('/users', userController);
 
 module.exports = router;`,
   VALID_SERVICE_ONE_MODEL: `const repositoryFactory = require('../repositories/repositoryFactory');
+const AppError = require('../commons/AppError');
 const STATUS_CODE = require('../commons/constants/statusCode');
 
 class UserService {
@@ -173,95 +190,74 @@ class UserService {
     this.repository = repositoryFactory.getRepositoryForModel('User');
   }
 
-  save(data) {
-    return new Promise((resolve, reject) => {
-      this.repository.save(data)
-        .then(id => {
-          resolve(id);
-        })
-        .catch(err => {
-          reject({'status': STATUS_CODE.INTERNAL_SERVER_ERROR, 'message': err.message});
-        });
-    });
+  async save(data) {
+    try {
+      return this.repository.save(data);
+    } catch (error) {
+      throw new AppError(error.message, STATUS_CODE.INTERNAL_SERVER_ERROR);
+    }
   }
 
-  get(id) {
-    return new Promise((resolve, reject) => {
-      this.repository.get(id)
-        .then(data => {
-          if (!data) {
-            return reject({'status': STATUS_CODE.NOT_FOUND, 'message': 'No User found with id ' + id});
-          }
-          resolve(data);
-        })
-        .catch(err => {
-          reject({'status': STATUS_CODE.INTERNAL_SERVER_ERROR, 'message': err.message});
-        });
-    });
+  async get(id) {
+    try {
+      const data = await this.repository.get(id);
+      if (!data) {
+        throw new AppError('No User found with id ' + id, STATUS_CODE.NOT_FOUND);
+      }
+
+      return data;
+    } catch (error) {
+      throw new AppError(error.message, STATUS_CODE.INTERNAL_SERVER_ERROR);
+    }
   }
 
-  getAll(offset = 0, limit = 15) {
-     const result = {
-      meta: {
-        offset: offset,
-        limit: limit,
-        count: 0
-      },
-      data: []
-     };
+  async getAll(offset = 0, limit = 15) {
+    try {
+      const result = {
+        meta: {
+          offset: offset,
+          limit: limit,
+          count: 0
+        },
+        data: []
+      };
 
-     return new Promise((resolve, reject) => {
-      this.repository.getAll(Number(offset), Number(limit))
-        .then(data => {
-          result.data = data;
+      const data = await this.repository.getAll(Number(offset), Number(limit));
+      const count = await this.repository.count();
 
-          return this.repository.count();
-        })
-        .then(count => {
-          result.meta.count = count;
+      result.data = data;
+      result.meta.count = count;
 
-          resolve(result);
-        })
-        .catch(err => {
-          reject({'status': STATUS_CODE.INTERNAL_SERVER_ERROR, 'message': err.message});
-        });
-     });
+      return result;
+    } catch (error) {
+      throw new AppError(error.message, STATUS_CODE.INTERNAL_SERVER_ERROR);
+    }
   }
 
-  delete(id) {
-    return new Promise((resolve, reject) => {
-      this.repository.exists(id)
-        .then(exists => {
-          if (!exists) {
-            return reject({'status': STATUS_CODE.NOT_FOUND, 'message': 'No User found with id: ' + id});
-          }
-          return this.repository.delete(id);
-        })
-        .then(affectedUser => {
-          resolve(true);
-        })
-        .catch(err => {
-          reject({'status': STATUS_CODE.INTERNAL_SERVER_ERROR, 'message': err.message});
-        });
-    });
+  async delete(id) {
+    try {
+      const exists = await this.repository.exists(id);
+      if (!exists) {
+        throw new AppError('No User found with id: ' + id, STATUS_CODE.NOT_FOUND);
+      }
+      return this.repository.delete(id);
+    } catch (error) {
+      throw new AppError(error.message, STATUS_CODE.INTERNAL_SERVER_ERROR);
+    }
   }
 
-  update(id, data) {
-    return new Promise((resolve, reject) => {
-      this.repository.exists(id)
-        .then(exists => {
-          if (!exists) {
-            return reject({'status': STATUS_CODE.NOT_FOUND, 'message': 'No User found with id ' + id});
-          }
-          return this.repository.update(id, data);
-        })
-        .then(data => {
-          resolve(data);
-        })
-        .catch(err => {
-          reject({'status': STATUS_CODE.INTERNAL_SERVER_ERROR, 'message': err.message});
-        });
-    });
+  async update(id, data) {
+    try {
+      const exists = await this.repository.exists(id);
+      if (!exists) {
+        throw new AppError('No User found with id: ' + id, STATUS_CODE.NOT_FOUND);
+      }
+      await this.repository.update(id, data);
+
+      return this.get(id);
+    } catch (error) {
+      throw new AppError(error.message, STATUS_CODE.INTERNAL_SERVER_ERROR);
+    }
   }
 }
 
@@ -273,76 +269,72 @@ defaultRoute.get('/', (request, response, next) => {
 });
 
 module.exports = defaultRoute;`,
-  VALID_CONTROLLER_ONE_MODEL: `const userRoute = require('express').Router();
+  VALID_CONTROLLER_ONE_MODEL: `const router = require('express').Router();
 const userService = require('../services/userService');
-const Util = require('../commons/util');
+const { generateLocationUri } = require('../commons/util');
 const STATUS_CODE = require('../commons/constants/statusCode');
 
-userRoute.post('/', (request, response) => {
-  userService.save(request.body)
-    .then(id => {
-      response.header('Location', Util.generateLocationUri(request, id));
-      response.status(STATUS_CODE.CREATED);
-      response.end();
-    })
-    .catch(err => {
-      response.status(err.status);
-      response.json(err);
-    });
+router.get('/', async (request, response, next) => {
+  try {
+    const data = await userService.getAll(request.query.offset, request.query.limit);
+    if (!data || data.length === 0) {
+      response
+        .status(STATUS_CODE.NO_CONTENT)
+        .json({success: true});
+    } else {
+      response
+        .status(STATUS_CODE.OK)
+        .json({success: true, data});
+    }
+  } catch (error) {
+    next(error);
+  }
 });
 
-userRoute.get('/:id', (request, response) => {
-  userService.get(request.params.id)
-    .then(data => {
-      response.status(STATUS_CODE.OK);
-      response.json(data);
-    })
-    .catch(err => {
-      response.status(err.status);
-      response.json(err);
-    });
+router.post('/', async (request, response, next) => {
+  try {
+    const id = await userService.save(request.body);
+    response
+      .header('Location', generateLocationUri(request, id))
+      .status(STATUS_CODE.CREATED)
+      .json({success: true});
+  } catch (error) {
+    next(error);
+  }
 });
 
-userRoute.delete('/:id', (request, response) => {
-  userService.delete(request.params.id)
-    .then(() => {
-      response.status(STATUS_CODE.NO_CONTENT);
-      response.end();
-    })
-    .catch(err => {
-      response.status(err.status);
-      response.json(err);
-    });
+router.get('/:id', async (request, response, next) => {
+  try {
+    const data = await userService.get(request.params.id);
+    response
+      .status(STATUS_CODE.OK)
+      .json({success: true, data});
+  } catch (error) {
+    next(error);
+  }
 });
 
-userRoute.put('/:id', (request, response) => {
-  userService.update(request.params.id, request.body)
-    .then(data => {
-      response.status(STATUS_CODE.OK);
-      response.json(data);
-    })
-    .catch(err => {
-      response.status(err.status);
-      response.json(err);
-    });
+router.delete('/:id', async (request, response, next) => {
+  try {
+    await userService.delete(request.params.id)
+    response
+      .status(STATUS_CODE.NO_CONTENT)
+      .json({success: true});
+  } catch(error) {
+    next(error);
+  }
 });
 
-userRoute.get('/', (request, response) => {
-  userService.getAll(request.query.offset, request.query.limit)
-    .then(data => {
-      if (!data || data.size === 0) {
-        response.status(STATUS_CODE.NO_CONTENT);
-        response.end();
-      } else {
-        response.status(STATUS_CODE.OK);
-        response.json(data);
-      }
-    })
-    .catch(err => {
-      response.status(err.status);
-      response.json(err);
-    });
+router.put('/:id', async (request, response, next) => {
+  try {
+    const data = await userService.update(request.params.id, request.body);
+    response
+      .status(STATUS_CODE.OK)
+      .json({success: true, data});
+  } catch(error) {
+    next(error);
+  }
 });
 
-module.exports = userRoute;`,
+module.exports = router;`,
 };

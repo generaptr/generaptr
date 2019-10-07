@@ -3,7 +3,6 @@ import fileUtil from '../../commons/utils/fileUtil';
 import DIRECTORY_STRUCTURE from '../../commons/constants/directoryStructure';
 import config from '../../generators/api/config/config';
 import cors from '../../generators/api/config/cors';
-import express from '../../generators/api/config/express';
 import router from '../../generators/api/config/router';
 import index from '../../generators/api/config/index';
 import { ConnectionData, Schema } from '../../commons/types';
@@ -65,18 +64,6 @@ export class ConfigurationFileOperations {
     return fileUtil.writeFile(
       fileUtil.joinPaths(filePath, DIRECTORY_STRUCTURE.API_STRUCTURE.MIDDLEWARES, 'cors.js'),
       cors.getCorsConfig(),
-    );
-  }
-
-  /**
-   * Initialize express configuration
-   * @param filePath - file path where api will be generated
-   * @return  - true if express file was successfully created
-   */
-  public async initializeExpressConfig(filePath: string): Promise<boolean> {
-    return fileUtil.writeFile(
-      fileUtil.joinPaths(filePath, DIRECTORY_STRUCTURE.API_STRUCTURE.CONFIG, 'express.js'),
-      express.getExpressConfig(),
     );
   }
 
