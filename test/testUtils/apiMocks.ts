@@ -99,7 +99,7 @@ module.exports = db;
   "INTERNAL_SERVER_ERROR": 500,
   "BAD_GATEWAY": 502
 };`,
-  VALID_UTIL_CLASS: `module.exports = generateLocationUri = (request, id) => request.protocol + '://' + request.get('host') + request.originalUrl + '/' + id;`,
+  VALID_UTIL_CLASS: `module.exports.generateLocationUri = (request, id) => request.protocol + '://' + request.get('host') + request.originalUrl + '/' + id;`,
   VALID_APP_ERROR_CLASS: `module.exports = class AppError extends Error {
 
   constructor(message, status = 400, type, data) {

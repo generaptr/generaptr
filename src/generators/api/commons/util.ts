@@ -10,7 +10,7 @@ export class Util {
    * @return  - Util class content as string
    */
   public getUtil(): string {
-    return `module.exports = generateLocationUri = (request, id) => request.protocol + '://' + request.get('host') + request.originalUrl + '/' + id;`;
+    return `module.exports.generateLocationUri = (request, id) => request.protocol + '://' + request.get('host') + request.originalUrl + '/' + id;`;
   }
 
   /**
