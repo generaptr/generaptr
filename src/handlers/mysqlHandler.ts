@@ -121,6 +121,7 @@ export default class MysqlHandler extends BaseHandler {
               if (relation) {
                 column.foreignKey = true;
                 column.dataType.references = relation;
+                column.dataType.references.type = column.dataType.type;
                 column.dataType.type = Utils.toTitleCase(relation.table);
                 column.name = Utils.singular(relation.table);
               }
@@ -162,6 +163,7 @@ export default class MysqlHandler extends BaseHandler {
                 name: relation.COLUMN_NAME,
                 table: relation.REFERENCED_TABLE_NAME,
                 column: relation.REFERENCED_COLUMN_NAME,
+                type: '',
               };
 
               return reference;

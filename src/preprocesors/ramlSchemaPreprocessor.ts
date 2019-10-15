@@ -72,7 +72,7 @@ export default class RamlSchemaPreprocessor {
           !typeUtil.isDefaultType(column.dataType.type)
         ) {
           column.dataType.relationType = '1-1';
-          column.dataType.isRelationHolder = true;
+          column.dataType.options = {isOwner: true};
         }
 
         return column;
@@ -103,7 +103,7 @@ export default class RamlSchemaPreprocessor {
           !typeUtil.isDefaultType(column.dataType.type)
         ) {
           column.dataType.relationType = '1-n';
-          column.dataType.isRelationHolder = true;
+          column.dataType.options = {isOwner: true};
         } else if (
           !column.allowNull &&
           !column.dataType.isArray &&
@@ -143,7 +143,7 @@ export default class RamlSchemaPreprocessor {
           !typeUtil.isDefaultType(column.dataType.type)
         ) {
           column.dataType.relationType = 'n-n';
-          column.dataType.isRelationHolder = true;
+          column.dataType.options = {isOwner: true};
         }
 
         return column;

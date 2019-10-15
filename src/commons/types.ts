@@ -36,6 +36,13 @@ export type TableReference = {
   name: string;
   table: string;
   column: string;
+  type: string;
+};
+
+export type RelationOptions = {
+  isOwner?: boolean;
+  through?: string;
+  foreignKey?: string;
 };
 
 export type DataType = {
@@ -44,8 +51,8 @@ export type DataType = {
   rawValues?: string;
   values?: string[];
   isArray?: boolean;
-  relationType?: '1-1' | '1-n' | 'n-n';
-  isRelationHolder?: boolean;
+  relationType?: string; // '1-1' | '1-n' | 'n-n';
+  options?: RelationOptions;
   references?: TableReference;
 };
 
