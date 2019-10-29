@@ -54,7 +54,6 @@ export default class MysqlSchemaPreprocessor {
     normalizedSchema = this.normalizeOneToManyRelations(normalizedSchema);
     normalizedSchema = this.normalizeManyToManyRelations(normalizedSchema);
     normalizedSchema = this.cleanupUnusedPropertiesFromColumns(normalizedSchema);
-    normalizedSchema = this.stripEmptyTables(normalizedSchema);
 
     return normalizedSchema;
   }
@@ -70,50 +69,55 @@ export default class MysqlSchemaPreprocessor {
    */
   private normalizeOneToOneRelations(schema: Schema): Schema {
     let updatedSchema: Schema = schema;
-    schema.forEach((table: Table) => {
-      if (!this.tableHasForeignKeys(table) || this.tableIsCrossReferenceTable(table)) {
-        return table;
-      }
-      table.columns.forEach((column: Column) => {
-        if (column.foreignKey && column.unique && column.dataType.references) {
-          const targetColumn: Column = {
-            name: schemaUtil.relationIsAlias(column) ? utils.toColumnName(column.dataType.references.name) : column.name,
-            primary: column.primary,
-            unique: true,
-            allowNull: false,
-            dataType: {
-              type: column.dataType.type,
-              isArray: false,
-              relationType: '1-1',
-            },
-          };
-          const sourceColumn: Column = {
-            name: utils.singular(table.name).toLowerCase(),
-            primary: column.primary,
-            unique: true,
-            allowNull: true,
-            dataType: {
-              type: utils.toTitleCase(table.name),
-              isArray: false,
-              relationType: '1-1',
-              isRelationHolder: true,
-            },
-          };
-          updatedSchema = this.addColumnToTable(
-            updatedSchema,
-            column.dataType.references.table,
-            sourceColumn,
-          );
-          updatedSchema = this.addColumnToTable(
-            updatedSchema,
-            table.name,
-            targetColumn,
-          );
-        }
-      });
 
-      return table;
-    });
+    for (const table of schema) {
+      if (!this.tableHasForeignKeys(table) || this.tableIsCrossReferenceTable(table)) {
+        continue;
+      }
+
+      for (const column of table.columns) {
+        if (!(column.foreignKey && column.unique && column.dataType.references)) {
+          continue;
+        }
+
+        const targetColumn: Column = {
+          name: schemaUtil.relationIsAlias(column) ? utils.toColumnName(column.dataType.references.name) : column.name,
+          primary: column.primary,
+          unique: true,
+          allowNull: false,
+          dataType: {
+            type: column.dataType.type,
+            isArray: false,
+            relationType: '1-1',
+          },
+        };
+        const sourceColumn: Column = {
+          name: utils.singular(table.name).toLowerCase(),
+          primary: column.primary,
+          unique: true,
+          allowNull: true,
+          dataType: {
+            type: utils.toTitleCase(table.name),
+            isArray: false,
+            relationType: '1-1',
+            references: column.dataType.references,
+            options: {
+              isOwner: true,
+            },
+          },
+        };
+        updatedSchema = this.addColumnToTable(
+          updatedSchema,
+          column.dataType.references.table,
+          sourceColumn,
+        );
+        updatedSchema = this.addColumnToTable(
+          updatedSchema,
+          table.name,
+          targetColumn,
+        );
+      }
+    }
 
     return updatedSchema;
   }
@@ -129,53 +133,54 @@ export default class MysqlSchemaPreprocessor {
    */
   private normalizeOneToManyRelations(schema: Schema): Schema {
     let updatedSchema: Schema = schema;
-    schema.forEach((table: Table) => {
-      if (!this.tableHasForeignKeys(table) || this.tableIsCrossReferenceTable(table)) {
-        return table;
-      }
-      table.columns.forEach((column: Column) => {
-        if (column.foreignKey && column.dataType.references) {
-          const sourceColumn: Column = {
-            name: schemaUtil.relationIsAlias(column) ? utils.toColumnName(column.dataType.references.name) : column.name,
-            primary: column.primary,
-            unique: false,
-            allowNull: false,
-            dataType: {
-              type: utils.toTitleCase(column.name),
-              isArray: false,
-              relationType: '1-n',
-            },
-          };
-          const targetColumn: Column = {
-            name: schemaUtil.relationIsAlias(column) ? `${table.name}_${utils.toColumnName(column.dataType.references.name)}` : table.name,
-            primary: column.primary,
-            unique: false,
-            allowNull: true,
-            dataType: {
-              type: utils.toTitleCase(table.name),
-              isArray: true,
-              relationType: '1-n',
-              isRelationHolder: true,
-            },
-          };
-          updatedSchema = this.addColumnToTable(
-            updatedSchema,
-            column.dataType.references.table,
-            targetColumn,
-          );
-          updatedSchema = this.addColumnToTable(
-            updatedSchema,
-            table.name,
-            sourceColumn,
-          );
-          if (schemaUtil.relationIsAlias(column)) {
-            updatedSchema = this.removeColumnFromTable(updatedSchema, table.name, column.name);
-          }
-        }
-      });
 
-      return table;
-    });
+    for (const table of schema) {
+      if (!this.tableHasForeignKeys(table) || this.tableIsCrossReferenceTable(table)) {
+        continue;
+      }
+
+      for (const column of table.columns) {
+        if (!(column.foreignKey && column.dataType.references)) {
+          continue;
+        }
+        const sourceColumn: Column = {
+          name: schemaUtil.relationIsAlias(column) ? utils.toColumnName(column.dataType.references.name) : column.name,
+          primary: column.primary,
+          unique: false,
+          allowNull: false,
+          dataType: {
+            type: utils.toTitleCase(column.name),
+            isArray: false,
+            relationType: '1-n',
+          },
+        };
+        const targetColumn: Column = {
+          name: schemaUtil.relationIsAlias(column) ? `${table.name}_as_${utils.toColumnName(column.dataType.references.name)}` : table.name,
+          primary: column.primary,
+          unique: false,
+          allowNull: true,
+          dataType: {
+            type: utils.toTitleCase(table.name),
+            isArray: true,
+            relationType: '1-n',
+            references: column.dataType.references,
+            options: {
+              isOwner: true,
+            },
+          },
+        };
+        updatedSchema = this.addColumnToTable(
+          updatedSchema,
+          column.dataType.references.table,
+          targetColumn,
+        );
+        updatedSchema = this.addColumnToTable(
+          updatedSchema,
+          table.name,
+          sourceColumn,
+        );
+      }
+    }
 
     return updatedSchema;
   }
@@ -191,10 +196,11 @@ export default class MysqlSchemaPreprocessor {
    */
   private normalizeManyToManyRelations(schema: Schema): Schema {
     let updatedSchema: Schema = schema;
-    schema.forEach((table: Table) => {
+    for (const table of schema) {
       if (!this.tableIsCrossReferenceTable(table) || table.columns.length !== CROSS_REFERENCE_COL_LENGTH) {
-        return table;
+        continue;
       }
+
       const source: Column = table.columns[FIRST_INDEX];
       const target: Column = table.columns[SECOND_INDEX];
 
@@ -207,7 +213,12 @@ export default class MysqlSchemaPreprocessor {
           type: utils.toTitleCase(source.dataType.type),
           isArray: true,
           relationType: 'n-n',
-          isRelationHolder: true,
+          references: source.dataType.references,
+          options: {
+            isOwner: true,
+            through: table.name,
+            foreignKey: source.dataType.references && source.dataType.references.name,
+          },
         },
       };
 
@@ -220,10 +231,14 @@ export default class MysqlSchemaPreprocessor {
           type: utils.toTitleCase(target.dataType.type),
           isArray: true,
           relationType: 'n-n',
-          isRelationHolder: true,
+          references: target.dataType.references,
+          options: {
+            isOwner: true,
+            through: table.name,
+            foreignKey: target.dataType.references && target.dataType.references.name,
+          },
         },
       };
-
       updatedSchema = this.addColumnToTable(
         updatedSchema,
         source.dataType.references ? source.dataType.references.table : '',
@@ -234,23 +249,14 @@ export default class MysqlSchemaPreprocessor {
         target.dataType.references ? target.dataType.references.table : '',
         sourceColumn,
       );
+
       updatedSchema = this.removeColumnFromTable(updatedSchema, table.name, source.name);
       updatedSchema = this.removeColumnFromTable(updatedSchema, table.name, target.name);
-
-      return table;
-    });
+      updatedSchema = this.addColumnToTable(updatedSchema, table.name, sourceColumn);
+      updatedSchema = this.addColumnToTable(updatedSchema, table.name, targetColumn);
+    }
 
     return updatedSchema;
-  }
-
-  /**
-   * Strips tables with no columns from schema.
-   *
-   * @param  schema db schema
-   * @returns cleaned up schema
-   */
-  private stripEmptyTables(schema: Schema): Schema {
-    return schema.filter((table: Table) => Boolean(Object.keys(table.columns).length));
   }
 
   /**

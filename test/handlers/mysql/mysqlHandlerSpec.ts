@@ -87,7 +87,7 @@ describe('Suite for testing MySqlHandler class', () => {
     try {
       if (handler) {
         handler.readSchema().then((schema: Schema) => {
-          assert.strictEqual(schema.length, 4);
+          assert.strictEqual(schema.length, 5);
 
           const users: Table = schema.filter((table: Table) => table.name === 'users')[0];
           const accounts: Table = schema.filter((table: Table) => table.name === 'accounts')[0];

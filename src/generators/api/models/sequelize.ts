@@ -108,6 +108,7 @@ module.exports = db;
     return `module.exports = (sequelize, DataTypes) => {
   const ${utils.toTitleCase(table.name)} = sequelize.define('${utils.singular(table.name).toLowerCase()}', {
 ${this.getBasicDataTypes(table)}
+${this.getReferencedDataTypes(table)}
   }, {
     tableName: '${table.name}',
     timestamps: false,
@@ -144,6 +145,29 @@ ${this.getRelations(table)}
 
   }
 
+  private getReferencedDataTypes(table: Table): string {
+    let dataTypes: string = '';
+    if (table.columns.length !== 2 || !table.columns.every((column: Column) => column.dataType.references && column.dataType.references.table)) {
+      return dataTypes;
+    }
+
+    table.columns.forEach((column: Column) => {
+      const type: DataType = { type: column.dataType.references && column.dataType.references.type || ''};
+      dataTypes += `    ${column.dataType.options && column.dataType.options.foreignKey}: {
+      type: ${this.getType(type)},
+      allowNull: ${column.allowNull ? 'true' : 'false'},
+      unique: false,
+      primaryKey: false,
+      references: {
+        model: '${column.dataType.type.toLowerCase()}',
+        key: '${column.dataType.references && column.dataType.references.column}'
+      }
+    },\n`;
+    });
+
+    return dataTypes;
+  }
+
   /**
    * Returns the string version of the sequelize type.
    * @param  type source
@@ -174,25 +198,25 @@ ${this.getRelations(table)}
     return table.columns.filter((column: Column) => !typeUtil.isDefaultType(column.dataType.type)).map((column: Column) => {
       switch (column.dataType.relationType) {
         case '1-1': {
-          if (column.dataType.isRelationHolder) {
-            return `    ${modelName}.hasOne(models.${column.dataType.type.toLowerCase()}, {as: '${column.name}'});`;
+          if (column.dataType.options && column.dataType.options.isOwner) {
+            return `    ${modelName}.hasOne(models.${column.dataType.type.toLowerCase()}, {as: '${column.name}', foreignKey: '${column.dataType.references && column.dataType.references.name}'});`;
           }
 
-          return `    ${modelName}.belongsTo(models.${column.dataType.type.toLowerCase()}, {as: '${column.name}'});`;
+          return '';
         }
         case '1-n': {
-          if (column.dataType.isRelationHolder) {
-            return `    ${modelName}.hasMany(models.${column.dataType.type.toLowerCase()}, {as: '${column.name}'});`;
+          if (column.dataType.options && column.dataType.options.isOwner) {
+            return `    ${modelName}.hasMany(models.${column.dataType.type.toLowerCase()}, {as: '${column.name}', foreignKey: '${column.dataType.references && column.dataType.references.name}'});`;
           }
 
           return `    ${modelName}.belongsTo(models.${column.dataType.type.toLowerCase()}, {as: '${column.name}'});`;
         }
         case 'n-n': {
           if (modelName.localeCompare(column.dataType.type) > 0) {
-            return `    ${modelName}.belongsToMany(models.${column.dataType.type.toLowerCase()}, {through: '${utils.pluralize(modelName).toLowerCase()}_${utils.pluralize(column.dataType.type).toLowerCase()}', as: '${column.name}'});`;
+            return `    ${modelName}.belongsToMany(models.${column.dataType.type.toLowerCase()}, {through: models.${column.dataType.options && column.dataType.options.through}, foreignKey: '${column.dataType.options && column.dataType.options.foreignKey}', as: '${column.name}'});`;
           }
 
-          return `    ${modelName}.belongsToMany(models.${column.dataType.type.toLowerCase()}, {through: '${utils.pluralize(column.dataType.type).toLowerCase()}_${utils.pluralize(modelName).toLowerCase()}', as: '${column.name}'});`;
+          return `    ${modelName}.belongsToMany(models.${column.dataType.type.toLowerCase()}, {through: models.${column.dataType.options && column.dataType.options.through}, foreignKey: '${column.dataType.options && column.dataType.options.foreignKey}', as: '${column.name}'});`;
         }
         default:
           return '';
