@@ -67,7 +67,7 @@
     "raml-1-parser": "^1.1.57",
     "rimraf": "^3.0.0",
     "tslint": "^5.20.0",
-    "typedoc": "^0.15.0",
+    "typedoc": "^0.17.6",
     "typescript": "^3.6.3"
   },
   "config": {
