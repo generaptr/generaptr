@@ -45,7 +45,7 @@
     "@types/bunyan": "^1.8.6",
     "@types/faker": "^4.1.5",
     "@types/fs-extra": "^8.0.0",
-    "@types/mocha": "^5.2.7",
+    "@types/mocha": "^10.0.6",
     "@types/mysql2": "github:types/mysql2",
     "@types/node": "^12.7.9",
     "@types/pluralize": "^0.0.29",
@@ -54,7 +54,7 @@
     "coveralls": "^3.0.6",
     "cz-conventional-changelog": "^3.0.2",
     "nyc": "^14.1.1",
-    "mocha": "^6.2.1"
+    "mocha": "^10.2.0"
   },
   "dependencies": {
     "bunyan": "^1.8.12",
