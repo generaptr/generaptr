@@ -238,13 +238,15 @@
 
 "@types/mysql2@github:types/mysql2":
   version "1.0.0"
-  resolved "https://codeload.github.com/types/mysql2/tar.gz/217efd4ccf9eccc0797522aa745d8a9e264f6a75"
+  uid "89378b2cb3974ea8cdd1d633b8f056e54e5d2384"
+  resolved "https://codeload.github.com/types/mysql2/tar.gz/89378b2cb3974ea8cdd1d633b8f056e54e5d2384"
   dependencies:
-    "@types/mysql" types/mysql#v2.0.0
+    "@types/mysql" types/mysql
 
-"@types/mysql@types/mysql#v2.0.0":
+"@types/mysql@types/mysql":
   version "2.0.0"
-  resolved "https://codeload.github.com/types/mysql/tar.gz/da645a82afd66419ed439dddf174648aa68ba1f9"
+  uid c26b1bc2bac17010081455e3127a90fb2eafcec9
+  resolved "https://codeload.github.com/types/mysql/tar.gz/c26b1bc2bac17010081455e3127a90fb2eafcec9"
 
 "@types/node@*", "@types/node@^12.0.2", "@types/node@^12.7.9":
   version "12.7.9"
