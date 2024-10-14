@@ -43,7 +43,7 @@
   "devDependencies": {
     "@types/assert": "^1.4.3",
     "@types/bunyan": "^1.8.6",
-    "@types/faker": "^4.1.5",
+    "@types/faker": "^6.6.9",
     "@types/fs-extra": "^8.0.0",
     "@types/mocha": "^10.0.6",
     "@types/mysql2": "github:types/mysql2",
@@ -59,7 +59,7 @@
   "dependencies": {
     "bunyan": "^1.8.12",
     "chalk": "^2.4.2",
-    "faker": "^4.1.0",
+    "faker": "^6.6.6",
     "fs-extra": "^8.1.0",
     "mysql2": "^3.9.8",
     "npm-run-all": "^4.1.5",
