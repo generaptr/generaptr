@@ -5,7 +5,8 @@ import type { OpenApiDocument } from '../spec/openapi.js';
 type JsonSchema = Record<string, any>;
 
 /** How a form edits a value and how the web app turns the input back into JSON. */
-export type Kind = 'string' | 'integer' | 'number' | 'boolean' | 'enum' | 'array' | 'json' | 'reference';
+/** `json` is a JSON column; `raw` is any other value without a JSON Schema type, such as a custom type. */
+export type Kind = 'string' | 'integer' | 'number' | 'boolean' | 'enum' | 'array' | 'json' | 'raw' | 'reference';
 export type Field = { kind: Kind; nullable: boolean };
 /** A GET the web app runs before it shows a page, and where in the page state the result goes. */
 export type Load = { path: unknown; into: string; pluck?: string; form?: Record<string, Field> };
@@ -25,7 +26,7 @@ const words = (key: string): string => {
 const singular = (name: string): string => name.replace(/s$/, '');
 const refName = (schema: JsonSchema | undefined): string => String(schema?.$ref).split('/').pop() as string;
 const types = (property: JsonSchema): string[] => [property.type ?? []].flat();
-const show = (value: unknown, full = false) => ({ $computed: 'show', args: { value, ...(full ? { full } : {}) } });
+const show = (value: unknown) => ({ $computed: 'show', args: { value } });
 const navigate = (to: unknown) => ({ press: { action: 'navigate', params: { to } } });
 const openRow = (base: string, id: string) => ({ press: { action: 'navigate', params: { base, id: { $item: id } } } });
 
@@ -91,9 +92,16 @@ export const webPages = (doc: OpenApiDocument): { title: string; resources: Reso
       return schemas[refName((doc.paths[item][method] as JsonSchema).requestBody.content['application/json'].schema)];
     };
     const propertiesOf = (schema: JsonSchema): [string, JsonSchema][] => Object.entries(schema.properties as Record<string, JsonSchema>);
+    const kindIn = (field: string, value: JsonSchema): Kind => {
+      if (references.has(field)) {
+        return 'reference';
+      }
+      const kind: Kind = kindOf(value);
+      return kind === 'json' && !/^jsonb?$/i.test(row.properties[field]?.['x-column']?.columnType ?? '') ? 'raw' : kind;
+    };
     const fieldsOf = (schema: JsonSchema): Record<string, Field> => Object.fromEntries(propertiesOf(schema)
       .map(([field, value]: [string, JsonSchema]) => [field, {
-        kind: references.has(field) ? 'reference' : kindOf(value), nullable: types(value).includes('null'),
+        kind: kindIn(field, value), nullable: row.properties[field]?.['x-column']?.nullable ?? types(value).includes('null'),
       }]));
 
     const list = (): Page => {
@@ -133,8 +141,11 @@ export const webPages = (doc: OpenApiDocument): { title: string; resources: Reso
       const { elements, el } = builder();
       const value = (field: string): string => {
         const foreignKey: DbForeignKey | undefined = references.get(field);
+        if (['json', 'raw'].includes(kindIn(field, row.properties[field]))) {
+          return el('Json', { value: { $state: `/row/${field}` } });
+        }
         if (!foreignKey) {
-          return el('Text', { text: show({ $state: `/row/${field}` }, true), variant: 'body' });
+          return el('Text', { text: show({ $state: `/row/${field}` }), variant: 'body' });
         }
         return el('Stack', { direction: 'horizontal', gap: 'none' }, [
           el('Link', {
@@ -215,7 +226,11 @@ export const webPages = (doc: OpenApiDocument): { title: string; resources: Reso
             return el('Select', { label: `${label} (${words(foreignKey.table)})`, name: field, options: { $state: `/options/${field}` }, value: bind, checks });
           }
           case 'json':
-            return el('Textarea', { label: `${label} (JSON)`, name: field, value: bind, checks });
+            return el('Textarea', {
+              label: `${label} (JSON)`, name: field, value: bind, checks: [...checks, { type: 'json', message: `${label} is not valid JSON.` }], validateOn: 'change',
+            });
+          case 'raw':
+            return el('Textarea', { label, name: field, value: bind, checks });
           default: {
             const numeric: boolean = fields[field].kind === 'integer' || fields[field].kind === 'number';
             const placeholders: Record<string, string> = { array: 'Values separated by commas', 'date-time': '2026-01-31T10:00:00Z', base64: 'Base64' };
@@ -232,7 +247,7 @@ export const webPages = (doc: OpenApiDocument): { title: string; resources: Reso
         : { method: 'PUT', path: { $template: here }, partial: true, next: { $template: here } };
       const root = el('Stack', { direction: 'vertical', gap: 'md' }, [
         el('Heading', { text: mode === 'create' ? `New ${thing}` : { $template: `Edit ${thing} \${/route/id}` }, level: 'h2' }),
-        el('Card', { maxWidth: 'lg' }, [
+        el('Card', { className: 'max-w-3xl' }, [
           el('Stack', { direction: 'vertical', gap: 'md' }, [
             ...inputs,
             el('Alert', { title: 'The API did not save the row.', message: { $state: '/error' }, type: 'error' }, [], { visible: { $state: '/error' } }),

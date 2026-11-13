@@ -2,7 +2,7 @@
 import assert from 'node:assert';
 import type { DbColumn, DbTable } from '../../../src/commons/types.js';
 import { openApiDocument } from '../../../src/generators/spec/openapi.js';
-import { type Element, type Page, webPages } from '../../../src/generators/web/pages.js';
+import { type Element, type Field, type Page, webPages } from '../../../src/generators/web/pages.js';
 
 const column = (name: string, columnType: string, extra: Partial<DbColumn> = {}): DbColumn => ({
   name, columnType, nullable: false, autoIncrement: false, ...extra,
@@ -18,6 +18,8 @@ const tables: DbTable[] = [
       column('role', "enum('admin','member')"),
       column('avatar', 'blob', { nullable: true }),
       column('created_at', 'datetime', { default: 'CURRENT_TIMESTAMP' }),
+      column('settings', 'json', { nullable: true }),
+      column('shape', 'geometry', { nullable: true }),
     ],
     primaryKey: { name: 'PRIMARY', columns: ['id'] },
   },
@@ -64,6 +66,17 @@ describe('web pages', () => {
     assert.deepStrictEqual(owner?.visible, { $state: '/row/owner' });
     const accounts = elements(resource('users').pages.detail).find((element: Element) => element.props.title === 'User accounts');
     assert.deepStrictEqual(accounts?.visible, { $state: '/row/userAccounts/0' });
+  });
+
+  it('shows JSON as a tree, checks JSON in forms, and keeps other untyped values as text', () => {
+    const { detail, create } = resource('users').pages;
+    const trees: Element[] = elements(detail).filter((element: Element) => element.type === 'Json');
+    assert.deepStrictEqual(trees.map((tree: Element) => tree.props.value), [{ $state: '/row/settings' }, { $state: '/row/shape' }]);
+    assert.deepStrictEqual(labelled(create, 'Settings (JSON)')?.props.checks, [{ type: 'json', message: 'Settings is not valid JSON.' }]);
+    assert.deepStrictEqual(labelled(create, 'Shape')?.props.checks, []);
+    const button = labelled(create, 'Create user') as Element;
+    const save = (button.on as { press: { params: { fields: Record<string, Field> } }[] }).press[1].params.fields;
+    assert.deepStrictEqual([save.settings, save.shape], [{ kind: 'json', nullable: true }, { kind: 'raw', nullable: true }]);
   });
 
   it('fills the page width with every vertical stack', () => {

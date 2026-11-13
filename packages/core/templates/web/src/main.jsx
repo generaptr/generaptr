@@ -7,13 +7,85 @@ import { shadcnComponents } from '@json-render/shadcn';
 import { shadcnComponentDefinitions } from '@json-render/shadcn/catalog';
 import { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import { z } from 'zod';
 import { resources, title } from './pages.json';
 import './index.css';
 
+const LONG_TEXT = 200;
+
+// A string longer than LONG_TEXT shows its start and a button for the rest.
+function JsonText({ text }) {
+  const [all, setAll] = useState(false);
+  if (all || text.length <= LONG_TEXT) {
+    return <span className="text-emerald-700 whitespace-pre-wrap break-words">"{text}"</span>;
+  }
+  return (
+    <span className="text-emerald-700 break-words">
+      "{text.slice(0, LONG_TEXT)}…"{' '}
+      <button type="button" className="text-foreground underline underline-offset-4" onClick={() => setAll(true)}>
+        Show all {text.length} characters
+      </button>
+    </span>
+  );
+}
+
+// Objects and arrays fold with the browser's own <details>; the first two levels start open.
+function JsonTree({ value, depth = 0 }) {
+  if (value === null || value === undefined) {
+    return <span className="text-muted-foreground">{depth ? 'null' : '—'}</span>;
+  }
+  if (typeof value === 'string') {
+    return depth ? <JsonText text={value} /> : <span className="whitespace-pre-wrap break-words">{value}</span>;
+  }
+  if (typeof value !== 'object') {
+    return <span className="text-sky-700">{String(value)}</span>;
+  }
+  const entries = Array.isArray(value) ? value.map((item, index) => [index, item]) : Object.entries(value);
+  if (!entries.length) {
+    return <span className="text-muted-foreground">{Array.isArray(value) ? 'No items' : 'No keys'}</span>;
+  }
+  return (
+    <details open={depth < 2}>
+      <summary className="cursor-pointer text-muted-foreground">
+        {entries.length} {Array.isArray(value) ? (entries.length === 1 ? 'item' : 'items') : entries.length === 1 ? 'key' : 'keys'}
+      </summary>
+      <dl className="ml-1 border-l pl-3">
+        {entries.map(([key, item]) => (
+          <div key={key} className="flex gap-2">
+            <dt className="shrink-0 text-muted-foreground">{key}</dt>
+            <dd className="min-w-0">
+              <JsonTree value={item} depth={depth + 1} />
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </details>
+  );
+}
+
 const used = ['Card', 'Stack', 'Grid', 'Heading', 'Text', 'Button', 'Link', 'Input', 'Textarea', 'Select', 'Switch', 'Alert'];
 const pick = (all) => Object.fromEntries(used.map((name) => [name, all[name]]));
-const catalog = defineCatalog(schema, { components: pick(shadcnComponentDefinitions), actions: {} });
-const { registry } = defineRegistry(catalog, { components: pick(shadcnComponents) });
+const catalog = defineCatalog(schema, {
+  components: {
+    ...pick(shadcnComponentDefinitions),
+    Json: { props: z.object({ value: z.unknown() }), description: 'A JSON value as a tree that folds' },
+  },
+  actions: {},
+});
+const { registry } = defineRegistry(catalog, {
+  components: { ...pick(shadcnComponents), Json: ({ props }) => <div className="text-sm"><JsonTree value={props.value} /></div> },
+});
+
+const parses = (text) => {
+  try {
+    JSON.parse(text);
+    return true;
+  } catch {
+    return false;
+  }
+};
+// The form checks a JSON field as the user types; an empty field is the `required` check's job.
+const validationFunctions = { json: (value) => value === undefined || value === '' || parses(String(value)) };
 
 // #/users, #/users/new, #/users/7, #/users/7/edit
 const route = (hash) => {
@@ -54,19 +126,11 @@ const toForm = (row, fields) => Object.fromEntries(Object.entries(fields).map(([
   if (field.kind === 'array') {
     return [key, value.join(', ')];
   }
-  if (field.kind === 'json' && typeof value !== 'string') {
+  if ((field.kind === 'json' || field.kind === 'raw') && typeof value !== 'string') {
     return [key, JSON.stringify(value, null, 2)];
   }
   return [key, String(value)];
 }));
-
-const parsed = (text) => {
-  try {
-    return JSON.parse(text);
-  } catch {
-    return text;
-  }
-};
 
 const toBody = (form, fields, partial) => Object.fromEntries(Object.entries(fields).flatMap(([key, field]) => {
   const value = form[key];
@@ -79,11 +143,12 @@ const toBody = (form, fields, partial) => Object.fromEntries(Object.entries(fiel
   if (field.kind === 'array') {
     return [[key, String(value).split(',').map((item) => item.trim()).filter(Boolean)]];
   }
-  return [[key, field.kind === 'json' ? parsed(String(value)) : value]];
+  // A JSON column takes parsed JSON; a value of any other type goes to the database as the text it is.
+  return [[key, field.kind === 'json' ? JSON.parse(String(value)) : value]];
 }));
 
-// A list cell shows one line; a detail page (`full`) shows objects as indented JSON.
-const show = ({ value, full }) => {
+// A list cell: one line.
+const show = ({ value }) => {
   if (value === null || value === undefined || value === '' || (Array.isArray(value) && !value.length)) {
     return '—';
   }
@@ -93,7 +158,7 @@ const show = ({ value, full }) => {
   if (Array.isArray(value) && value.every((item) => typeof item !== 'object' || item === null)) {
     return value.join(', ');
   }
-  return typeof value === 'object' ? JSON.stringify(value, null, full ? 2 : undefined) : String(value);
+  return typeof value === 'object' ? JSON.stringify(value) : String(value);
 };
 
 function App() {
@@ -179,7 +244,14 @@ function App() {
         ))}
       </nav>
       <main className="p-6 max-w-screen-2xl w-full min-w-0">
-        <JSONUIProvider key={hash} registry={registry} store={store} handlers={handlers} functions={{ show }}>
+        <JSONUIProvider
+          key={hash}
+          registry={registry}
+          store={store}
+          handlers={handlers}
+          functions={{ show }}
+          validationFunctions={validationFunctions}
+        >
           <Renderer spec={current.page.spec} registry={registry} />
         </JSONUIProvider>
       </main>
