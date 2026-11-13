@@ -77,10 +77,10 @@ describe('generated Express + Drizzle API', () => {
     assert.strictEqual((await send('GET', `/users/${userId}`)).status, 404);
   });
 
-  it('returns a JSON error for a bad write', async () => {
+  it('hides database errors behind a generic 500', async () => {
     const response = await send('POST', '/accounts', { type: 'admin', userId: 999999999 });
     assert.strictEqual(response.status, 500);
-    assert.ok((await json<{ message: string }>(response)).message);
+    assert.deepStrictEqual(await json<object>(response), { message: 'Internal Server Error' });
   });
 
   it('rejects an invalid body with 400 before it reaches the database', async () => {

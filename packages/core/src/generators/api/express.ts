@@ -18,27 +18,49 @@ const PLAIN: string[] = [
   'date', 'datetime', 'timestamp', 'time', 'year', 'json', 'float', 'double',
 ];
 
+const unsupported = (column: DbColumn): Error =>
+  new Error(`Unsupported MySQL type "${column.columnType}" for column ${column.name}`);
+
+/** Parses MySQL enum values (`'a','it''s'`). Returns undefined when the list is malformed. */
+const enumValues = (args: string): string[] | undefined => {
+  const values: string[] = [...args.matchAll(/'((?:[^']|'')*)'/g)].map((m: RegExpMatchArray) => m[1]);
+  const rebuilt: string = values.map((value: string) => `'${value}'`).join(',');
+
+  return values.length && rebuilt === args ? values.map((value: string) => value.replace(/''/g, "'")) : undefined;
+};
+
 /** Returns the Drizzle builder name and its call for one MySQL column. */
 export const columnBuilder = (column: DbColumn): { builder: string; call: string } => {
-  const match: RegExpMatchArray | null = column.columnType.match(/^(\w+)(?:\((.*)\))?(.*)$/);
+  const match: RegExpMatchArray | null = column.columnType.match(/^([a-z]+)(?:\((.*)\))?( unsigned)?( zerofill)?$/);
   if (!match) {
-    throw new Error(`Unsupported MySQL type "${column.columnType}" for column ${column.name}`);
+    throw unsupported(column);
   }
-  const [, base, args = '', rest] = match;
+  const [, base, args = '', unsignedFlag] = match;
   const name: string = JSON.stringify(column.name);
-  const unsigned: boolean = rest.includes('unsigned');
+  const unsigned: boolean = Boolean(unsignedFlag);
+  const digits: boolean = /^\d+$/.test(args);
 
+  if (base === 'enum') {
+    const values: string[] | undefined = enumValues(args);
+    if (!values) {
+      throw unsupported(column);
+    }
+    return { builder: 'mysqlEnum', call: `mysqlEnum(${name}, ${JSON.stringify(values)})` };
+  }
+  if (args && !digits && base !== 'decimal') {
+    throw unsupported(column);
+  }
   if (base === 'tinyint' && args === '1') {
     return { builder: 'boolean', call: `boolean(${name})` };
   }
-  if (base === 'enum') {
-    return { builder: 'mysqlEnum', call: `mysqlEnum(${name}, [${args}])` };
-  }
   if (base === 'decimal') {
-    const [precision, scale = '0'] = args.split(',');
-    return { builder: 'decimal', call: `decimal(${name}, { precision: ${precision}, scale: ${scale} })` };
+    const size: RegExpMatchArray | null = args.match(/^(\d+)(?:,(\d+))?$/);
+    if (!size) {
+      throw unsupported(column);
+    }
+    return { builder: 'decimal', call: `decimal(${name}, { precision: ${size[1]}, scale: ${size[2] ?? 0} })` };
   }
-  if (SIZED.includes(base)) {
+  if (SIZED.includes(base) && digits) {
     return { builder: base, call: `${base}(${name}, { length: ${args} })` };
   }
   if (base === 'bigint') {
@@ -50,7 +72,24 @@ export const columnBuilder = (column: DbColumn): { builder: string; call: string
   if (PLAIN.includes(base)) {
     return { builder: base, call: `${base}(${name})` };
   }
-  throw new Error(`Unsupported MySQL type "${column.columnType}" for column ${column.name}`);
+  throw unsupported(column);
+};
+
+const SAFE_NAME: RegExp = /^[A-Za-z_][A-Za-z0-9_]*$/;
+
+/** Names become JS identifiers, URL paths and file names in the generated code. */
+const assertSafeNames = (tables: DbTable[]): void => {
+  const names: string[] = tables.flatMap((table: DbTable) => [
+    table.name,
+    ...table.columns.flatMap((column: DbColumn) => [
+      column.name,
+      ...(column.references ? [column.references.table, column.references.column] : []),
+    ]),
+  ]);
+  const unsafe: string | undefined = names.find((name: string) => !SAFE_NAME.test(name));
+  if (unsafe !== undefined) {
+    throw new Error(`Unsafe name "${unsafe}": generaptr supports names with letters, digits, and _ only`);
+  }
 };
 
 const primaryColumns = (table: DbTable): DbColumn[] => table.columns.filter((column: DbColumn) => column.primary);
@@ -171,8 +210,11 @@ app.use((err, req, res, next) => {
   if (err instanceof ZodError) {
     return res.status(400).json({ message: 'Invalid request body', issues: err.issues });
   }
+  if (err.status >= 400 && err.status < 500) {
+    return res.status(err.status).json({ message: err.message });
+  }
   console.error(err);
-  res.status(err.status ?? 500).json({ message: err.message });
+  res.status(500).json({ message: 'Internal Server Error' });
 });
 `;
 };
@@ -202,6 +244,7 @@ export const packageJson = (info: PackageJsonInfo): string => {
 
 /** Every file of the generated API, keyed by path relative to the output directory. */
 export const renderApi = (tables: DbTable[], info: PackageJsonInfo): Record<string, string> => {
+  assertSafeNames(tables);
   const files: Record<string, string> = {
     'package.json': packageJson(info),
     '.gitignore': 'node_modules\n.env\n',
