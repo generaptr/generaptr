@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>generaptr: a REST API from your database tables</title>
+<meta name="description" content="Generaptr reads the tables of a MySQL or PostgreSQL database and writes an Express 5 + Drizzle API and an OpenAPI 3.1 document.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #EEF2EE;
+    --paper-raised: #F7F9F6;
+    --ink: #13261C;
+    --ink-soft: #46594D;
+    --fern: #2F7D4F;
+    --line: #C6D2C9;
+    --code-bg: #10211A;
+    --code-ink: #D5E3D8;
+    --code-dim: #7E9A86;
+    --moss: #9CCFA8;
+    --sand: #E3CB8E;
+    --warn: #8A5A12;
+    --warn-bg: #F6ECD6;
+    --measure: 68ch;
+    --sans: "Bricolage Grotesque", system-ui, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font: 400 1.0625rem/1.6 var(--sans);
+    font-optical-sizing: auto;
+  }
+  a { color: var(--fern); text-underline-offset: 0.18em; }
+  a:hover { color: var(--ink); }
+  :focus-visible { outline: 3px solid var(--fern); outline-offset: 3px; border-radius: 4px; }
+  code, pre { font-family: var(--mono); font-size: 0.875rem; }
+  :not(pre) > code { background: #DFE7E1; padding: 0.08em 0.35em; border-radius: 4px; }
+
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+
+  header.site {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding: 28px 0;
+  }
+  header.site img { height: 34px; width: auto; display: block; }
+  header.site nav { display: flex; gap: 22px; flex-wrap: wrap; }
+  header.site nav a { color: var(--ink); text-decoration: none; font-weight: 600; }
+  header.site nav a:hover { color: var(--fern); }
+
+  .hero { padding: 56px 0 40px; }
+  .hero h1 {
+    font-size: clamp(2.6rem, 6.4vw, 5.2rem);
+    line-height: 0.98;
+    letter-spacing: -0.035em;
+    font-weight: 800;
+    margin: 0 0 24px;
+    max-width: 15ch;
+  }
+  .hero p { font-size: 1.25rem; color: var(--ink-soft); max-width: 46ch; margin: 0 0 32px; }
+
+  .command {
+    display: inline-flex; align-items: stretch;
+    background: var(--code-bg); color: var(--code-ink);
+    border-radius: 10px; overflow: hidden;
+  }
+  .command code { background: none; padding: 14px 18px; font-size: 1rem; color: var(--code-ink); }
+  .command code::before { content: "$ "; color: var(--code-dim); }
+  .command button {
+    font: 600 0.9375rem var(--sans);
+    border: 0; background: var(--fern); color: #fff; padding: 0 18px; cursor: pointer;
+  }
+  .command button:hover { background: #276A43; }
+  .hero .after { margin: 14px 0 0; font-size: 0.9375rem; color: var(--ink-soft); }
+
+  /* The one bold moment: table in, API out. */
+  .transform {
+    display: grid; grid-template-columns: minmax(0, 0.9fr) auto minmax(0, 1.3fr);
+    gap: 0; align-items: stretch;
+    background: var(--code-bg); color: var(--code-ink);
+    border-radius: 16px; overflow: hidden;
+    margin: 24px 0 96px;
+  }
+  .transform figure { margin: 0; padding: 28px 28px 32px; min-width: 0; }
+  .transform figcaption { font: 600 0.9375rem var(--sans); color: var(--moss); margin-bottom: 14px; }
+  .transform pre { margin: 0; overflow-x: auto; line-height: 1.65; color: var(--code-ink); }
+  .transform .arrow span { display: inline-block; }
+  .transform .arrow {
+    display: flex; align-items: center; justify-content: center;
+    padding: 0 6px; color: var(--sand); font-size: 2rem;
+    border-left: 1px solid #23392D; border-right: 1px solid #23392D;
+  }
+  .k { color: var(--moss); }
+  .s { color: var(--sand); }
+  .c { color: var(--code-dim); }
+  .routes { margin-top: 22px; border-top: 1px solid #23392D; padding-top: 18px; }
+  .routes div { display: grid; grid-template-columns: 4.5rem 1fr; font-family: var(--mono); font-size: 0.875rem; line-height: 1.9; }
+  .routes b { color: var(--sand); font-weight: 500; }
+
+  section.doc { display: grid; grid-template-columns: 15rem minmax(0, 1fr); gap: 48px; padding: 56px 0; border-top: 1px solid var(--line); }
+  section.doc > h2 {
+    margin: 0; font-size: 1.75rem; line-height: 1.15; letter-spacing: -0.02em; font-weight: 800;
+    position: sticky; top: 24px; align-self: start;
+  }
+  section.doc .body { max-width: var(--measure); }
+  section.doc .body > :first-child { margin-top: 0; }
+  section.doc h3 { font-size: 1.125rem; margin: 32px 0 8px; }
+  section.doc p, section.doc li { color: var(--ink); }
+  section.doc ul { padding-left: 1.2em; }
+  section.doc li { margin: 6px 0; }
+
+  pre.block {
+    background: var(--code-bg); color: var(--code-ink);
+    padding: 18px 20px; border-radius: 10px; overflow-x: auto; line-height: 1.6;
+  }
+
+  .ways { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--paper-raised); }
+  .ways > div { padding: 20px 22px; }
+  .ways > div + div { border-left: 1px solid var(--line); }
+  .ways h3 { margin: 0 0 6px; }
+  .ways p { margin: 0; color: var(--ink-soft); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.9375rem; }
+  th, td { text-align: left; vertical-align: top; padding: 10px 12px 10px 0; border-bottom: 1px solid var(--line); }
+  th { font-weight: 600; }
+  td code { white-space: nowrap; }
+  .table-scroll { overflow-x: auto; }
+
+  .warning {
+    background: var(--warn-bg); color: #3D2A08; border-left: 4px solid var(--warn);
+    padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0;
+  }
+  .warning strong { color: var(--warn); }
+
+  .limits li a { font-weight: 600; }
+
+  footer.site { border-top: 1px solid var(--line); padding: 32px 0 48px; color: var(--ink-soft); font-size: 0.9375rem; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+
+  @media (max-width: 860px) {
+    .transform { grid-template-columns: minmax(0, 1fr); }
+    .transform .arrow { border: 0; border-top: 1px solid #23392D; border-bottom: 1px solid #23392D; padding: 6px 0; }
+    .transform .arrow span { transform: rotate(90deg); }
+    section.doc { grid-template-columns: minmax(0, 1fr); gap: 16px; padding: 44px 0; }
+    section.doc > h2 { position: static; }
+    .ways { grid-template-columns: 1fr; }
+    .ways > div + div { border-left: 0; border-top: 1px solid var(--line); }
+  }
+  @media (max-width: 520px) {
+    .wrap { padding: 0 16px; }
+    header.site nav { gap: 14px; }
+    .command { display: flex; }
+    .command code { flex: 1; overflow-x: auto; font-size: 0.9375rem; }
+    .transform figure { padding: 22px 18px 24px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="site">
+    <a href="./" aria-label="generaptr home"><img src="logo.png" alt="generaptr" width="273" height="70"></a>
+    <nav aria-label="Site">
+      <a href="#generated-api">Docs</a>
+      <a href="https://github.com/generaptr/generaptr">GitHub</a>
+      <a href="https://www.npmjs.com/package/generaptr-cli">npm</a>
+      <a href="https://github.com/generaptr/generaptr/blob/master/CHANGELOG.md">Changelog</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="hero">
+      <h1>Point it at your database. Get a working API.</h1>
+      <p>Generaptr reads the tables of a MySQL or PostgreSQL database and writes an Express&nbsp;5 + Drizzle API, with validation and an OpenAPI&nbsp;3.1 document that describes it.</p>
+      <div class="command">
+        <code id="cmd">npx generaptr-cli</code>
+        <button type="button" data-copy="cmd">Copy</button>
+      </div>
+      <p class="after">Node 22 or later. The CLI asks for the connection, then writes the project.</p>
+    </div>
+
+    <section class="transform" aria-label="Example: a table and the code generaptr writes for it">
+      <figure>
+        <figcaption>Your table</figcaption>
+<pre><span class="k">CREATE TABLE</span> users (
+  id         <span class="k">serial PRIMARY KEY</span>,
+  email      <span class="k">varchar</span>(50) <span class="k">NOT NULL UNIQUE</span>,
+  active     <span class="k">boolean NOT NULL DEFAULT</span> true,
+  created_at <span class="k">timestamptz NOT NULL</span>
+             <span class="k">DEFAULT</span> now()
+);</pre>
+      </figure>
+      <div class="arrow" aria-hidden="true"><span>&rarr;</span></div>
+      <figure>
+        <figcaption>Your API: <code style="background:none;padding:0;color:inherit">src/db/schema.js</code> and its routes</figcaption>
+<pre><span class="k">export const</span> users = pgTable(<span class="s">"users"</span>, {
+  id: serial(<span class="s">"id"</span>).primaryKey(),
+  email: varchar(<span class="s">"email"</span>, { length: 50 }).notNull().unique(),
+  active: boolean(<span class="s">"active"</span>).notNull()
+    .default(sql.raw(<span class="s">"true"</span>)),
+  createdAt: timestamp(<span class="s">"created_at"</span>, { withTimezone: true })
+    .notNull().default(sql.raw(<span class="s">"now()"</span>)),
+});</pre>
+        <div class="routes">
+          <div><b>GET</b><span>/users?limit=20&amp;offset=0</span></div>
+          <div><b>POST</b><span>/users <span class="c">201, Location: /users/1</span></span></div>
+          <div><b>GET</b><span>/users/{id} <span class="c">404 when missing</span></span></div>
+          <div><b>PUT</b><span>/users/{id} <span class="c">204</span></span></div>
+          <div><b>DELETE</b><span>/users/{id} <span class="c">204</span></span></div>
+        </div>
+      </figure>
+    </section>
+
+    <section class="doc" id="generated-api" aria-labelledby="h-generated">
+      <h2 id="h-generated">The generated API</h2>
+      <div class="body">
+        <pre class="block">api/
+├── package.json        <span class="c"># exact versions of express, drizzle-orm, the driver, zod</span>
+├── drizzle.config.js
+├── .env.example        <span class="c"># DATABASE_URL</span>
+├── openapi.json
+└── src/
+    ├── index.js
+    ├── app.js          <span class="c"># one router per table</span>
+    ├── db/schema.js    <span class="c"># one Drizzle table per database table</span>
+    └── routes/users.js <span class="c"># list, get, create, update, delete</span></pre>
+        <ul>
+          <li>Each table with one primary key gets five routes. Link tables with a composite key get none.</li>
+          <li>zod schemas from <code>drizzle-orm/zod</code> check each request body. A bad body gets 400 with the list of problems.</li>
+          <li>Database errors get a generic 500. The response never shows the database message.</li>
+          <li>Defaults, enums, unique keys, and foreign keys come from the database, so a client can leave out the columns that the database fills.</li>
+        </ul>
+        <pre class="block">cd api
+cp .env.example .env    <span class="c"># set DATABASE_URL</span>
+npm start</pre>
+      </div>
+    </section>
+
+    <section class="doc" aria-labelledby="h-inputs">
+      <h2 id="h-inputs">Read from a database or a spec</h2>
+      <div class="body">
+        <div class="ways">
+          <div>
+            <h3>A database</h3>
+            <p>MySQL through <code>information_schema</code>, PostgreSQL through <code>pg_catalog</code>. The user needs read access only.</p>
+          </div>
+          <div>
+            <h3>An OpenAPI 3.1 file</h3>
+            <p>A file that generaptr wrote reads back to the same tables. Other files map by convention: each object schema becomes a table.</p>
+          </div>
+        </div>
+        <p>From either source, generaptr writes the full API, or only <code>openapi.json</code>. An OpenAPI file can target MySQL or PostgreSQL, so you can move a schema from one engine to the other.</p>
+      </div>
+    </section>
+
+    <section class="doc" aria-labelledby="h-migrations">
+      <h2 id="h-migrations">Migrations</h2>
+      <div class="body">
+        <p>The generated API uses Drizzle Kit. Migrations go forward only: to undo a change, write a new migration.</p>
+        <pre class="block">npm run db:generate   <span class="c"># writes SQL from src/db/schema.js</span>
+npm run db:migrate    <span class="c"># applies the SQL</span></pre>
+        <div class="warning" role="note">
+          <strong>Warning:</strong> the first <code>db:generate</code> writes <code>CREATE TABLE</code> for every table. Do not run <code>db:migrate</code> against the database that generaptr read: those tables exist there already. <a href="https://github.com/generaptr/generaptr/issues/168">Issue #168</a> tracks a baseline migration.
+        </div>
+      </div>
+    </section>
+
+    <section class="doc" aria-labelledby="h-types">
+      <h2 id="h-types">Column types</h2>
+      <div class="body">
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th scope="col">MySQL</th><th scope="col">PostgreSQL</th></tr></thead>
+            <tbody>
+              <tr><td>integer types, signed or <code>unsigned</code></td><td><code>smallint</code>, <code>integer</code>, <code>bigint</code>, serial and identity</td></tr>
+              <tr><td><code>tinyint(1)</code> as boolean</td><td><code>boolean</code></td></tr>
+              <tr><td><code>decimal(p,s)</code></td><td><code>numeric(p,s)</code></td></tr>
+              <tr><td><code>varchar(n)</code>, <code>char(n)</code>, <code>binary(n)</code></td><td><code>character varying(n)</code>, <code>character(n)</code></td></tr>
+              <tr><td><code>enum(...)</code></td><td>enum types</td></tr>
+              <tr><td>text, blob, date and time types, <code>json</code>, <code>float</code>, <code>double</code></td><td><code>text</code>, <code>date</code>, <code>time</code>, <code>timestamp</code> with precision and time zone, <code>json</code>, <code>jsonb</code>, <code>uuid</code>, <code>real</code>, <code>double precision</code></td></tr>
+              <tr><td></td><td>one-dimensional arrays, such as <code>text[]</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Generaptr stops with <code>Unsupported type</code> on any other type, and with <code>Unsafe name</code> on a table or column name that has characters other than letters, digits, and <code>_</code>.</p>
+      </div>
+    </section>
+
+    <section class="doc" aria-labelledby="h-library">
+      <h2 id="h-library">Use it from code</h2>
+      <div class="body">
+        <p>The <code>generaptr</code> package holds the same steps as the CLI.</p>
+<pre class="block"><span class="k">import</span> { handlers, operations } <span class="k">from</span> <span class="s">'generaptr'</span>;
+
+<span class="k">const</span> db = <span class="k">new</span> handlers.Postgres({
+  host: <span class="s">'127.0.0.1'</span>, port: 5432, user: <span class="s">'postgres'</span>,
+  password: <span class="s">'secret'</span>, database: <span class="s">'shop'</span>, schema: <span class="s">'public'</span>,
+});
+<span class="k">const</span> schema = <span class="k">await</span> db.readSchema();
+<span class="k">await</span> db.close();
+
+<span class="k">await</span> operations.api.generateApi(<span class="s">'./shop-api'</span>, info, schema);
+<span class="k">await</span> operations.spec.generateSpec(<span class="s">'./spec'</span>, info, schema);</pre>
+        <p><code>info</code> holds the <code>name</code>, <code>version</code>, <code>description</code>, <code>author</code>, and <code>license</code> of the generated project. The <a href="https://github.com/generaptr/generaptr/tree/master/packages/core#readme">package README</a> lists every export.</p>
+      </div>
+    </section>
+
+    <section class="doc" aria-labelledby="h-limits">
+      <h2 id="h-limits">Known limits</h2>
+      <div class="body">
+        <ul class="limits">
+          <li>PostgreSQL <code>bytea</code> and <code>tsvector</code> columns are not supported. <a href="https://github.com/generaptr/generaptr/issues/166">#166</a></li>
+          <li>Routes read one table each; there are no relation includes yet. <a href="https://github.com/generaptr/generaptr/issues/167">#167</a></li>
+          <li>The first migration has no baseline for an existing database. <a href="https://github.com/generaptr/generaptr/issues/168">#168</a></li>
+          <li>OpenAPI input is JSON only. <a href="https://github.com/generaptr/generaptr/issues/169">#169</a></li>
+          <li>The generated API pins the Drizzle 1.0 beta. <a href="https://github.com/generaptr/generaptr/issues/170">#170</a></li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site">
+    <span>generaptr is MIT licensed.</span>
+    <span><a href="https://github.com/generaptr/generaptr/releases">Releases</a> &nbsp; <a href="https://github.com/generaptr/generaptr/blob/master/CONTRIBUTING.md">Contributing</a></span>
+  </footer>
+</div>
+<script>
+  document.querySelectorAll('[data-copy]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const text = document.getElementById(button.dataset.copy).textContent;
+      try {
+        await navigator.clipboard.writeText(text);
+        button.textContent = 'Copied';
+      } catch {
+        button.textContent = 'Select and copy';
+      }
+      setTimeout(() => { button.textContent = 'Copy'; }, 2000);
+    });
+  });
+</script>
+</body>
+</html>
