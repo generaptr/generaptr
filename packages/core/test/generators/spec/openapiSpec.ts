@@ -85,6 +85,25 @@ describe('OpenAPI generator', () => {
     assert.deepStrictEqual(tablesFromOpenApi(openApiDocument({ dialect: 'mysql', tables }, info), 'mysql'), { dialect: 'mysql', tables });
   });
 
+  it.each(["'it''s'", '0', '-1.5', 'true', 'null', 'now()', 'CURRENT_TIMESTAMP', "'{}'::jsonb", "'a'::character varying(20)"])(
+    'keeps the default %s from a document',
+    (value: string) => {
+      const withDefault: DbTable[] = [{ name: 'users', columns: [column('id', 'int', { primary: true, default: value })] }];
+      const doc = openApiDocument({ dialect: 'mysql', tables: withDefault }, info);
+      assert.strictEqual(tablesFromOpenApi(doc, 'mysql').tables[0].columns[0].default, value);
+    },
+  );
+
+  it.each(["'x'); DROP TABLE users; --", '1; DROP TABLE users', "'a\\'", 'pg_sleep(10)', '(select 1)'])(
+    'rejects the default %s from a document',
+    (value: string) => {
+      const withDefault: DbTable[] = [{ name: 'users', columns: [column('id', 'int', { primary: true, default: value })] }];
+      const doc = openApiDocument({ dialect: 'mysql', tables: withDefault }, info);
+      assert.throws(() => tablesFromOpenApi(doc, 'mysql'), /Unsafe default/);
+      assert.throws(() => tablesFromOpenApi(doc, 'postgresql'), /Unsafe default/);
+    },
+  );
+
   it('reads a third-party document by convention', () => {
     const doc = {
       openapi: '3.1.0',

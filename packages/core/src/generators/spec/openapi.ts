@@ -195,6 +195,19 @@ const conventionType = (schema: JsonSchema, dialect: Dialect): string => {
   return names[type ?? ''] ?? names.json;
 };
 
+// A literal or a known function, with optional casts. A document can come from anyone, and the default reaches DDL.
+const SAFE_DEFAULT: RegExp =
+  /^(?:-?\d+(?:\.\d+)?|'(?:[^'\\]|'')*'|true|false|null|now\(\)|gen_random_uuid\(\)|current_(?:timestamp|date|time)(?:\(\d\))?)(?:::[a-z][a-z ]*(?:\(\d+(?:,\d+)?\))?(?:\[\])?)*$/i;
+
+const assertSafeDefaults = (tables: DbTable[]): void => {
+  const unsafe: DbColumn | undefined = tables
+    .flatMap((table: DbTable) => table.columns)
+    .find((column: DbColumn) => column.default !== undefined && !SAFE_DEFAULT.test(column.default));
+  if (unsafe) {
+    throw new Error(`Unsafe default "${unsafe.default}" for column ${unsafe.name}`);
+  }
+};
+
 /**
  * Reads tables from an OpenAPI document into `dialect`. Documents that generaptr wrote for the same
  * dialect read back exactly through `x-table` and `x-column`. Other documents map by convention.
@@ -241,6 +254,7 @@ export const tablesFromOpenApi = (
         }),
       }));
   assertSafeNames(tables);
+  assertSafeDefaults(tables);
 
   return { dialect, tables };
 };
