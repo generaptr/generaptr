@@ -1,6 +1,7 @@
 import { DbCheck, DbColumn, DbForeignKey, DbIndex, DbSchema, DbTable, DbUnique, Dialect } from './types.js';
 
-export const camel = (name: string): string => name.replace(/[_\-\s]+(\w)/g, (_: string, c: string) => c.toUpperCase());
+// The lookbehind starts a match only at the start of a run of separators, so each run is read once.
+export const camel = (name: string): string => name.replace(/(?<![_\-\s])[_\-\s]+(\w)/g, (_: string, c: string) => c.toUpperCase());
 
 export const pascal = (name: string): string => {
   const value: string = camel(name);
