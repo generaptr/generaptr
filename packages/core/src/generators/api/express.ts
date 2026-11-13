@@ -1,3 +1,5 @@
+import * as path from 'node:path';
+import { Eta } from 'eta';
 import {
   assertSafeNames, camel, type ParsedType, parseColumnType, primaryColumns, routedTables, routePath,
 } from '../../commons/columns';
@@ -42,126 +44,69 @@ export const columnBuilder = (column: DbColumn): { builder: string; call: string
   }
 };
 
+const eta: Eta = new Eta({
+  views: path.resolve(__dirname, '../../../templates/api'),
+  autoEscape: false,
+  autoTrim: false,
+});
+
+const chainFor = (column: DbColumn, table: DbTable, tables: DbTable[]): string => {
+  let chain: string = columnBuilder(column).call;
+  if (column.autoIncrement) {
+    chain += '.autoincrement()';
+  }
+  if (column.primary && primaryColumns(table).length === 1) {
+    chain += '.primaryKey()';
+  } else if (!column.nullable) {
+    chain += '.notNull()';
+  }
+  if (column.unique) {
+    chain += '.unique()';
+  }
+  const target: DbTable | undefined = tables.find((t: DbTable) => t.name === column.references?.table);
+  if (column.references && target) {
+    chain += `.references(() => ${camel(target.name)}.${camel(column.references.column)})`;
+  }
+
+  return chain;
+};
+
 export const schemaFile = (tables: DbTable[]): string => {
   const builders: Set<string> = new Set(['mysqlTable']);
-  const blocks: string[] = tables.map((table: DbTable) => {
+  const views = tables.map((table: DbTable) => {
     const primary: DbColumn[] = primaryColumns(table);
-    const lines: string[] = table.columns.map((column: DbColumn) => {
-      const { builder, call } = columnBuilder(column);
-      builders.add(builder);
-      let chain: string = call;
-      if (column.autoIncrement) {
-        chain += '.autoincrement()';
-      }
-      if (column.primary && primary.length === 1) {
-        chain += '.primaryKey()';
-      } else if (!column.nullable) {
-        chain += '.notNull()';
-      }
-      if (column.unique) {
-        chain += '.unique()';
-      }
-      if (column.references) {
-        const target: DbTable | undefined = tables.find((t: DbTable) => t.name === column.references?.table);
-        if (target) {
-          chain += `.references(() => ${camel(target.name)}.${camel(column.references.column)})`;
-        }
-      }
-
-      return `  ${camel(column.name)}: ${chain},`;
-    });
-    let extra: string = '';
+    for (const column of table.columns) {
+      builders.add(columnBuilder(column).builder);
+    }
     if (primary.length > 1) {
       builders.add('primaryKey');
-      const keys: string = primary.map((column: DbColumn) => `table.${camel(column.name)}`).join(', ');
-      extra = `, (table) => [primaryKey({ columns: [${keys}] })]`;
     }
 
-    return `export const ${camel(table.name)} = mysqlTable(${JSON.stringify(table.name)}, {\n${lines.join('\n')}\n}${extra});\n`;
+    return {
+      name: camel(table.name),
+      table: JSON.stringify(table.name),
+      columns: table.columns.map((column: DbColumn) => ({ key: camel(column.name), chain: chainFor(column, table, tables) })),
+      primaryKeys: primary.length > 1 ? primary.map((column: DbColumn) => `table.${camel(column.name)}`).join(', ') : '',
+    };
   });
 
-  return `import { ${[...builders].sort().join(', ')} } from 'drizzle-orm/mysql-core';\n\n${blocks.join('\n')}`;
+  return eta.render('src/db/schema.js.eta', { builders: [...builders].sort().join(', '), tables: views });
 };
 
 export const routeFile = (table: DbTable): string => {
-  const entity: string = camel(table.name);
   const [primary] = primaryColumns(table);
-  const key: string = camel(primary.name);
-  const id: string = parseColumnType(primary).kind === 'integer' ? 'Number(req.params.id)' : 'req.params.id';
 
-  return `import { eq } from 'drizzle-orm';
-import { createInsertSchema, createUpdateSchema } from 'drizzle-orm/zod';
-import { Router } from 'express';
-import { db } from '../db/index.js';
-import { ${entity} } from '../db/schema.js';
-
-const insertSchema = createInsertSchema(${entity});
-const updateSchema = createUpdateSchema(${entity});
-const byId = (req) => eq(${entity}.${key}, ${id});
-
-export const router = Router();
-
-router.get('/', async (req, res) => {
-  const limit = Math.min(Number(req.query.limit) || 20, 100);
-  const offset = Number(req.query.offset) || 0;
-  res.json(await db.select().from(${entity}).limit(limit).offset(offset));
-});
-
-router.get('/:id', async (req, res) => {
-  const [row] = await db.select().from(${entity}).where(byId(req));
-  if (!row) {
-    return res.status(404).json({ message: 'Not found' });
-  }
-  res.json(row);
-});
-
-router.post('/', async (req, res) => {
-  const [created] = await db.insert(${entity}).values(insertSchema.parse(req.body)).$returningId();
-  res.status(201).location(\`\${req.baseUrl}/\${created.${key}}\`).json(created);
-});
-
-router.put('/:id', async (req, res) => {
-  await db.update(${entity}).set(updateSchema.parse(req.body)).where(byId(req));
-  res.status(204).end();
-});
-
-router.delete('/:id', async (req, res) => {
-  await db.delete(${entity}).where(byId(req));
-  res.status(204).end();
-});
-`;
+  return eta.render('src/routes/route.js.eta', {
+    entity: camel(table.name),
+    key: camel(primary.name),
+    id: parseColumnType(primary).kind === 'integer' ? 'Number(req.params.id)' : 'req.params.id',
+  });
 };
 
-export const appFile = (tables: DbTable[]): string => {
-  const routed: DbTable[] = routedTables(tables);
-  const imports: string = routed
-    .map((table: DbTable) => `import { router as ${camel(table.name)} } from './routes/${camel(table.name)}.js';`)
-    .join('\n');
-  const mounts: string = routed
-    .map((table: DbTable) => `app.use('${routePath(table)}', ${camel(table.name)});`)
-    .join('\n');
-
-  return `import express from 'express';
-import { ZodError } from 'zod';
-${imports}
-
-export const app = express();
-
-app.use(express.json());
-${mounts}
-
-app.use((err, req, res, next) => {
-  if (err instanceof ZodError) {
-    return res.status(400).json({ message: 'Invalid request body', issues: err.issues });
-  }
-  if (err.status >= 400 && err.status < 500) {
-    return res.status(err.status).json({ message: err.message });
-  }
-  console.error(err);
-  res.status(500).json({ message: 'Internal Server Error' });
-});
-`;
-};
+export const appFile = (tables: DbTable[]): string =>
+  eta.render('src/app.js.eta', {
+    routes: routedTables(tables).map((table: DbTable) => ({ name: camel(table.name), path: routePath(table) })),
+  });
 
 export const packageJson = (info: PackageJsonInfo): string => {
   const { 'drizzle-kit': drizzleKit, ...dependencies } = VERSIONS;
@@ -191,31 +136,12 @@ export const renderApi = (tables: DbTable[], info: PackageJsonInfo): Record<stri
   assertSafeNames(tables);
   const files: Record<string, string> = {
     'package.json': packageJson(info),
-    '.gitignore': 'node_modules\n.env\n',
-    '.env.example': 'DATABASE_URL=mysql://user:password@127.0.0.1:3306/database\nPORT=3000\n',
-    'drizzle.config.js': `import { defineConfig } from 'drizzle-kit';
-
-try {
-  process.loadEnvFile();
-} catch {}
-
-export default defineConfig({
-  dialect: 'mysql',
-  schema: './src/db/schema.js',
-  out: './drizzle',
-  dbCredentials: { url: process.env.DATABASE_URL },
-});
-`,
-    'src/index.js': `import { app } from './app.js';
-
-const port = Number(process.env.PORT) || 3000;
-app.listen(port, () => console.log(\`Listening on port \${port}\`));
-`,
+    '.gitignore': eta.render('gitignore.eta', {}),
+    '.env.example': eta.render('env.example.eta', {}),
+    'drizzle.config.js': eta.render('drizzle.config.js.eta', {}),
+    'src/index.js': eta.render('src/index.js.eta', {}),
     'src/app.js': appFile(tables),
-    'src/db/index.js': `import { drizzle } from 'drizzle-orm/mysql2';
-
-export const db = drizzle(process.env.DATABASE_URL);
-`,
+    'src/db/index.js': eta.render('src/db/index.js.eta', {}),
     'src/db/schema.js': schemaFile(tables),
     'openapi.json': `${JSON.stringify(openApiDocument(tables, info), undefined, 2)}\n`,
   };

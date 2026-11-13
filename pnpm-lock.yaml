@@ -29,6 +29,9 @@ importers:
 
   packages/core:
     dependencies:
+      eta:
+        specifier: 4.6.0
+        version: 4.6.0
       mysql2:
         specifier: ^3.9.8
         version: 3.24.6(@types/node@22.20.5)
@@ -650,6 +653,10 @@ packages:
 
   estree-walker@3.0.3:
     resolution: {integrity: sha512-7RUKfXgSMMkzt6ZuXmqapOurLGPPfgj6l9uRZ7lRGolvk0y2yocc35LdcxKC5PQZdn2DMqioAQ2NoWcrTKmm6g==}
+
+  eta@4.6.0:
+    resolution: {integrity: sha512-lW6is4T1NFOYnmqGZIfvixqj7A7sSvScF+DN8EK6K58xI5MZ5UvYe0GjopxOXQtZvUn4eDdVuZ8XSoYWTMEKwA==}
+    engines: {node: '>=20'}
 
   expect-type@1.4.0:
     resolution: {integrity: sha512-KfYbmpRm0VbLjEvVa9yGwCi9GI34xvi7A/HXYWQO65CSD2u3MczUJSuwXKFIxlGsgBQizV9q5J9NHj4VG0n+pA==}
@@ -1437,6 +1444,8 @@ snapshots:
   estree-walker@3.0.3:
     dependencies:
       '@types/estree': 1.0.10
+
+  eta@4.6.0: {}
 
   expect-type@1.4.0: {}
 

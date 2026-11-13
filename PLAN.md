@@ -19,7 +19,7 @@ Make generaptr work again on current Node and npm, and make it generate a curren
 | Generated models | generaptr writes `src/db/schema.js` itself from `MysqlHandler.readTables()` (raw `information_schema`: real names, exact `COLUMN_TYPE`, FKs, link tables). Not `drizzle-kit pull`: a spec input has no database to pull from. The relation preprocessor is lossy and stays for spec output only. | Done |
 | Spec format | OpenAPI 3.1 (JSON) replaces RAML. The spec is built from the same `DbTable[]` as the API, so it describes the generated API exactly. `x-table` / `x-column` make generaptr specs read back exactly; other specs map by convention. YAML input is not supported yet. | Done |
 | Generated API shape | ESM JavaScript, Node 22+. `express.json()` (no body-parser), `node --watch` (no nodemon), `--env-file-if-exists=.env`. One route file per table with one primary key. Request bodies go through `drizzle-orm/zod`, so bad input gets 400. No relation includes yet. | Done |
-| Templates | Move generated files to template files with eta (or mustache if eta is not slimmer), output escaping off. | Agreed |
+| Templates | eta 4 template files in `packages/core/templates/api` (`autoEscape` off). TypeScript builds small view models; `package.json` and `openapi.json` stay `JSON.stringify`. A snapshot test pins every generated file. | Done |
 | Tooling | TypeScript 7. Vitest replaces mocha + nyc. Biome (root, lint only) replaces tslint and eslint. typedoc, coveralls, commitizen, npm-run-all, rimraf removed. | Done |
 | Releases | Changesets + npm provenance from CI. | Proposed |
 
@@ -92,7 +92,7 @@ Size: core about 3.8k lines of TypeScript. CLI 428 lines of JS.
 - [ ] Relation includes (`with`) through Drizzle relations v2.
 - [ ] Baseline for an existing database: the first `db:generate` migration creates every table, so it must not run on the database it came from.
 - [x] PR 3: OpenAPI 3.1 replaces RAML as output and input. The RAML path, the relation preprocessors, the example generator, and their dependencies (`raml-1-parser`, faker, bunyan, fs-extra, chalk, pluralize) are deleted. Items 17 and 18 go away with that code.
-- [ ] PR 4: template files (eta or mustache).
+- [x] PR 4: template files with eta. Output stayed byte-identical (pinned by snapshots).
 - [ ] PR 5: core to ESM.
 - [ ] Last PR: delete `PLAN.md`, update all docs, release v2.0.0.
 

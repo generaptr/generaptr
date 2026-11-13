@@ -36,6 +36,11 @@
     "vitest": "^5.1.0"
   },
   "dependencies": {
+    "eta": "4.6.0",
     "mysql2": "^3.9.8"
-  }
+  },
+  "files": [
+    "lib",
+    "templates"
+  ]
 }

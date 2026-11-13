@@ -34,7 +34,7 @@ const tables: DbTable[] = [
 describe('renderApi', () => {
   it.each(Object.entries(renderApi(tables, { name: 'demo', version: '1.0.0', description: '', author: 'me', license: 'MIT' })))(
     'writes %s',
-    (file: string, content: string) => {
+    (_file: string, content: string) => {
       expect(content).toMatchSnapshot();
     },
   );
