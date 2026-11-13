@@ -3,6 +3,7 @@ import { Eta } from 'eta';
 import {
   assertSafeNames, camel, type ParsedType, parseColumnType, primaryColumns, routedTables, routePath,
 } from '../../commons/columns.js';
+import { type Relation, tableRelations } from '../../commons/relations.js';
 import { DbColumn, DbSchema, DbTable, Dialect, PackageJsonInfo } from '../../commons/types.js';
 import { openApiDocument } from '../spec/openapi.js';
 
@@ -185,7 +186,7 @@ export const schemaFile = (schema: DbSchema): string => {
   });
 };
 
-export const routeFile = (table: DbTable, dialect: Dialect): string => {
+export const routeFile = (table: DbTable, dialect: Dialect, relations: Relation[] = []): string => {
   const [primary] = primaryColumns(table);
   const entity: string = camel(table.name);
   const key: string = camel(primary.name);
@@ -195,6 +196,31 @@ export const routeFile = (table: DbTable, dialect: Dialect): string => {
     key,
     id: parseColumnType(primary, dialect).kind === 'integer' ? 'Number(req.params.id)' : 'req.params.id',
     returning: DIALECTS[dialect].returning(entity, key),
+    relations: JSON.stringify(relations.map((relation: Relation) => relation.name)),
+  });
+};
+
+/** `src/db/relations.js`: both sides of every foreign key, for `?with=` on the routes. */
+export const relationsFile = (tables: DbTable[]): string => {
+  const column = (table: string, name: string): string => `r.${camel(table)}.${camel(name)}`;
+  const call = (source: string, relation: Relation): string => {
+    const from: string = column(source, relation.from);
+    const to: string = column(relation.target, relation.to);
+    const ends: string = relation.through
+      ? `from: ${from}.through(${column(relation.through.table, relation.through.from)}), `
+        + `to: ${to}.through(${column(relation.through.table, relation.through.to)})`
+      : `from: ${from}, to: ${to}`;
+
+    return `r.${relation.kind}.${camel(relation.target)}({ ${ends} })`;
+  };
+
+  return eta.render('src/db/relations.js.eta', {
+    tables: [...tableRelations(tables)]
+      .filter(([, relations]: [string, Relation[]]) => relations.length)
+      .map(([table, relations]: [string, Relation[]]) => ({
+        name: camel(table),
+        relations: relations.map((relation: Relation) => ({ name: relation.name, call: call(table, relation) })),
+      })),
   });
 };
 
@@ -240,10 +266,12 @@ export const renderApi = (schema: DbSchema, info: PackageJsonInfo): Record<strin
     'src/app.js': appFile(schema.tables),
     'src/db/index.js': eta.render('src/db/index.js.eta', { driver: dialect.driver }),
     'src/db/schema.js': schemaFile(schema),
+    'src/db/relations.js': relationsFile(schema.tables),
     'openapi.json': `${JSON.stringify(openApiDocument(schema, info), undefined, 2)}\n`,
   };
+  const relations: Map<string, Relation[]> = tableRelations(schema.tables);
   for (const table of routedTables(schema.tables)) {
-    files[`src/routes/${camel(table.name)}.js`] = routeFile(table, schema.dialect);
+    files[`src/routes/${camel(table.name)}.js`] = routeFile(table, schema.dialect, relations.get(table.name));
   }
 
   return files;

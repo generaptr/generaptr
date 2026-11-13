@@ -60,6 +60,19 @@ describe('OpenAPI generator', () => {
     assert.strictEqual(users.properties.id.minimum, 0);
   });
 
+  it('describes ?with and the related rows it adds', () => {
+    const doc = openApiDocument({ dialect: 'mysql', tables }, info);
+    const get = (doc.paths['/accounts/{id}'] as any).get;
+    const withParameter = get.parameters.find((parameter: { name: string }) => parameter.name === 'with');
+    assert.deepStrictEqual(withParameter.schema, { type: 'array', items: { type: 'string', enum: ['user'] } });
+    assert.strictEqual(withParameter.explode, false);
+    assert.deepStrictEqual(get.responses[200].content['application/json'].schema.allOf[1].properties.user, {
+      anyOf: [{ $ref: '#/components/schemas/Users' }, { type: 'null' }],
+    });
+    const list = (doc.paths['/users'] as any).get.responses[200].content['application/json'].schema.items;
+    assert.deepStrictEqual(list.allOf[1].properties.accounts, { type: 'array', items: { $ref: '#/components/schemas/Accounts' } });
+  });
+
   it('describes Postgres arrays and precise timestamps', () => {
     const doc = openApiDocument({
       dialect: 'postgresql',

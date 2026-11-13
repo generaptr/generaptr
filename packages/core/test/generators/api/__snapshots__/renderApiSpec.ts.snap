@@ -60,6 +60,24 @@ exports[`renderApi > writes openapi.json 1`] = `
               "type": "integer",
               "minimum": 0
             }
+          },
+          {
+            "name": "with",
+            "in": "query",
+            "required": false,
+            "description": "Relations to include, separated by commas. An unknown name gets 400.",
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "accounts",
+                  "usersGroups"
+                ]
+              }
+            }
           }
         ],
         "responses": {
@@ -70,7 +88,28 @@ exports[`renderApi > writes openapi.json 1`] = `
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Users"
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/Users"
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "accounts": {
+                            "type": "array",
+                            "items": {
+                              "$ref": "#/components/schemas/Accounts"
+                            }
+                          },
+                          "usersGroups": {
+                            "type": "array",
+                            "items": {
+                              "$ref": "#/components/schemas/UsersGroups"
+                            }
+                          }
+                        }
+                      }
+                    ]
                   }
                 }
               }
@@ -141,13 +180,54 @@ exports[`renderApi > writes openapi.json 1`] = `
       ],
       "get": {
         "operationId": "getUsers",
+        "parameters": [
+          {
+            "name": "with",
+            "in": "query",
+            "required": false,
+            "description": "Relations to include, separated by commas. An unknown name gets 400.",
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "accounts",
+                  "usersGroups"
+                ]
+              }
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Found",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Users"
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Users"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "accounts": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Accounts"
+                          }
+                        },
+                        "usersGroups": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/UsersGroups"
+                          }
+                        }
+                      }
+                    }
+                  ]
                 }
               }
             }
@@ -224,6 +304,23 @@ exports[`renderApi > writes openapi.json 1`] = `
               "type": "integer",
               "minimum": 0
             }
+          },
+          {
+            "name": "with",
+            "in": "query",
+            "required": false,
+            "description": "Relations to include, separated by commas. An unknown name gets 400.",
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "user"
+                ]
+              }
+            }
           }
         ],
         "responses": {
@@ -234,7 +331,26 @@ exports[`renderApi > writes openapi.json 1`] = `
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Accounts"
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/Accounts"
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "user": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/components/schemas/Users"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    ]
                   }
                 }
               }
@@ -305,13 +421,51 @@ exports[`renderApi > writes openapi.json 1`] = `
       ],
       "get": {
         "operationId": "getAccounts",
+        "parameters": [
+          {
+            "name": "with",
+            "in": "query",
+            "required": false,
+            "description": "Relations to include, separated by commas. An unknown name gets 400.",
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "user"
+                ]
+              }
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Found",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Accounts"
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Accounts"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "user": {
+                          "anyOf": [
+                            {
+                              "$ref": "#/components/schemas/Users"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
                 }
               }
             }
@@ -673,8 +827,28 @@ app.use((err, req, res, next) => {
 
 exports[`renderApi > writes src/db/index.js 1`] = `
 "import { drizzle } from 'drizzle-orm/mysql2';
+import { relations } from './relations.js';
 
-export const db = drizzle(process.env.DATABASE_URL);
+export const db = drizzle(process.env.DATABASE_URL, { relations });
+"
+`;
+
+exports[`renderApi > writes src/db/relations.js 1`] = `
+"import { defineRelations } from 'drizzle-orm';
+import * as schema from './schema.js';
+
+export const relations = defineRelations(schema, (r) => ({
+  users: {
+    accounts: r.many.accounts({ from: r.users.id, to: r.accounts.userId }),
+    usersGroups: r.many.usersGroups({ from: r.users.id, to: r.usersGroups.userId }),
+  },
+  accounts: {
+    user: r.one.users({ from: r.accounts.userId, to: r.users.id }),
+  },
+  usersGroups: {
+    user: r.one.users({ from: r.usersGroups.userId, to: r.users.id }),
+  },
+}));
 "
 `;
 
@@ -720,17 +894,29 @@ const { createInsertSchema, createUpdateSchema } = createSchemaFactory({ coerce:
 const insertSchema = createInsertSchema(accounts);
 const updateSchema = createUpdateSchema(accounts);
 const byId = (req) => eq(accounts.code, req.params.id);
+const relationNames = ["user"];
+
+// \`?with=a,b\` names the relations to include, as defined in src/db/relations.js.
+const withRelations = (req) => {
+  const names = String(req.query.with ?? '').split(',').map((name) => name.trim()).filter(Boolean);
+  const unknown = names.find((name) => !relationNames.includes(name));
+  if (unknown !== undefined) {
+    const message = \`Unknown relation "\${unknown}". Use: \${relationNames.join(', ') || 'none'}\`;
+    throw Object.assign(new Error(message), { status: 400 });
+  }
+  return Object.fromEntries(names.map((name) => [name, true]));
+};
 
 export const router = Router();
 
 router.get('/', async (req, res) => {
   const limit = Math.min(Number(req.query.limit) || 20, 100);
   const offset = Number(req.query.offset) || 0;
-  res.json(await db.select().from(accounts).limit(limit).offset(offset));
+  res.json(await db.query.accounts.findMany({ limit, offset, with: withRelations(req) }));
 });
 
 router.get('/:id', async (req, res) => {
-  const [row] = await db.select().from(accounts).where(byId(req));
+  const row = await db.query.accounts.findFirst({ where: { code: req.params.id }, with: withRelations(req) });
   if (!row) {
     return res.status(404).json({ message: 'Not found' });
   }
@@ -766,17 +952,29 @@ const { createInsertSchema, createUpdateSchema } = createSchemaFactory({ coerce:
 const insertSchema = createInsertSchema(users);
 const updateSchema = createUpdateSchema(users);
 const byId = (req) => eq(users.id, Number(req.params.id));
+const relationNames = ["accounts","usersGroups"];
+
+// \`?with=a,b\` names the relations to include, as defined in src/db/relations.js.
+const withRelations = (req) => {
+  const names = String(req.query.with ?? '').split(',').map((name) => name.trim()).filter(Boolean);
+  const unknown = names.find((name) => !relationNames.includes(name));
+  if (unknown !== undefined) {
+    const message = \`Unknown relation "\${unknown}". Use: \${relationNames.join(', ') || 'none'}\`;
+    throw Object.assign(new Error(message), { status: 400 });
+  }
+  return Object.fromEntries(names.map((name) => [name, true]));
+};
 
 export const router = Router();
 
 router.get('/', async (req, res) => {
   const limit = Math.min(Number(req.query.limit) || 20, 100);
   const offset = Number(req.query.offset) || 0;
-  res.json(await db.select().from(users).limit(limit).offset(offset));
+  res.json(await db.query.users.findMany({ limit, offset, with: withRelations(req) }));
 });
 
 router.get('/:id', async (req, res) => {
-  const [row] = await db.select().from(users).where(byId(req));
+  const row = await db.query.users.findFirst({ where: { id: Number(req.params.id) }, with: withRelations(req) });
   if (!row) {
     return res.status(404).json({ message: 'Not found' });
   }
@@ -860,6 +1058,23 @@ exports[`renderApi for Postgres > writes openapi.json 1`] = `
               "type": "integer",
               "minimum": 0
             }
+          },
+          {
+            "name": "with",
+            "in": "query",
+            "required": false,
+            "description": "Relations to include, separated by commas. An unknown name gets 400.",
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "events"
+                ]
+              }
+            }
           }
         ],
         "responses": {
@@ -870,7 +1085,22 @@ exports[`renderApi for Postgres > writes openapi.json 1`] = `
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Users"
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/Users"
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "events": {
+                            "type": "array",
+                            "items": {
+                              "$ref": "#/components/schemas/Events"
+                            }
+                          }
+                        }
+                      }
+                    ]
                   }
                 }
               }
@@ -939,13 +1169,47 @@ exports[`renderApi for Postgres > writes openapi.json 1`] = `
       ],
       "get": {
         "operationId": "getUsers",
+        "parameters": [
+          {
+            "name": "with",
+            "in": "query",
+            "required": false,
+            "description": "Relations to include, separated by commas. An unknown name gets 400.",
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "events"
+                ]
+              }
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Found",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Users"
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Users"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "events": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Events"
+                          }
+                        }
+                      }
+                    }
+                  ]
                 }
               }
             }
@@ -1022,6 +1286,23 @@ exports[`renderApi for Postgres > writes openapi.json 1`] = `
               "type": "integer",
               "minimum": 0
             }
+          },
+          {
+            "name": "with",
+            "in": "query",
+            "required": false,
+            "description": "Relations to include, separated by commas. An unknown name gets 400.",
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "user"
+                ]
+              }
+            }
           }
         ],
         "responses": {
@@ -1032,7 +1313,26 @@ exports[`renderApi for Postgres > writes openapi.json 1`] = `
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Events"
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/Events"
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "user": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/components/schemas/Users"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    ]
                   }
                 }
               }
@@ -1101,13 +1401,51 @@ exports[`renderApi for Postgres > writes openapi.json 1`] = `
       ],
       "get": {
         "operationId": "getEvents",
+        "parameters": [
+          {
+            "name": "with",
+            "in": "query",
+            "required": false,
+            "description": "Relations to include, separated by commas. An unknown name gets 400.",
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "user"
+                ]
+              }
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Found",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Events"
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Events"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "user": {
+                          "anyOf": [
+                            {
+                              "$ref": "#/components/schemas/Users"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
                 }
               }
             }
@@ -1475,8 +1813,24 @@ app.use((err, req, res, next) => {
 
 exports[`renderApi for Postgres > writes src/db/index.js 1`] = `
 "import { drizzle } from 'drizzle-orm/node-postgres';
+import { relations } from './relations.js';
 
-export const db = drizzle(process.env.DATABASE_URL);
+export const db = drizzle(process.env.DATABASE_URL, { relations });
+"
+`;
+
+exports[`renderApi for Postgres > writes src/db/relations.js 1`] = `
+"import { defineRelations } from 'drizzle-orm';
+import * as schema from './schema.js';
+
+export const relations = defineRelations(schema, (r) => ({
+  users: {
+    events: r.many.events({ from: r.users.id, to: r.events.userId }),
+  },
+  events: {
+    user: r.one.users({ from: r.events.userId, to: r.users.id }),
+  },
+}));
 "
 `;
 
@@ -1522,17 +1876,29 @@ const { createInsertSchema, createUpdateSchema } = createSchemaFactory({ coerce:
 const insertSchema = createInsertSchema(events);
 const updateSchema = createUpdateSchema(events);
 const byId = (req) => eq(events.id, Number(req.params.id));
+const relationNames = ["user"];
+
+// \`?with=a,b\` names the relations to include, as defined in src/db/relations.js.
+const withRelations = (req) => {
+  const names = String(req.query.with ?? '').split(',').map((name) => name.trim()).filter(Boolean);
+  const unknown = names.find((name) => !relationNames.includes(name));
+  if (unknown !== undefined) {
+    const message = \`Unknown relation "\${unknown}". Use: \${relationNames.join(', ') || 'none'}\`;
+    throw Object.assign(new Error(message), { status: 400 });
+  }
+  return Object.fromEntries(names.map((name) => [name, true]));
+};
 
 export const router = Router();
 
 router.get('/', async (req, res) => {
   const limit = Math.min(Number(req.query.limit) || 20, 100);
   const offset = Number(req.query.offset) || 0;
-  res.json(await db.select().from(events).limit(limit).offset(offset));
+  res.json(await db.query.events.findMany({ limit, offset, with: withRelations(req) }));
 });
 
 router.get('/:id', async (req, res) => {
-  const [row] = await db.select().from(events).where(byId(req));
+  const row = await db.query.events.findFirst({ where: { id: Number(req.params.id) }, with: withRelations(req) });
   if (!row) {
     return res.status(404).json({ message: 'Not found' });
   }
@@ -1568,17 +1934,29 @@ const { createInsertSchema, createUpdateSchema } = createSchemaFactory({ coerce:
 const insertSchema = createInsertSchema(users);
 const updateSchema = createUpdateSchema(users);
 const byId = (req) => eq(users.id, Number(req.params.id));
+const relationNames = ["events"];
+
+// \`?with=a,b\` names the relations to include, as defined in src/db/relations.js.
+const withRelations = (req) => {
+  const names = String(req.query.with ?? '').split(',').map((name) => name.trim()).filter(Boolean);
+  const unknown = names.find((name) => !relationNames.includes(name));
+  if (unknown !== undefined) {
+    const message = \`Unknown relation "\${unknown}". Use: \${relationNames.join(', ') || 'none'}\`;
+    throw Object.assign(new Error(message), { status: 400 });
+  }
+  return Object.fromEntries(names.map((name) => [name, true]));
+};
 
 export const router = Router();
 
 router.get('/', async (req, res) => {
   const limit = Math.min(Number(req.query.limit) || 20, 100);
   const offset = Number(req.query.offset) || 0;
-  res.json(await db.select().from(users).limit(limit).offset(offset));
+  res.json(await db.query.users.findMany({ limit, offset, with: withRelations(req) }));
 });
 
 router.get('/:id', async (req, res) => {
-  const [row] = await db.select().from(users).where(byId(req));
+  const row = await db.query.users.findFirst({ where: { id: Number(req.params.id) }, with: withRelations(req) });
   if (!row) {
     return res.status(404).json({ message: 'Not found' });
   }

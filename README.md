@@ -35,13 +35,15 @@ api/
     ├── app.js          # mounts one router per table
     ├── db/
     │   ├── index.js
-    │   └── schema.js   # one Drizzle table per database table
+    │   ├── schema.js   # one Drizzle table per database table
+    │   └── relations.js # both sides of every foreign key
     └── routes/
         └── <table>.js  # list, get, create, update, delete
 ```
 
 - Each table with one primary key gets `GET /<table>`, `POST /<table>`, `GET|PUT|DELETE /<table>/{id}`. Link tables with a composite key get no routes.
 - The list route takes `limit` (at most 100, default 20) and `offset`.
+- The list and get routes take `with` to include related rows, for example `GET /users/1?with=accounts,groups`. A foreign key `accounts.user_id` gives `accounts.user` and `users.accounts`. A link table, such as `users_groups`, gives `users.groups` and `groups.users`. An unknown name gets 400.
 - zod schemas from `drizzle-orm/zod` check request bodies. A bad body gets 400 with the zod issues.
 - Database errors get a generic 500. The response does not show the database message.
 - Column defaults from the database stay in the schema, so a client can leave those columns out.
@@ -83,7 +85,6 @@ Generaptr stops with `Unsupported type` when a table has any other type. It also
 ## Known limits
 
 - PostgreSQL `bytea` and `tsvector` are not supported. JSON cannot carry them as they are.
-- The generated API has no relation includes. Each route reads one table.
 - Generaptr reads OpenAPI documents in JSON only, not YAML.
 - The generated API pins `drizzle-orm` and `drizzle-kit` `1.0.0-beta.22`.
 
