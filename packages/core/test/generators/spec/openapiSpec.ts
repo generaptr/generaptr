@@ -199,6 +199,26 @@ describe('OpenAPI generator', () => {
     assert.strictEqual(users.columns.length, tables[0].columns.length);
   });
 
+  it('reads CHECK constraints back, and leaves them out in another dialect', () => {
+    const checks = [{ name: 'users_role_known', expression: "(`role` in (_utf8mb4'a;b',_utf8mb4'it\\'s'))" }];
+    const doc = openApiDocument({ dialect: 'mysql', tables: [{ ...tables[0], checks }] }, info);
+    assert.deepStrictEqual(tablesFromOpenApi(doc, 'mysql').tables[0].checks, checks);
+    assert.strictEqual(tablesFromOpenApi(doc, 'postgresql').tables[0].checks, undefined);
+  });
+
+  it.each([
+    'amount > 0); DROP TABLE users; --',
+    'amount > 0 -- comment',
+    'amount > 0 /* comment */',
+    'amount > 0) OR (1 = 1',
+    'amount > (0',
+    "name = 'open",
+  ])('rejects the CHECK expression %s from a document', (expression: string) => {
+    const doc: Doc = structuredClone(openApiDocument({ dialect: 'mysql', tables }, info));
+    doc.components.schemas.Users['x-checks'] = [{ name: 'users_check', expression }];
+    assert.throws(() => tablesFromOpenApi(doc, 'mysql'), /Unsafe expression/);
+  });
+
   it('reads the keys of a generaptr 2 document from its columns', () => {
     const legacy = (name: string, extra: object) => ({ name, columnType: 'integer', nullable: false, autoIncrement: false, ...extra });
     const doc = {

@@ -41,6 +41,9 @@ export type DbForeignKey = {
   onUpdate?: ReferentialAction;
 };
 
+/** `expression` is SQL in the table's dialect, as the database prints it. */
+export type DbCheck = { name: string; expression: string };
+
 /** Keys are constraints of the table, with the names the database gave them. */
 export type DbTable = {
   name: string;
@@ -48,6 +51,7 @@ export type DbTable = {
   primaryKey?: DbPrimaryKey;
   uniques?: DbUnique[];
   foreignKeys?: DbForeignKey[];
+  checks?: DbCheck[];
 };
 
 /** Tables plus the dialect their column types are written in. */

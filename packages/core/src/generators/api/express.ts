@@ -166,6 +166,10 @@ const constraintsFor = (table: DbTable, dialect: Dialect, builders: Set<string>)
       + `foreignColumns: [${columns(key.foreignColumns, target)}] })`
       + `${key.onDelete ? `.onDelete(${JSON.stringify(key.onDelete)})` : ''}${key.onUpdate ? `.onUpdate(${JSON.stringify(key.onUpdate)})` : ''}`);
   }
+  for (const check of table.checks ?? []) {
+    builders.add('check');
+    constraints.push(`check(${JSON.stringify(check.name)}, sql.raw(${JSON.stringify(check.expression)}))`);
+  }
 
   return constraints;
 };
@@ -201,7 +205,8 @@ export const schemaFile = (schema: DbSchema): string => {
   });
 
   return eta.render('src/db/schema.js.eta', {
-    usesSql: schema.tables.some((table: DbTable) => table.columns.some((column: DbColumn) => column.default !== undefined)),
+    usesSql: schema.tables.some((table: DbTable) =>
+      table.checks?.length || table.columns.some((column: DbColumn) => column.default !== undefined)),
     builders: [...builders].sort().join(', '),
     core,
     tableFunction,

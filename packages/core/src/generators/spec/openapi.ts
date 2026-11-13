@@ -3,7 +3,7 @@ import {
 } from '../../commons/columns.js';
 import { type Relation, routedRelations } from '../../commons/relations.js';
 import {
-  DbColumn, DbForeignKey, DbSchema, DbTable, DbUnique, Dialect, PackageJsonInfo, REFERENTIAL_ACTIONS, ReferentialAction,
+  DbCheck, DbColumn, DbForeignKey, DbSchema, DbTable, DbUnique, Dialect, PackageJsonInfo, REFERENTIAL_ACTIONS, ReferentialAction,
 } from '../../commons/types.js';
 
 // razor: plain objects typed loosely; switch to `openapi-types` if callers need deep typing.
@@ -64,6 +64,7 @@ const rowSchema = (table: DbTable, dialect: Dialect): JsonSchema => ({
   type: 'object',
   'x-table': table.name,
   'x-keys': keysOf(table),
+  ...(table.checks ? { 'x-checks': table.checks } : {}),
   required: table.columns.map((column: DbColumn) => camel(column.name)),
   properties: Object.fromEntries(table.columns.map((column: DbColumn) => [
     camel(column.name),
@@ -234,6 +235,37 @@ const conventionType = (schema: JsonSchema, dialect: Dialect): string => {
 const SAFE_DEFAULT: RegExp =
   /^(?:-?\d+(?:\.\d+)?|'(?:[^'\\]|'')*'|true|false|null|now\(\)|gen_random_uuid\(\)|current_(?:timestamp|date|time)(?:\(\d\))?)(?:::[a-z][a-z ]*(?:\(\d+(?:,\d+)?\))?(?:\[\])?)*$/i;
 
+/**
+ * Rejects SQL that can leave the parentheses Drizzle puts around it: a statement end, a comment, or an unbalanced
+ * bracket or quote. Only MySQL escapes with a backslash inside a literal; Postgres gets no backslash and no `$` quote.
+ */
+const assertSafeExpression = (expression: string, dialect: Dialect): void => {
+  const unsafe = (): Error => new Error(`Unsafe expression "${expression}"`);
+  let depth = 0;
+  for (let i = 0; i < expression.length; i++) {
+    const char: string = expression[i];
+    if (char === "'" || char === '"' || char === '`') {
+      let end: number = i + 1;
+      while (end < expression.length && expression[end] !== char) {
+        end += dialect === 'mysql' && expression[end] === '\\' ? 2 : 1;
+      }
+      if (end >= expression.length) {
+        throw unsafe();
+      }
+      i = end;
+    } else if (char === ';' || char === '\\' || char === '$' || expression.startsWith('--', i) || expression.startsWith('/*', i)) {
+      throw unsafe();
+    } else if (char === '(') {
+      depth++;
+    } else if (char === ')' && --depth < 0) {
+      throw unsafe();
+    }
+  }
+  if (depth) {
+    throw unsafe();
+  }
+};
+
 const assertSafeDefaults = (tables: DbTable[]): void => {
   const unsafe: DbColumn | undefined = tables
     .flatMap((table: DbTable) => table.columns)
@@ -288,6 +320,17 @@ const keysFromDocument = (raw: JsonSchema): Partial<DbTable> => {
     ...(uniques.length ? { uniques } : {}),
     ...(foreignKeys.length ? { foreignKeys } : {}),
   };
+};
+
+const checksFromDocument = (raw: unknown, dialect: Dialect): DbCheck[] => {
+  if (raw !== undefined && !Array.isArray(raw)) {
+    throw new Error('Invalid x-checks: expected a list');
+  }
+  return (raw ?? []).map((check: JsonSchema) => {
+    const expression: string = text(check.expression);
+    assertSafeExpression(expression, dialect);
+    return { name: text(check.name), expression };
+  });
 };
 
 type LegacyColumn = DbColumn & { primary?: boolean; unique?: boolean; references?: { table: string; column: string } };
@@ -347,7 +390,9 @@ export const tablesFromOpenApi = (
       const primaryKey = !exact && keys.primaryKey
         ? { ...keys.primaryKey, name: dialect === 'mysql' ? 'PRIMARY' : keys.primaryKey.name === 'PRIMARY' ? `${name}_pkey` : keys.primaryKey.name }
         : keys.primaryKey;
-      return { name, columns: converted, ...keys, ...(primaryKey ? { primaryKey } : {}) };
+      // A CHECK expression is SQL in the document's dialect; another dialect cannot run it.
+      const checks: DbCheck[] = exact ? checksFromDocument(schema['x-checks'], dialect) : [];
+      return { name, columns: converted, ...keys, ...(primaryKey ? { primaryKey } : {}), ...(checks.length ? { checks } : {}) };
     })
     : schemas
       .filter(([, schema]: [string, JsonSchema]) => schema.type === 'object' && schema.properties)

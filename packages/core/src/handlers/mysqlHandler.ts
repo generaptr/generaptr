@@ -30,6 +30,14 @@ const KEYS: string = `
   WHERE c.CONSTRAINT_SCHEMA = ? AND c.CONSTRAINT_TYPE IN ('PRIMARY KEY', 'UNIQUE', 'FOREIGN KEY')
   ORDER BY c.TABLE_NAME, c.CONSTRAINT_NAME, k.ORDINAL_POSITION`;
 
+const CHECKS: string = `
+  SELECT t.TABLE_NAME, c.CONSTRAINT_NAME, c.CHECK_CLAUSE
+  FROM CHECK_CONSTRAINTS c
+  JOIN TABLE_CONSTRAINTS t ON t.CONSTRAINT_SCHEMA = c.CONSTRAINT_SCHEMA
+    AND t.CONSTRAINT_NAME = c.CONSTRAINT_NAME AND t.CONSTRAINT_TYPE = 'CHECK'
+  WHERE c.CONSTRAINT_SCHEMA = ?
+  ORDER BY t.TABLE_NAME, c.CONSTRAINT_NAME`;
+
 /**
  * Reads a MySQL schema from information_schema.
  */
@@ -115,6 +123,16 @@ export default class MysqlHandler {
             ...(onDelete ? { onDelete } : {}), ...(onUpdate ? { onUpdate } : {}),
           });
         }
+      }
+    }
+
+    const [checks] = await this.pool.query<mysql.RowDataPacket[]>(CHECKS, [this.database]);
+    for (const row of checks) {
+      const table: DbTable | undefined = tables.get(row.TABLE_NAME);
+      if (table) {
+        // CHECK_CLAUSE escapes quotes and backslashes once more than the SQL it holds.
+        const expression: string = String(row.CHECK_CLAUSE).replace(/\\(.)/g, '$1');
+        table.checks = [...table.checks ?? [], { name: row.CONSTRAINT_NAME, expression }];
       }
     }
 

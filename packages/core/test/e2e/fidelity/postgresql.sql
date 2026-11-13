@@ -48,3 +48,14 @@ CREATE TABLE audit_log (
   message text NOT NULL,
   at timestamptz NOT NULL DEFAULT now()
 );
+
+-- CHECK constraints: one column, two columns, a list of values.
+CREATE TABLE prices (
+  id serial PRIMARY KEY,
+  amount numeric(10,2) NOT NULL,
+  discount numeric(10,2),
+  currency text NOT NULL,
+  CONSTRAINT prices_amount_positive CHECK (amount > 0),
+  CONSTRAINT prices_discount_below_amount CHECK (discount IS NULL OR discount < amount),
+  CONSTRAINT prices_currency_known CHECK (currency = ANY (ARRAY['EUR', 'USD', 'it''s']))
+);

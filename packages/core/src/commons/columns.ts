@@ -1,4 +1,4 @@
-import { DbColumn, DbForeignKey, DbTable, DbUnique, Dialect } from './types.js';
+import { DbCheck, DbColumn, DbForeignKey, DbTable, DbUnique, Dialect } from './types.js';
 
 export const camel = (name: string): string => name.replace(/[_\-\s]+(\w)/g, (_: string, c: string) => c.toUpperCase());
 
@@ -147,6 +147,7 @@ export const assertSafeNames = (tables: DbTable[]): void => {
     ...(table.primaryKey ? [table.primaryKey.name, ...table.primaryKey.columns] : []),
     ...(table.uniques ?? []).flatMap((unique: DbUnique) => [unique.name, ...unique.columns]),
     ...(table.foreignKeys ?? []).flatMap((key: DbForeignKey) => [key.name, key.table, ...key.columns, ...key.foreignColumns]),
+    ...(table.checks ?? []).map((check: DbCheck) => check.name),
   ]);
   const unsafe: string | undefined = names.find((name: string) => !SAFE_NAME.test(name));
   if (unsafe !== undefined) {

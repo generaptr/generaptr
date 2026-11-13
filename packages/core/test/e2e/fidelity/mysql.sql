@@ -48,3 +48,14 @@ CREATE TABLE audit_log (
   message text NOT NULL,
   at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+-- CHECK constraints: one column, two columns, a list of values.
+CREATE TABLE prices (
+  id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  amount decimal(10,2) NOT NULL,
+  discount decimal(10,2),
+  currency varchar(3) NOT NULL,
+  CONSTRAINT prices_amount_positive CHECK (amount > 0),
+  CONSTRAINT prices_discount_below_amount CHECK (discount IS NULL OR discount < amount),
+  CONSTRAINT prices_currency_known CHECK (currency IN ('EUR', 'USD', 'it''s'))
+);

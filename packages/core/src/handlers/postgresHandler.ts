@@ -14,7 +14,7 @@ type ColumnRow = {
 
 type ConstraintRow = {
   name: string;
-  kind: 'p' | 'u' | 'f';
+  kind: 'p' | 'u' | 'f' | 'c';
   table_name: string;
   columns: string[];
   ref_table: string | null;
@@ -22,6 +22,7 @@ type ConstraintRow = {
   on_delete: string;
   on_update: string;
   nulls_not_distinct: boolean;
+  expression: string | null;
 };
 
 /** pg_constraint action codes. `a` (no action) is the default and is not stored. */
@@ -56,13 +57,14 @@ const CONSTRAINTS: string = `
     array(SELECT a.attname FROM unnest(con.confkey) WITH ORDINALITY AS k(attnum, ord)
       JOIN pg_attribute a ON a.attrelid = con.confrelid AND a.attnum = k.attnum ORDER BY k.ord)::text[] AS ref_columns,
     con.confdeltype AS on_delete, con.confupdtype AS on_update,
-    coalesce((to_jsonb(i) ->> 'indnullsnotdistinct')::boolean, false) AS nulls_not_distinct
+    coalesce((to_jsonb(i) ->> 'indnullsnotdistinct')::boolean, false) AS nulls_not_distinct,
+    CASE WHEN con.contype = 'c' THEN pg_get_expr(con.conbin, con.conrelid) END AS expression
   FROM pg_constraint con
   JOIN pg_class src ON src.oid = con.conrelid
   JOIN pg_namespace n ON n.oid = src.relnamespace
   LEFT JOIN pg_class ref ON ref.oid = con.confrelid
   LEFT JOIN pg_index i ON i.indexrelid = con.conindid AND con.contype = 'u'
-  WHERE n.nspname = $1 AND con.contype IN ('p', 'u', 'f')
+  WHERE n.nspname = $1 AND con.contype IN ('p', 'u', 'f', 'c')
   ORDER BY src.relname, con.conname`;
 
 /**
@@ -122,6 +124,8 @@ export default class PostgresHandler {
         table.uniques = [...table.uniques ?? [], {
           name: row.name, columns: row.columns, ...(row.nulls_not_distinct ? { nullsNotDistinct: true } : {}),
         }];
+      } else if (row.kind === 'c') {
+        table.checks = [...table.checks ?? [], { name: row.name, expression: row.expression as string }];
       } else if (row.ref_table) {
         const onDelete: ReferentialAction | undefined = ACTIONS[row.on_delete];
         const onUpdate: ReferentialAction | undefined = ACTIONS[row.on_update];
