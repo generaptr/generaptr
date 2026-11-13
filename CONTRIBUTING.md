@@ -56,5 +56,8 @@ Both packages release together with the same version.
 2. Add a section to `CHANGELOG.md`.
 3. Merge to `master`.
 4. Tag the merge commit and push the tag: `git tag v2.1.0 && git push origin v2.1.0`.
+5. Approve the staged versions with 2FA: core first, then the CLI, because the CLI depends on the new core. Use **Staged Packages** on npmjs.com, or `npm stage list generaptr` and `npm stage approve <stage-id>`.
 
-The `release` workflow runs CI. It then checks that the tag equals both versions and publishes `generaptr` and `generaptr-cli` to npm with provenance. It uses npm trusted publishing, so it needs no npm token. A version that is already on npm is skipped, so you can run the workflow again after a failure.
+The `release` workflow runs CI. It then checks that the tag equals both versions and stages `generaptr` and `generaptr-cli` on npm with provenance. It uses npm trusted publishing, so it needs no npm token. The trusted publisher of each package allows `npm stage publish` only, so CI cannot release a version without a maintainer.
+
+A version that is already on npm is skipped. When a run fails after it staged core, approve or reject that staged version before you run the workflow again.

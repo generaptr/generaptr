@@ -24,8 +24,8 @@ jobs:
         with:
           node-version: 24
           cache: pnpm
-      # Trusted publishing needs npm 11.5.1 or later.
-      - run: npm install --global npm@11
+      # Staged publishing through trusted publishing needs npm 11.15.0 or later.
+      - run: npm install --global "npm@>=11.15.0 <12"
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - name: Check that the tag equals both package versions
@@ -34,8 +34,9 @@ jobs:
             version="v$(node -p "require('./$dir/package.json').version")"
             [ "$version" = "$GITHUB_REF_NAME" ] || { echo "$dir is $version, tag is $GITHUB_REF_NAME"; exit 1; }
           done
-      # pnpm pack writes the real version in place of workspace:*. npm publish does the OIDC upload.
-      - name: Publish core, then CLI
+      # pnpm pack writes the real version in place of workspace:*. npm stage publish does the OIDC upload.
+      # A maintainer approves each staged version with 2FA before it goes live.
+      - name: Stage core, then CLI
         run: |
           for dir in packages/core packages/cli; do
             name="$(node -p "require('./$dir/package.json').name")"
@@ -45,5 +46,5 @@ jobs:
               continue
             fi
             tarball="$(cd "$dir" && pnpm pack --pack-destination "$RUNNER_TEMP" | tail -1)"
-            npm publish "$tarball" --provenance --access public
+            npm stage publish "$tarball" --provenance --access public
           done
