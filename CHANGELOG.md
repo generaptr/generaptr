@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 3.0.0
 
 - Generaptr writes a web app next to the API: list, detail, create, and edit pages per table, as json-render specs drawn with shadcn components and Tailwind. The library exports `operations.web.generateWeb` and `operations.web.installWeb`, and the CLI asks for the web app's output directory.
 - The web app has a light, dark, and system mode. Its colors are in `src/theme.css`, in the format of a shadcn theme.
