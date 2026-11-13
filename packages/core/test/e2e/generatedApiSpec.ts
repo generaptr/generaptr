@@ -1,8 +1,10 @@
 import assert from 'node:assert';
-import { type ChildProcess, spawn } from 'node:child_process';
+import { type ChildProcess, spawn, spawnSync } from 'node:child_process';
 import * as fs from 'node:fs/promises';
 import * as os from 'node:os';
 import * as path from 'node:path';
+import mysql from 'mysql2/promise';
+import pg from 'pg';
 import config from '../config.js';
 import { generateApi, installApi } from '../../src/fileOperations/apiFileOperations.js';
 import MysqlHandler from '../../src/handlers/mysqlHandler.js';
@@ -22,6 +24,12 @@ const dialects = [
       await handler.close();
       return schema;
     },
+    // db:baseline creates Drizzle's migrations table in the source database; the test removes it again.
+    dropMigrations: async (): Promise<void> => {
+      const connection = await mysql.createConnection(mysqlConnection);
+      await connection.query('DROP TABLE IF EXISTS __drizzle_migrations');
+      await connection.end();
+    },
     url: `mysql://${mysqlConnection.user}:${mysqlConnection.password}@${mysqlConnection.host}:${mysqlConnection.port}/${mysqlConnection.database}`,
   },
   {
@@ -32,6 +40,12 @@ const dialects = [
       const schema = await handler.readSchema();
       await handler.close();
       return schema;
+    },
+    dropMigrations: async (): Promise<void> => {
+      const client = new pg.Client(postgresConnection);
+      await client.connect();
+      await client.query('DROP SCHEMA IF EXISTS drizzle CASCADE');
+      await client.end();
     },
     url: `postgres://${postgresConnection.user}:${postgresConnection.password}@${postgresConnection.host}:${postgresConnection.port}/${postgresConnection.database}`,
   },
@@ -49,7 +63,7 @@ const send = async (method: string, url: string, body?: object): Promise<Respons
 // The API's own contract, so the test reads the body as that shape.
 const json = async <T>(response: Response): Promise<T> => (await response.json()) as T;
 
-describe.each(dialects)('generated Express + Drizzle API on $dialect', ({ dialect, port, read, url }) => {
+describe.each(dialects)('generated Express + Drizzle API on $dialect', ({ dialect, dropMigrations, port, read, url }) => {
   let dir: string;
   let server: ChildProcess;
 
@@ -140,6 +154,23 @@ describe.each(dialects)('generated Express + Drizzle API on $dialect', ({ dialec
     assert.strictEqual(new Date(String(group.seenAt)).toISOString(), seenAt);
     assert.strictEqual((await send('DELETE', `/groups/${id}`)).status, 204);
   });
+
+  it('records the first migration as applied on the source database with db:baseline', async () => {
+    const npm = (script: string) => spawnSync('npm', ['run', '--silent', script], {
+      cwd: dir, env: { ...process.env, DATABASE_URL: url }, encoding: 'utf-8',
+    });
+    try {
+      const baseline = npm('db:baseline');
+      assert.strictEqual(baseline.status, 0, baseline.stderr + baseline.stdout);
+      const migrate = npm('db:migrate');
+      assert.strictEqual(migrate.status, 0, migrate.stderr + migrate.stdout);
+      const again = npm('db:baseline');
+      assert.strictEqual(again.status, 1);
+      assert.match(again.stderr, /already has applied migrations/);
+    } finally {
+      await dropMigrations();
+    }
+  }, 180000);
 
   it('hides database errors behind a generic 500', async () => {
     const response = await send('POST', '/accounts', { type: 'admin', userId: 999999999 });

@@ -1,0 +1,22 @@
+// Records the first migration in ./drizzle as applied, without running it. Run this once, on the
+// database that generaptr read: its tables exist already. A fresh database runs `npm run db:migrate`.
+import { drizzle } from 'drizzle-orm/<%= it.driver %>';
+import { migrate } from 'drizzle-orm/<%= it.driver %>/migrator';
+
+const errors = {
+  databaseMigrations: 'The database already has applied migrations. Use `npm run db:migrate` instead.',
+  localMigrations: './drizzle has more than one migration. Baseline records only the first; remove the others, then run it again.',
+};
+
+const db = drizzle(process.env.DATABASE_URL);
+try {
+  const result = await migrate(db, { migrationsFolder: './drizzle', init: true });
+  if (result?.exitCode) {
+    console.error(errors[result.exitCode]);
+    process.exitCode = 1;
+  } else {
+    console.log('Recorded the first migration as applied. No table changed.');
+  }
+} finally {
+  await db.$client.end();
+}
