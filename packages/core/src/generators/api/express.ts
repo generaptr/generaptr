@@ -9,12 +9,12 @@ import { openApiDocument } from '../spec/openapi.js';
 
 export { routedTables };
 
-/** Versions the generated API installs. Drizzle v1 is beta: pin it exactly. */
+/** Versions the generated API installs. Drizzle v1 is a release candidate: pin it exactly. */
 export const VERSIONS: Record<string, string> = {
   express: '5.3.0',
-  'drizzle-orm': '1.0.0-beta.22',
+  'drizzle-orm': '1.0.0-rc.5',
   zod: '4.6.7',
-  'drizzle-kit': '1.0.0-beta.22',
+  'drizzle-kit': '1.0.0-rc.5',
   mysql2: '3.24.6',
   pg: '8.23.1',
 };

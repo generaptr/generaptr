@@ -775,12 +775,12 @@ exports[`renderApi > writes package.json 1`] = `
   },
   "dependencies": {
     "express": "5.3.0",
-    "drizzle-orm": "1.0.0-beta.22",
+    "drizzle-orm": "1.0.0-rc.5",
     "mysql2": "3.24.6",
     "zod": "4.6.7"
   },
   "devDependencies": {
-    "drizzle-kit": "1.0.0-beta.22"
+    "drizzle-kit": "1.0.0-rc.5"
   }
 }
 "
@@ -1757,12 +1757,12 @@ exports[`renderApi for Postgres > writes package.json 1`] = `
   },
   "dependencies": {
     "express": "5.3.0",
-    "drizzle-orm": "1.0.0-beta.22",
+    "drizzle-orm": "1.0.0-rc.5",
     "pg": "8.23.1",
     "zod": "4.6.7"
   },
   "devDependencies": {
-    "drizzle-kit": "1.0.0-beta.22"
+    "drizzle-kit": "1.0.0-rc.5"
   }
 }
 "
