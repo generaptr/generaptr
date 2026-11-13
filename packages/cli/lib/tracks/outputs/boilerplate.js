@@ -1,11 +1,10 @@
 import { styleText } from 'node:util';
 import inquirer from 'inquirer';
-import { operations } from 'generaptr';
+import { handlers, operations } from 'generaptr';
 
-import * as input from '../inputs/input.js';
-import * as dialect from './database/dialect.js';
+import * as mysql from '../inputs/database/relational/mysql.js';
 
-const { api: Api } = operations;
+const { api } = operations;
 
 export const questions = [
   {
@@ -44,31 +43,23 @@ export const questions = [
 ];
 
 export const handler = async (data) => {
-  const api = new Api(data.output);
+  const connection = await inquirer.prompt(mysql.questions);
+  const reader = new handlers.MySql(connection);
+  await reader.connect();
+  const tables = await reader.readTables();
+  await reader.close();
 
-  await api.createDirectoryStructure();
+  const files = await api.generateApi(data.output, data, tables);
+  console.log(styleText('green', `Generated ${files.length} files in ${data.output}`));
 
-  const schema = await input.handler(await inquirer.prompt(input.questions));
-  const connection = await dialect.handler(await inquirer.prompt(dialect.questions));
   const consent = await inquirer.prompt([{
-    name: 'allow',
+    name: 'install',
     type: 'confirm',
-    message: styleText('yellow', 'Allow generaptr to install required packages:'),
+    message: styleText('yellow', 'Run npm install in the generated API?'),
   }]);
-
-  if (!consent.allow) {
-    throw new Error('User did not agree that generaptr should install required packages');
+  if (consent.install) {
+    await api.installApi(data.output);
   }
-
-  await api.createPackageJson(data, connection.dialect);
-  await api.installDependencies(connection.dialect);
-  await api.initializeORM(connection.dialect);
-  await api.initializeConfig(connection, schema);
-  await api.initializeCommons();
-  await api.initializeModels(connection.dialect, schema);
-  await api.initializeRepositories(connection.dialect, schema);
-  await api.initializeServices(schema);
-  await api.initializeControllers(schema);
 
   return true;
 };
