@@ -4,10 +4,11 @@
 [![npm](https://badge.fury.io/js/generaptr.svg)](https://badge.fury.io/js/generaptr) [![npm](https://badge.fury.io/js/generaptr-cli.svg)](https://badge.fury.io/js/generaptr-cli) [![CI](https://github.com/generaptr/generaptr/actions/workflows/ci.yml/badge.svg)](https://github.com/generaptr/generaptr/actions/workflows/ci.yml) [![Join the chat at https://gitter.im/generaptr/generaptr](https://badges.gitter.im/generaptr/generaptr.svg)](https://gitter.im/generaptr/generaptr?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Coverage Status](https://coveralls.io/repos/github/generaptr/generaptr/badge.svg?branch=master)](https://coveralls.io/github/generaptr/generaptr?branch=master)
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fgeneraptr%2Fgeneraptr.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fgeneraptr%2Fgeneraptr?ref=badge_shield)
 
-Generaptr reads the tables of a MySQL or PostgreSQL database and writes two things:
+Generaptr reads the tables of a MySQL or PostgreSQL database and writes three things:
 
 - A REST API: Express 5, Drizzle ORM, and zod validation, with one CRUD route per table.
 - An OpenAPI 3.1 document that describes that API exactly.
+- A web app for that API: list, detail, create, and edit pages per table, drawn with shadcn components and Tailwind.
 
 Generaptr can also read an OpenAPI document back and write the API from it.
 
@@ -56,6 +57,30 @@ Run it:
 cd api
 cp .env.example .env    # then set DATABASE_URL
 npm start
+```
+
+## The generated web app
+
+```
+web/
+├── package.json        # react, vite, tailwindcss, @json-render/* (exact versions)
+├── vite.config.js      # forwards /api to API_URL
+├── .env.example        # API_URL, default http://localhost:3000
+└── src/
+    ├── pages.json      # json-render specs, written from openapi.json
+    ├── main.jsx        # renders the specs; the same for every API
+    └── index.css       # shadcn theme tokens
+```
+
+- Each table with a route gets a list page with paging, a detail page with its related rows, and create and edit forms.
+- `src/pages.json` holds one [json-render](https://github.com/vercel-labs/json-render) spec per page. Edit it to change a page; generate again to start over.
+- A form takes its fields from the API's input schema. A foreign key becomes a select of the rows it can point to. The form checks required fields and lengths, and shows the API's message when the API rejects a row.
+- The browser calls `/api` on the web app's own server, which forwards to the API, so the API needs no CORS.
+
+```sh
+cd web
+cp .env.example .env    # then set API_URL
+npm run dev             # or: npm run build && npm run preview
 ```
 
 ### Migrations

@@ -5,13 +5,23 @@ import { parse } from 'yaml';
 import { run } from '../commons/utils/run.js';
 import { renderApi } from '../generators/api/express.js';
 import { openApiDocument, tablesFromOpenApi } from '../generators/spec/openapi.js';
+import { renderWeb } from '../generators/web/vite.js';
 import { DbSchema, Dialect, PackageJsonInfo } from '../commons/types.js';
 
 /**
  * Writes an Express 5 + Drizzle API for the given tables into `dir`.
  */
-export const generateApi = async (dir: string, info: PackageJsonInfo, schema: DbSchema): Promise<string[]> => {
-  const files: Record<string, string> = renderApi(schema, info);
+export const generateApi = async (dir: string, info: PackageJsonInfo, schema: DbSchema): Promise<string[]> =>
+  writeFiles(dir, renderApi(schema, info));
+
+/**
+ * Writes a web app for the API that `generateApi` writes for the same tables: list, detail, create, and edit
+ * pages per table, as json-render specs drawn with shadcn components. It calls the API through `/api`.
+ */
+export const generateWeb = async (dir: string, info: PackageJsonInfo, schema: DbSchema): Promise<string[]> =>
+  writeFiles(dir, renderWeb(schema, info));
+
+const writeFiles = async (dir: string, files: Record<string, string>): Promise<string[]> => {
   for (const [file, content] of Object.entries(files)) {
     await fs.mkdir(path.dirname(path.join(dir, file)), { recursive: true });
     await fs.writeFile(path.join(dir, file), content, 'utf-8');
@@ -21,7 +31,7 @@ export const generateApi = async (dir: string, info: PackageJsonInfo, schema: Db
 };
 
 /**
- * Installs the generated API's pinned dependencies.
+ * Installs the pinned dependencies of a generated API or web app.
  */
 export const installApi = async (dir: string): Promise<void> => {
   console.log(`running: ${styleText('green', 'npm install')}`);

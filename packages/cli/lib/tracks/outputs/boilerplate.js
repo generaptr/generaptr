@@ -4,7 +4,7 @@ import { operations } from 'generaptr';
 
 import * as source from '../inputs/source.js';
 
-const { api } = operations;
+const { api, web } = operations;
 
 export const questions = [
   {
@@ -12,6 +12,12 @@ export const questions = [
     type: 'input',
     message: 'Boilerplate API output directory:',
     default: 'api',
+  },
+  {
+    name: 'webOutput',
+    type: 'input',
+    message: 'Web app output directory (empty for none):',
+    default: 'web',
   },
   {
     name: 'name',
@@ -47,14 +53,21 @@ export const handler = async (data) => {
 
   const files = await api.generateApi(data.output, data, schema);
   console.log(styleText('green', `Generated ${files.length} files in ${data.output}`));
+  if (data.webOutput) {
+    const webFiles = await web.generateWeb(data.webOutput, data, schema);
+    console.log(styleText('green', `Generated ${webFiles.length} files in ${data.webOutput}`));
+  }
 
   const consent = await inquirer.prompt([{
     name: 'install',
     type: 'confirm',
-    message: styleText('yellow', 'Run npm install in the generated API?'),
+    message: styleText('yellow', 'Run npm install in the generated projects?'),
   }]);
   if (consent.install) {
     await api.installApi(data.output);
+    if (data.webOutput) {
+      await web.installWeb(data.webOutput);
+    }
   }
 
   return true;

@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Generaptr writes a web app next to the API: list, detail, create, and edit pages per table, as json-render specs drawn with shadcn components and Tailwind. The library exports `operations.web.generateWeb` and `operations.web.installWeb`, and the CLI asks for the web app's output directory.
 - Breaking: keys belong to the table. `DbTable` has `primaryKey`, `uniques`, and `foreignKeys`, each with the name the database gave it. `DbColumn` has no `primary`, `unique`, or `references`. Generaptr 2 OpenAPI documents still read.
 - The generated schema keeps key names, composite unique constraints, composite foreign keys, `ON DELETE` and `ON UPDATE` actions, and Postgres `NULLS NOT DISTINCT`.
 - The generated schema keeps CHECK constraints, for Postgres and MySQL. A CHECK expression from an OpenAPI document must stay inside its parentheses, and a document read into another dialect keeps no CHECK constraints.
