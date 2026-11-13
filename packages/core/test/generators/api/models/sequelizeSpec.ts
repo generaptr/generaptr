@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import assert from 'node:assert';
 import SequelizeModelGenerator from '../../../../src/generators/api/models/sequelize';
 import apiMocks from '../../../testUtils/apiMocks';
 import schemaMocks from '../../../testUtils/schemaMocks';

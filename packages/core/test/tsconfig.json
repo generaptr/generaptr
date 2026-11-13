@@ -1,23 +1,26 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "target": "es2023",
+    "lib": [
+      "es2023",
+      "esnext.disposable"
+    ],
+    "types": [
+      "node",
+      "vitest/globals"
+    ],
     "noImplicitAny": false,
     "noImplicitReturns": true,
     "noImplicitThis": true,
     "noUnusedParameters": true,
     "noUnusedLocals": true,
     "strictNullChecks": true,
-    "importHelpers": true,
     "declaration": true,
-    "sourceMap": false,
-    "target": "es6",
-    "lib": ["es6"],
-    "outDir": "../build",
-    "types": [
-      "assert", "faker", "mocha", "node", "pluralize", "bunyan", "chalk", "fs-extra", "mysql2"
-    ],
-    "typeRoots": ["../typings/globals", "../typings/modules", "../node_modules/@types"]
+    "skipLibCheck": true,
+    "rootDir": "..",
+    "outDir": "../build"
   },
   "include": [
     "../src/**/*",

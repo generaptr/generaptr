@@ -1,5 +1,7 @@
-import * as assert from 'assert';
-import * as fs from 'fs';
+import assert from 'node:assert';
+import * as fs from 'node:fs/promises';
+import * as os from 'node:os';
+import * as path from 'node:path';
 import fileUtil from '../../../src/commons/utils/fileUtil';
 import { ConnectionData } from "../../../src/commons/types";
 import DIRECTORY_STRUCTURE from '../../../src/commons/constants/directoryStructure';
@@ -9,175 +11,125 @@ import apiMocks from '../../testUtils/apiMocks';
 import schemaMocks from '../../testUtils/schemaMocks';
 
 describe('Suite for testing the ConfigurationsFileOperations class', () => {
-  it('should create config.js file', (done: Function) => {
-    const apiFileOperations: ApiFileOperations = new ApiFileOperations('api.test');
+  let tmpDir: string;
+  let apiFileOperations: ApiFileOperations;
 
-    configurationsFileOperations.initializeConfig(apiFileOperations.getFilePath())
-      .then(() => {
-        fs.readFile(
-          fileUtil.joinPaths(
-            apiFileOperations.getFilePath(),
-            DIRECTORY_STRUCTURE.API_STRUCTURE.CONFIG,
-            'config.js',
-          ),
-          (err: Error, data: Buffer) => {
-            assert.ifError(err);
-            assert(data, 'Content should not be empty');
-            assert.strictEqual(data.toString(), apiMocks.VALID_CONFIG_VALUE);
-            done();
-          });
-      })
-      .catch((err: Error) => {
-        assert.fail(err.message);
-        done();
-      });
+  beforeAll(async () => {
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'generaptr-'));
+    apiFileOperations = new ApiFileOperations(tmpDir);
+    await apiFileOperations.createDirectoryStructure();
   });
 
-  it('should create index.js file from config folder', (done: Function) => {
-    const apiFileOperations: ApiFileOperations = new ApiFileOperations('api.test');
-
-    configurationsFileOperations.initializeGetEnvBasedConfig(apiFileOperations.getFilePath())
-      .then(() => {
-        fs.readFile(
-          fileUtil.joinPaths(
-            apiFileOperations.getFilePath(),
-            DIRECTORY_STRUCTURE.API_STRUCTURE.CONFIG,
-            'index.js',
-          ),
-          (err: Error, data: Buffer) => {
-            assert.ifError(err);
-            assert(data, 'Content should not be empty');
-            assert.strictEqual(data.toString(), apiMocks.VALID_CONFIG_GET_ENV_BASED_CONFIG);
-            done();
-          });
-      })
-      .catch((err: Error) => {
-        assert.fail(err.message);
-        done();
-      });
+  afterAll(async () => {
+    await fs.rm(tmpDir, { recursive: true, force: true });
   });
 
-  it('should create database.js file from config folder', (done: Function) => {
-    const apiFileOperations: ApiFileOperations = new ApiFileOperations('api.test');
+  it('should create config.js file', async () => {
+    await configurationsFileOperations.initializeConfig(apiFileOperations.getFilePath());
 
-    configurationsFileOperations.initializeDbConfig(
+    const data: string = await fs.readFile(
+      fileUtil.joinPaths(
+        apiFileOperations.getFilePath(),
+        DIRECTORY_STRUCTURE.API_STRUCTURE.CONFIG,
+        'config.js',
+      ),
+      'utf-8',
+    );
+    assert(data, 'Content should not be empty');
+    assert.strictEqual(data, apiMocks.VALID_CONFIG_VALUE);
+  });
+
+  it('should create index.js file from config folder', async () => {
+    await configurationsFileOperations.initializeGetEnvBasedConfig(apiFileOperations.getFilePath());
+
+    const data: string = await fs.readFile(
+      fileUtil.joinPaths(
+        apiFileOperations.getFilePath(),
+        DIRECTORY_STRUCTURE.API_STRUCTURE.CONFIG,
+        'index.js',
+      ),
+      'utf-8',
+    );
+    assert(data, 'Content should not be empty');
+    assert.strictEqual(data, apiMocks.VALID_CONFIG_GET_ENV_BASED_CONFIG);
+  });
+
+  it('should create database.js file from config folder', async () => {
+    await configurationsFileOperations.initializeDbConfig(
       apiMocks.VALID_SEQUELIZE_CONFIG as ConnectionData,
-      apiFileOperations.getFilePath())
-      .then(() => {
-        fs.readFile(
-          fileUtil.joinPaths(
-            apiFileOperations.getFilePath(),
-            DIRECTORY_STRUCTURE.API_STRUCTURE.CONFIG,
-            'database.js',
-          ),
-          (err: Error, data: Buffer) => {
-            assert.ifError(err);
-            assert(data, 'Content should not be empty');
-            assert.strictEqual(data.toString(), apiMocks.VALID_SEQUELIZE_DATABASE_CONFIG);
-            done();
-          });
-      })
-      .catch((err: Error) => {
-        assert.fail(err.message);
-        done();
-      });
+      apiFileOperations.getFilePath());
+
+    const data: string = await fs.readFile(
+      fileUtil.joinPaths(
+        apiFileOperations.getFilePath(),
+        DIRECTORY_STRUCTURE.API_STRUCTURE.CONFIG,
+        'database.js',
+      ),
+      'utf-8',
+    );
+    assert(data, 'Content should not be empty');
+    assert.strictEqual(data, apiMocks.VALID_SEQUELIZE_DATABASE_CONFIG);
   });
 
-  it('should create cors.js file from config folder', (done: Function) => {
-    const apiFileOperations: ApiFileOperations = new ApiFileOperations('api.test');
+  it('should create cors.js file from config folder', async () => {
+    await configurationsFileOperations.initializeCorsConfig(apiFileOperations.getFilePath());
 
-    configurationsFileOperations.initializeCorsConfig(apiFileOperations.getFilePath())
-      .then(() => {
-        fs.readFile(
-          fileUtil.joinPaths(
-            apiFileOperations.getFilePath(),
-            DIRECTORY_STRUCTURE.API_STRUCTURE.MIDDLEWARES,
-            'cors.js',
-          ),
-          (err: Error, data: Buffer) => {
-            assert.ifError(err);
-            assert(data, 'Content should not be empty');
-            assert.strictEqual(data.toString(), apiMocks.VALID_CORS_CONFIG);
-            done();
-          });
-      })
-      .catch((err: Error) => {
-        assert.fail(err.message);
-        done();
-      });
+    const data: string = await fs.readFile(
+      fileUtil.joinPaths(
+        apiFileOperations.getFilePath(),
+        DIRECTORY_STRUCTURE.API_STRUCTURE.MIDDLEWARES,
+        'cors.js',
+      ),
+      'utf-8',
+    );
+    assert(data, 'Content should not be empty');
+    assert.strictEqual(data, apiMocks.VALID_CORS_CONFIG);
   });
 
-  it('should create express.js file from config folder', (done: Function) => {
-    const apiFileOperations: ApiFileOperations = new ApiFileOperations('api.test');
+  it('should create express.js file from config folder', async () => {
+    await configurationsFileOperations.initializeExpressConfig(apiFileOperations.getFilePath());
 
-    configurationsFileOperations.initializeExpressConfig(apiFileOperations.getFilePath())
-      .then(() => {
-        fs.readFile(
-          fileUtil.joinPaths(
-            apiFileOperations.getFilePath(),
-            DIRECTORY_STRUCTURE.API_STRUCTURE.CONFIG,
-            'express.js',
-          ),
-          (err: Error, data: Buffer) => {
-            assert.ifError(err);
-            assert(data, 'Content should not be empty');
-            assert.strictEqual(data.toString(), apiMocks.VALID_EXPRESS_CONFIG);
-            done();
-          });
-      })
-      .catch((err: Error) => {
-        assert.fail(err.message);
-        done();
-      });
+    const data: string = await fs.readFile(
+      fileUtil.joinPaths(
+        apiFileOperations.getFilePath(),
+        DIRECTORY_STRUCTURE.API_STRUCTURE.CONFIG,
+        'express.js',
+      ),
+      'utf-8',
+    );
+    assert(data, 'Content should not be empty');
+    assert.strictEqual(data, apiMocks.VALID_EXPRESS_CONFIG);
   });
 
-  it('should create router.js file from config folder', (done: Function) => {
-    const apiFileOperations: ApiFileOperations = new ApiFileOperations('api.test');
-
-    configurationsFileOperations.initializeRouterConfig(
+  it('should create router.js file from config folder', async () => {
+    await configurationsFileOperations.initializeRouterConfig(
       apiFileOperations.getFilePath(),
-      schemaMocks.PROCESSED_SCHEMA_ONE_TABLE)
-      .then(() => {
-        fs.readFile(
-          fileUtil.joinPaths(
-            apiFileOperations.getFilePath(),
-            DIRECTORY_STRUCTURE.API_STRUCTURE.CONFIG,
-            'router.js',
-          ),
-          (err: Error, data: Buffer) => {
-            assert.ifError(err);
-            assert(data, 'Content should not be empty');
-            assert.strictEqual(data.toString(), apiMocks.VALID_ROUTER_CONFIG);
-            done();
-          });
-      })
-      .catch((err: Error) => {
-        assert.fail(err.message);
-        done();
-      });
+      schemaMocks.PROCESSED_SCHEMA_ONE_TABLE);
+
+    const data: string = await fs.readFile(
+      fileUtil.joinPaths(
+        apiFileOperations.getFilePath(),
+        DIRECTORY_STRUCTURE.API_STRUCTURE.CONFIG,
+        'router.js',
+      ),
+      'utf-8',
+    );
+    assert(data, 'Content should not be empty');
+    assert.strictEqual(data, apiMocks.VALID_ROUTER_CONFIG);
   });
 
-  it('should create index.js main app file', (done: Function) => {
-    const apiFileOperations: ApiFileOperations = new ApiFileOperations('api.test');
+  it('should create index.js main app file', async () => {
+    await configurationsFileOperations.initializeIndex(apiFileOperations.getFilePath());
 
-    configurationsFileOperations.initializeIndex(apiFileOperations.getFilePath())
-      .then(() => {
-        fs.readFile(
-          fileUtil.joinPaths(
-            apiFileOperations.getFilePath(),
-            DIRECTORY_STRUCTURE.API_STRUCTURE.SRC,
-            'index.js',
-          ),
-          (err: Error, data: Buffer) => {
-            assert.ifError(err);
-            assert(data, 'Content should not be empty');
-            assert.strictEqual(data.toString(), apiMocks.VALID_INDEX_FILE);
-            done();
-          });
-      })
-      .catch((err: Error) => {
-        assert.fail(err.message);
-        done();
-      });
+    const data: string = await fs.readFile(
+      fileUtil.joinPaths(
+        apiFileOperations.getFilePath(),
+        DIRECTORY_STRUCTURE.API_STRUCTURE.SRC,
+        'index.js',
+      ),
+      'utf-8',
+    );
+    assert(data, 'Content should not be empty');
+    assert.strictEqual(data, apiMocks.VALID_INDEX_FILE);
   });
 });

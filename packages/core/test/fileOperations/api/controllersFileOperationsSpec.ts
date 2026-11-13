@@ -1,5 +1,7 @@
-import * as assert from 'assert';
-import * as fs from 'fs';
+import assert from 'node:assert';
+import * as fs from 'node:fs/promises';
+import * as os from 'node:os';
+import * as path from 'node:path';
 import fileUtil from '../../../src/commons/utils/fileUtil';
 import utils from '../../../src/commons/utils/utils';
 import DIRECTORY_STRUCTURE from '../../../src/commons/constants/directoryStructure';
@@ -10,45 +12,41 @@ import schemaMocks from '../../testUtils/schemaMocks';
 import { Table } from "../../../src/commons/types";
 
 describe('Suite for testing the ControllersFileOperations class', () => {
-  it('should create all controller files for schema', (done: Function) => {
-    const apiFileOperations: ApiFileOperations = new ApiFileOperations('api.test');
+  let tmpDir: string;
+  let apiFileOperations: ApiFileOperations;
 
-    controllersFileOperations.initializeControllers(apiFileOperations.getFilePath(), schemaMocks.PROCESSED_SCHEMA_ONE_TABLE)
-      .then(() => {
-        const table: Table = schemaMocks.PROCESSED_SCHEMA_ONE_TABLE[0] as Table;
-        const model: string = utils.singular(table.name);
+  beforeAll(async () => {
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'generaptr-'));
+    apiFileOperations = new ApiFileOperations(tmpDir);
+    await apiFileOperations.createDirectoryStructure();
+  });
 
-        // Read generated controller
-        fs.readFile(
-          fileUtil.joinPaths(
-            apiFileOperations.getFilePath(),
-            DIRECTORY_STRUCTURE.API_STRUCTURE.CONTROLLERS,
-            `${model}Controller.js`,
-          ),
-          (err: Error, data: Buffer) => {
-            assert.ifError(err);
-            assert(data, 'Content should not be empty');
-            assert.strictEqual(data.toString(), apiMocks.VALID_CONTROLLER_ONE_MODEL);
+  afterAll(async () => {
+    await fs.rm(tmpDir, { recursive: true, force: true });
+  });
 
-            // Read default controller content
-            fs.readFile(
-              fileUtil.joinPaths(
-                apiFileOperations.getFilePath(),
-                DIRECTORY_STRUCTURE.API_STRUCTURE.CONTROLLERS,
-                'defaultController.js',
-              ),
-              (error: Error, d: Buffer) => {
-                assert.ifError(error);
-                assert(data, 'Content should not be empty');
-                assert.strictEqual(d.toString(), apiMocks.VALID_DEFAULT_CONTROLLER);
+  it('should create all controller files for schema', async () => {
+    await controllersFileOperations.initializeControllers(
+      apiFileOperations.getFilePath(),
+      schemaMocks.PROCESSED_SCHEMA_ONE_TABLE,
+    );
+    const table: Table = schemaMocks.PROCESSED_SCHEMA_ONE_TABLE[0] as Table;
+    const model: string = utils.singular(table.name);
 
-                done();
-              });
-          });
-      })
-      .catch((err: Error) => {
-        assert.fail(err.message);
-        done();
-      });
+    // Read generated controller
+    const data: string = await fs.readFile(
+      fileUtil.joinPaths(apiFileOperations.getFilePath(), DIRECTORY_STRUCTURE.API_STRUCTURE.CONTROLLERS, `${model}Controller.js`),
+      'utf-8',
+    );
+    assert(data, 'Content should not be empty');
+    assert.strictEqual(data, apiMocks.VALID_CONTROLLER_ONE_MODEL);
+
+    // Read default controller content
+    const defaultController: string = await fs.readFile(
+      fileUtil.joinPaths(apiFileOperations.getFilePath(), DIRECTORY_STRUCTURE.API_STRUCTURE.CONTROLLERS, 'defaultController.js'),
+      'utf-8',
+    );
+    assert(defaultController, 'Content should not be empty');
+    assert.strictEqual(defaultController, apiMocks.VALID_DEFAULT_CONTROLLER);
   });
 });

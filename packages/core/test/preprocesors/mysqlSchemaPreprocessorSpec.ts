@@ -1,5 +1,5 @@
 import MysqlSchemaPreprocessor from '../../src/preprocesors/mysqlSchemaPreprocessor';
-import * as assert from 'assert';
+import assert from 'node:assert';
 import mocks from '../testUtils/schemaMocks';
 import { MySqlColumnSchema, Column, Schema, Table } from '../../src/commons/types';
 const preProcessor: MysqlSchemaPreprocessor = new MysqlSchemaPreprocessor();

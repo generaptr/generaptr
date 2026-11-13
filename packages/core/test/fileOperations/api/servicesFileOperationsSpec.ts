@@ -1,5 +1,7 @@
-import * as assert from 'assert';
-import * as fs from 'fs';
+import assert from 'node:assert';
+import * as fs from 'node:fs/promises';
+import * as os from 'node:os';
+import * as path from 'node:path';
 import fileUtil from '../../../src/commons/utils/fileUtil';
 import utils from '../../../src/commons/utils/utils';
 import DIRECTORY_STRUCTURE from '../../../src/commons/constants/directoryStructure';
@@ -10,32 +12,30 @@ import schemaMocks from '../../testUtils/schemaMocks';
 import { Table } from "../../../src/commons/types";
 
 describe('Suite for testing the ServicesFileOperations class', () => {
-  it('should create all services files for schema', (done: Function) => {
-    const apiFileOperations: ApiFileOperations = new ApiFileOperations('api.test');
+  let tmpDir: string;
+  let apiFileOperations: ApiFileOperations;
 
-    servicesFileOperations.initializeServices(apiFileOperations.getFilePath(), schemaMocks.PROCESSED_SCHEMA_ONE_TABLE)
-      .then(() => {
-        const table: Table = schemaMocks.PROCESSED_SCHEMA_ONE_TABLE[0] as Table;
-        const model: string = utils.singular(table.name);
+  beforeAll(async () => {
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'generaptr-'));
+    apiFileOperations = new ApiFileOperations(tmpDir);
+    await apiFileOperations.createDirectoryStructure();
+  });
 
-        // Read generated controller
-        fs.readFile(
-          fileUtil.joinPaths(
-            apiFileOperations.getFilePath(),
-            DIRECTORY_STRUCTURE.API_STRUCTURE.SERVICES,
-            `${model}Service.js`,
-          ),
-          (err: Error, data: Buffer) => {
-            assert.ifError(err);
-            assert(data, 'Content should not be empty');
-            assert.strictEqual(data.toString(), apiMocks.VALID_SERVICE_ONE_MODEL);
+  afterAll(async () => {
+    await fs.rm(tmpDir, { recursive: true, force: true });
+  });
 
-            done();
-          });
-      })
-      .catch((err: Error) => {
-        assert.fail(err.message);
-        done();
-      });
+  it('should create all services files for schema', async () => {
+    await servicesFileOperations.initializeServices(apiFileOperations.getFilePath(), schemaMocks.PROCESSED_SCHEMA_ONE_TABLE);
+    const table: Table = schemaMocks.PROCESSED_SCHEMA_ONE_TABLE[0] as Table;
+    const model: string = utils.singular(table.name);
+
+    // Read generated service
+    const data: string = await fs.readFile(
+      fileUtil.joinPaths(apiFileOperations.getFilePath(), DIRECTORY_STRUCTURE.API_STRUCTURE.SERVICES, `${model}Service.js`),
+      'utf-8',
+    );
+    assert(data, 'Content should not be empty');
+    assert.strictEqual(data, apiMocks.VALID_SERVICE_ONE_MODEL);
   });
 });

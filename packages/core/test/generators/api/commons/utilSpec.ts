@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import assert from 'node:assert';
 import apiMocks from '../../../testUtils/apiMocks';
 import util from '../../../../src/generators/api/commons/util';
 

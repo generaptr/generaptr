@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import assert from 'node:assert';
 import mocks from '../../testUtils/schemaMocks';
 import examplesGenerator from '../../../src/generators/spec/examples';
 import { Example, Schema, Table } from '../../../src/commons/types';
@@ -28,6 +28,7 @@ describe('Suite for testing RamlExampleGenerator', () => {
     assert(userExample.type, 'Type should not be null');
     assert.strictEqual(userExample.type, 'User', 'Type object should be User');
     assert(userExample.data, 'Data object should not be null');
-    assert.strictEqual(Object.keys(userExample.data).length, 4, 'Number of data generated should be 4');
+    // users mock has 5 columns; mocha saw 4 only because an earlier spec cached a 4-column User.
+    assert.strictEqual(Object.keys(userExample.data).length, 5, 'Number of data generated should be 5');
   });
 });

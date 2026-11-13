@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import assert from 'node:assert';
 import typesGenerator from '../../../src/generators/spec/types';
 import { Table } from '../../../src/commons/types';
 

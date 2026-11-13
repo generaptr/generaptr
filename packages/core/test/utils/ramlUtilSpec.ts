@@ -1,5 +1,5 @@
 import ramlUtil from '../../src/commons/utils/ramlUtil';
-import * as assert from 'assert';
+import assert from 'node:assert';
 
 describe('Suite for testing RamlUtil class', () => {
   it('should generate fake data', () => {
@@ -13,7 +13,7 @@ describe('Suite for testing RamlUtil class', () => {
       assert.strictEqual(typeof ramlUtil.generateId('string'), 'string');
       ramlUtil.generateId('not-a-type');
     } catch (e) {
-      assert.strictEqual(e.message, 'Not implemented yet');
+      assert.strictEqual((e as Error).message, 'Not implemented yet');
     }
   });
 

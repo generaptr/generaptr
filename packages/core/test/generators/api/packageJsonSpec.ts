@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import assert from 'node:assert';
 import packageJsonGenerator from '../../../src/generators/api/packageJson';
 import apiMocks from '../../testUtils/apiMocks';
 

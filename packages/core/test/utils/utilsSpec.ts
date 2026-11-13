@@ -1,5 +1,5 @@
 import utils from '../../src/commons/utils/utils';
-import * as assert from 'assert';
+import assert from 'node:assert';
 
 describe('Suite for testing Utils class', () => {
 

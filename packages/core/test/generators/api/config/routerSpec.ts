@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import assert from 'node:assert';
 import schemaMocks from '../../../testUtils/schemaMocks';
 import apiMocks from '../../../testUtils/apiMocks';
 import router from '../../../../src/generators/api/config/router';

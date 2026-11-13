@@ -1,6 +1,7 @@
-import * as assert from 'assert';
-import * as fs from 'fs';
-import * as path from 'path';
+import assert from 'node:assert';
+import * as fs from 'node:fs/promises';
+import * as os from 'node:os';
+import * as path from 'node:path';
 import RamlFileOperations from '../../src/fileOperations/ramlFileOperations';
 import DIRECTORY_STRUCTURE from '../../src/commons/constants/directoryStructure';
 import typesGenerator from '../../src/generators/spec/types';
@@ -35,151 +36,96 @@ const table: Table = {
 };
 const schema: Schema = mocks.PROCESSED_SCHEMA_ONE_TABLE;
 describe('Suite for testing RamlFileOperation class', () => {
+  let tmpDir: string;
+  let ramlFileOperations: RamlFileOperations;
 
-  it('should throw an error if path provided is filePath', (done: Function) => {
-    const ramlFileOperations: RamlFileOperations = new RamlFileOperations('raml.test');
-
-    ramlFileOperations.createDirectoryStructure()
-      .then(() => {
-        done();
-      })
-      .catch((exception: Error) => {
-        assert.strictEqual(exception, 'Invalid directory path');
-        done();
-      });
+  beforeAll(async () => {
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'generaptr-'));
+    ramlFileOperations = new RamlFileOperations(tmpDir);
+    await ramlFileOperations.createDirectoryStructure();
   });
 
-  it('should create directory structure', () => {
-    const ramlFileOperations: RamlFileOperations = new RamlFileOperations('raml.test');
-
-    ramlFileOperations.createDirectoryStructure()
-      .then(() => {
-        Object.keys(DIRECTORY_STRUCTURE.RAML_STRUCTURE).map((key: string) => {
-          fs.stat(
-            path.join(
-              ramlFileOperations.getFilePath(),
-              DIRECTORY_STRUCTURE.RAML_STRUCTURE[key],
-            ),
-            (err: Error, stat: fs.Stats) => {
-              if (err) {
-                assert.fail(err.message);
-              }
-              assert.strictEqual(stat.isDirectory(), true);
-            });
-        });
-      })
-      .catch((exception: Error) => {
-        assert.fail(exception.message);
-      });
+  afterAll(async () => {
+    await fs.rm(tmpDir, { recursive: true, force: true });
   });
 
-  it('should create raml type file', (done: Function) => {
-    const ramlFileOperations: RamlFileOperations = new RamlFileOperations('raml.test');
+  it('should throw an error if path provided is filePath', async () => {
+    const fileOperations: RamlFileOperations = new RamlFileOperations(path.join(tmpDir, 'raml.test'));
 
-    ramlFileOperations.createDirectoryStructure()
-      .then(() => ramlFileOperations.generateSchemaTypeFiles([table]))
-      .then(() => {
-        fs.readFile(
-          path.join(
-            ramlFileOperations.getFilePath(),
-            DIRECTORY_STRUCTURE.RAML_STRUCTURE.TYPES,
-            `${table.name}.raml`,
-          ),
-          (err: Error, data: Buffer) => {
-            assert.ifError(err);
-            assert(data, 'Content should not be empty');
-            assert.strictEqual(data.toString('ascii'), typesGenerator.generateTypeContent(table), 'Content should be the same');
-
-            done();
-          });
-      })
-      .catch((exception: Error) => {
-        assert.fail(exception.message);
-        done();
-      });
+    try {
+      await fileOperations.createDirectoryStructure();
+    } catch (exception) {
+      assert.strictEqual(exception, 'Invalid directory path');
+    }
   });
 
-  it('should create entity.json files', (done: Function) => {
-    const ramlFileOperations: RamlFileOperations = new RamlFileOperations('raml.test');
-    ramlFileOperations.createDirectoryStructure()
-      .then(() => ramlFileOperations.generateSchemaExampleFiles(schema))
-      .then(() => {
-        fs.readFile(
-          path.join(
-            ramlFileOperations.getFilePath(),
-            DIRECTORY_STRUCTURE.RAML_STRUCTURE.EXAMPLES,
-            `${utils.toTitleCase(schema[0].name)}.json`,
-          ),
-          (err: Error, data: Buffer) => {
-            assert.ifError(err);
-            assert(data, 'Content should not be empty');
-            assert.strictEqual(
-              Object.keys(JSON.parse(data.toString())).length,
-              schema[0].columns.length,
-              'Number of attributes should be the same',
-            );
+  it('should create directory structure', async () => {
+    await ramlFileOperations.createDirectoryStructure();
 
-            done();
-          },
-        );
-      })
-      .catch((exception: Error) => {
-        assert.fail(exception.message);
-        done();
-      });
+    for (const key of Object.keys(DIRECTORY_STRUCTURE.RAML_STRUCTURE)) {
+      const stat = await fs.stat(path.join(ramlFileOperations.getFilePath(), DIRECTORY_STRUCTURE.RAML_STRUCTURE[key]));
+      assert.strictEqual(stat.isDirectory(), true);
+    }
   });
 
-  it('should create entity[s].json files', (done: Function) => {
-    const ramlFileOperations: RamlFileOperations = new RamlFileOperations('raml.test');
+  it('should create raml type file', async () => {
+    await ramlFileOperations.createDirectoryStructure();
+    await ramlFileOperations.generateSchemaTypeFiles([table]);
 
-    ramlFileOperations.createDirectoryStructure()
-      .then(() => ramlFileOperations.generateSchemaExampleFiles(schema))
-      .then(() => ramlFileOperations.generateSchemaExamplesFilesFromCache())
-      .then(() => {
-        fs.readFile(
-          path.join(
-            ramlFileOperations.getFilePath(),
-            DIRECTORY_STRUCTURE.RAML_STRUCTURE.EXAMPLES,
-            `${utils.pluralize(utils.toTitleCase(schema[0].name))}.json`,
-          ),
-          (err: Error, data: Buffer) => {
-            assert.ifError(err);
-            assert(data, 'Countent should not be empty');
-            assert.strictEqual(JSON.parse(data.toString()).length, 2, 'Number of entities should be 2');
-
-            for (const entity of JSON.parse(data.toString())) {
-              assert.strictEqual(Object.keys(entity).length, 4, 'Number of attributes for every entity should be 4');
-            }
-          });
-
-        done();
-      })
-      .catch((exception: Error) => {
-        assert.fail(exception.message);
-        done();
-      });
+    const data: Buffer = await fs.readFile(
+      path.join(ramlFileOperations.getFilePath(), DIRECTORY_STRUCTURE.RAML_STRUCTURE.TYPES, `${table.name}.raml`),
+    );
+    assert(data, 'Content should not be empty');
+    assert.strictEqual(data.toString('ascii'), typesGenerator.generateTypeContent(table), 'Content should be the same');
   });
 
-  it('should create api.raml files', (done: Function) => {
-    const ramlFileOperations: RamlFileOperations = new RamlFileOperations('raml.test');
+  it('should create entity.json files', async () => {
+    await ramlFileOperations.createDirectoryStructure();
+    await ramlFileOperations.generateSchemaExampleFiles(schema);
 
-    ramlFileOperations.generateSchemaApiFiles(
+    const data: Buffer = await fs.readFile(
+      path.join(
+        ramlFileOperations.getFilePath(),
+        DIRECTORY_STRUCTURE.RAML_STRUCTURE.EXAMPLES,
+        `${utils.toTitleCase(schema[0].name)}.json`,
+      ),
+    );
+    assert(data, 'Content should not be empty');
+    assert.strictEqual(
+      Object.keys(JSON.parse(data.toString())).length,
+      schema[0].columns.length,
+      'Number of attributes should be the same',
+    );
+  });
+
+  it('should create entity[s].json files', async () => {
+    await ramlFileOperations.createDirectoryStructure();
+    await ramlFileOperations.generateSchemaExampleFiles(schema);
+    await ramlFileOperations.generateSchemaExamplesFilesFromCache();
+
+    const data: Buffer = await fs.readFile(
+      path.join(
+        ramlFileOperations.getFilePath(),
+        DIRECTORY_STRUCTURE.RAML_STRUCTURE.EXAMPLES,
+        `${utils.pluralize(utils.toTitleCase(schema[0].name))}.json`,
+      ),
+    );
+    assert(data, 'Countent should not be empty');
+    assert.strictEqual(JSON.parse(data.toString()).length, 2, 'Number of entities should be 2');
+
+    for (const entity of JSON.parse(data.toString())) {
+      assert.strictEqual(Object.keys(entity).length, 4, 'Number of attributes for every entity should be 4');
+    }
+  });
+
+  it('should create api.raml files', async () => {
+    await ramlFileOperations.generateSchemaApiFiles(
       [{ name: 'users', columns: [] }],
       { name: 'Test Test', version: 'v1', url: '/', output: ramlFileOperations.getFilePath() },
-    )
-      .then(() => {
-        fs.readFile(
-          path.join(ramlFileOperations.getFilePath(), 'api.raml'), (err: Error, data: Buffer) => {
-            assert.ifError(err);
-            assert(data, 'Content should not be empty');
-            done();
-          },
-        );
-      })
-      .catch((exception: Error) => {
-        assert.fail(exception.message);
-        done();
-      });
+    );
+
+    const data: Buffer = await fs.readFile(path.join(ramlFileOperations.getFilePath(), 'api.raml'));
+    assert(data, 'Content should not be empty');
   });
 
 });

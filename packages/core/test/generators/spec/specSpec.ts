@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import assert from 'node:assert';
 import specGenerator from '../../../src/generators/spec/spec';
 
 const VALID_HEADER: string =

@@ -1,6 +1,6 @@
 import typeUtil from '../../src/commons/utils/typeUtil';
 import { DataType } from '../../src/commons/types';
-import * as assert from 'assert';
+import assert from 'node:assert';
 
 describe('Suite for testing TypeConverter class', () => {
   it('should convert to string types', () => {
@@ -27,7 +27,7 @@ describe('Suite for testing TypeConverter class', () => {
     try {
       typeUtil.convertSqlType('type-that-does-not-exist');
     } catch (e) {
-      assert.strictEqual(e.message, 'Type not found');
+      assert.strictEqual((e as Error).message, 'Type not found');
     }
   });
 
@@ -35,7 +35,7 @@ describe('Suite for testing TypeConverter class', () => {
     try {
       typeUtil.convertNoSqlType('int');
     } catch (e) {
-      assert.strictEqual(e.message, 'int not yet implemented.');
+      assert.strictEqual((e as Error).message, 'int not yet implemented.');
     }
   });
 

@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import assert from 'node:assert';
 import BaseHandler from '../../src/handlers/baseHandler';
 import { MySqlColumnSchema } from '../../src/commons/types';
 
@@ -18,7 +18,7 @@ describe('Suite for testing BaseHandler class', () => {
     try {
       handler.normalizeColumnSchema(colSchema);
     } catch (e) {
-      assert.strictEqual(e.message, 'Input source not not supported.');
+      assert.strictEqual((e as Error).message, 'Input source not not supported.');
     }
   });
 
@@ -26,7 +26,7 @@ describe('Suite for testing BaseHandler class', () => {
     try {
       handler.normalizeRelations([{ name: 'users', columns: [] }]);
     } catch (e) {
-      assert.strictEqual(e.message, 'Input source not not supported.');
+      assert.strictEqual((e as Error).message, 'Input source not not supported.');
     }
   });
 });

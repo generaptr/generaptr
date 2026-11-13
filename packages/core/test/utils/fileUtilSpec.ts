@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import assert from 'node:assert';
 import fileUtil from '../../src/commons/utils/fileUtil';
 
 describe('Suite for testing FileUtil class', () => {
@@ -6,12 +6,7 @@ describe('Suite for testing FileUtil class', () => {
     assert.strictEqual(fileUtil.normalizePath('./'), `${process.cwd()}/./`);
   });
 
-  it('should create a directory', (done: Function) => {
-    fileUtil.createDirectory('/').then(() => {
-      done();
-    }).catch((e: Error) => {
-      assert.fail('create directory failed');
-      console.log(e);
-    });
+  it('should create a directory', async () => {
+    assert.strictEqual(await fileUtil.createDirectory('/'), true);
   });
 });

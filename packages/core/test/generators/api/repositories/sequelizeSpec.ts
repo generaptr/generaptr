@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import assert from 'node:assert';
 import SequelizeRepositoryGenerator from '../../../../src/generators/api/repositories/sequelize';
 import schemaMocks from '../../../testUtils/schemaMocks';
 import { Schema } from "../../../../src/commons/types";

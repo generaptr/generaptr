@@ -1,6 +1,6 @@
 # Generaptr modernization plan
 
-Status: draft, 2026-11-13. Move this file into the monorepo root after Phase 0.
+Status: in progress on branch `chore/monorepo` (local, not pushed). Updated 2026-11-13.
 
 ## Goal
 
@@ -13,13 +13,13 @@ Make generaptr work again on current Node and npm, and make it generate a curren
 | Repo layout | One monorepo: `packages/core` (was `generaptr`), `packages/cli` (was `generaptr-cli`). | Agreed |
 | Workspace tool | pnpm workspaces + Turbo. CLI depends on `"generaptr": "workspace:*"`. | Agreed |
 | History | Merge both repos with `git merge --allow-unrelated-histories`. Keep both histories. | Proposed |
-| Runtime | ESM only. `engines.node >= 22`. CI on Node 22 and 24. | Proposed |
+| Runtime | `engines.node >= 22`. CI on Node 22 and 24. CLI is ESM. Core stays CommonJS until Phase 2 rewrites it. | Done |
 | Generated API | Express 5 + Drizzle (v1). | Agreed |
 | Migrations | Drizzle native: `drizzle-kit generate` + `drizzle-kit migrate`. Forward-only. No custom migration script. No rollback. A bad migration gets a new forward migration. | Agreed |
 | Generated models | Use `drizzle-kit pull` output for `schema.ts`. Delete the Sequelize model generator. | Proposed |
 | Spec format | OpenAPI 3.1 replaces RAML (`raml-1-parser` is deprecated upstream). | Proposed |
 | Templates | Template files (from `feature/refactoring`) replace TS string literals. | Proposed |
-| Tooling | Vitest replaces mocha + nyc. Biome replaces tslint. Remove typedoc, coveralls, commitizen, npm-run-all, rimraf. | Proposed |
+| Tooling | TypeScript 7. Vitest replaces mocha + nyc. Biome (root, lint only) replaces tslint and eslint. typedoc, coveralls, commitizen, npm-run-all, rimraf removed. | Done |
 | Releases | Changesets + npm provenance from CI. | Proposed |
 
 ## Current state (checked 2026-11-13 in a scratch copy)
@@ -40,6 +40,16 @@ Size: core about 3.8k lines of TypeScript. CLI 428 lines of JS.
 10. **Build tools in runtime `dependencies`:** typescript, tslint, typedoc, rimraf, npm-run-all.
 11. **Shell string for install:** `exec("cd ${path} && npm i ...")` (`apiFileOperations.ts:84`) breaks on paths with spaces. Use `spawn` with `cwd`.
 
+### Found during Phase 1
+
+12. **CLI boilerplate flow always failed.** `outputs/database/dialect.js` did not await the handler, so `dialect` was lost and `initializeORM` rejected with "Dialect not supported". Fixed.
+13. **Vitest false passes.** Vitest does not call `done` callbacks, so the old callback tests finished at once and their assertions never ran. All such tests become async/await.
+14. **Generated models do not match real columns.** The model generator targets Sequelize 4. On Sequelize 5, `underscored: true` maps `firstName` to `first_name`, so `GET /users` and `GET /accounts` return 500. Not fixed: Phase 2 replaces the Sequelize model layer.
+15. **pnpm exposed hidden dependencies.** `tslib` (`importHelpers`) only worked through npm hoisting. Fixed by targeting ES2023 without helpers.
+16. **inquirer 14 renamed the `list` prompt type to `select`.** Fixed.
+17. **`fileUtil.isDirectory()` always returns true** (index 0 of the cut string is `/`). `createDirectoryStructure()` never rejects a file path. Not fixed yet.
+18. **The RAML example generator reads a module-level cache** (`cacheUtil`). Output depends on what ran before in the same process. Mocha hid this: `examplesSpec` expected 4 keys only because another spec filled the cache first. Not fixed yet.
+
 ### Branches
 
 - `feature/refactoring` (last commit 2019-09, 60 ahead / 26 behind master): **do not merge.** It is on TS 2.8 and Sequelize 4. It drops RAML, the spec generator and most tests. Only the config, controller, entrypoint and middleware generator classes exist. Keep these ideas: `.mst` template files, the `mysql2/promise` handler, and the `Schema` / `Table` / `Column` types.
@@ -50,21 +60,24 @@ Size: core about 3.8k lines of TypeScript. CLI 428 lines of JS.
 
 ### Phase 0: monorepo skeleton (about ½ day)
 
-- [ ] Create the monorepo. Merge `generaptr` into `packages/core` and `generaptr-cli` into `packages/cli`.
-- [ ] Add `pnpm-workspace.yaml` and `turbo.json` with `build`, `lint`, `typecheck` and `test` tasks.
-- [ ] Add a GitHub Actions workflow for Node 22 and 24, with a MySQL service container.
-- [ ] Point dependabot at the monorepo, and only let PRs merge when CI passes.
+- [x] Create the monorepo. Merge `generaptr` into `packages/core` and `generaptr-cli` into `packages/cli` (subtree merge, both histories kept).
+- [x] Add `pnpm-workspace.yaml` and `turbo.json` with `build`, `typecheck` and `test` tasks. Lint runs once at the root.
+- [x] Add a GitHub Actions workflow for Node 22 and 24, with a MySQL service container.
+- [x] Point dependabot at the monorepo (grouped weekly npm updates, monthly actions updates).
+- [ ] Push the branch and open a PR. Make CI a required check on `master`.
 - [ ] Delete the stale branches.
 - [ ] Archive the old `generaptr-cli` repo with a pointer to the monorepo.
 
 ### Phase 1: revive (1–2 days)
 
-- [ ] Convert both packages to ESM. Set `engines.node >= 22`.
-- [ ] Fix items 1, 3, 4, 5, 6, 8 and 10 from "Broken today".
-- [ ] Rewrite the file-operation tests as independent async tests (item 7).
-- [ ] Replace mocha + nyc with Vitest. Replace tslint with Biome.
-- [ ] Pin every version the generated app installs. Use `spawn` with `cwd` (item 11).
-- [ ] Gate: CLI runs end to end against a local MySQL and produces an API that boots.
+- [x] Convert the CLI to ESM. Set `engines.node >= 22` on both packages. (Core ESM moves to Phase 2.)
+- [x] Fix items 1, 3, 4, 5, 6, 8 and 10 from "Broken today".
+- [x] Move core to promise APIs (`node:fs/promises`, `mysql2/promise` with `?` placeholders, `spawn`).
+- [x] Rewrite the file-operation tests as independent async tests (item 7). Result: 119 tests pass, each spec uses its own temp dir.
+- [x] Replace mocha + nyc with Vitest. Replace tslint and eslint with Biome.
+- [x] Pin every version the generated app installs. Use `spawn` with `cwd` (item 11).
+- [x] Gate, boot: the CLI runs end to end against MySQL 8.4 and the generated API boots and serves routes.
+- [ ] Gate, data: entity endpoints return 500 (see item 14). Phase 2 fixes this with Drizzle.
 
 ### Phase 2: modernize generated output (1–2 weeks)
 
@@ -82,7 +95,7 @@ Size: core about 3.8k lines of TypeScript. CLI 428 lines of JS.
 
 ## Open questions
 
-- Is Drizzle v1 stable when Phase 2 starts? (A July 2026 changelog says release candidate.) If not, pin the RC.
+- Is Drizzle v1 stable when Phase 2 starts? On 2026-11-13 npm has `drizzle-orm` 0.45.4 stable and `1.0.0-beta.22`. Decide: build on the v1 beta, or on 0.45 and upgrade later.
 - Add Postgres introspection in Phase 2, or later?
 - Is the `develop` async API already in npm `generaptr@1.4.1`? Not checked.
 - Is the tool still worth the Phase 2 work? `drizzle-kit pull`, `prisma db pull` and LLM codegen cover part of it. Phases 0–1 are cheap either way.

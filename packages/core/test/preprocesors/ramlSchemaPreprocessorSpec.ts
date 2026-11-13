@@ -1,5 +1,5 @@
 import RamlSchemaPreprocessor from '../../src/preprocesors/ramlSchemaPreprocessor';
-import * as assert from 'assert';
+import assert from 'node:assert';
 import { RamlColumnSchema, Column } from '../../src/commons/types';
 const preProcessor: RamlSchemaPreprocessor = new RamlSchemaPreprocessor();
 

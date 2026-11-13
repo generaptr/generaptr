@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import assert from 'node:assert';
 import apiMocks from '../../../testUtils/apiMocks';
 import express from '../../../../src/generators/api/config/express';
 
