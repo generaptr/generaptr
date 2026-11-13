@@ -1,6 +1,6 @@
 import assert from 'node:assert';
 import { compileErrors, validate } from '@readme/openapi-parser';
-import { DbColumn, DbTable } from '../../../src/commons/types.js';
+import { DbColumn, DbIndex, DbTable } from '../../../src/commons/types.js';
 import { openApiDocument, tablesFromOpenApi } from '../../../src/generators/spec/openapi.js';
 
 const column = (name: string, columnType: string, extra: Partial<DbColumn> = {}): DbColumn => ({
@@ -226,6 +226,29 @@ describe('OpenAPI generator', () => {
     const doc: Doc = structuredClone(openApiDocument({ dialect, tables: dialect === 'mysql' ? tables : postgresTables }, info));
     doc.components.schemas.Users['x-checks'] = [{ name: 'users_check', expression }];
     assert.throws(() => tablesFromOpenApi(doc, dialect), /Unsafe expression/);
+  });
+
+  it('reads indexes back, and leaves them out in another dialect', () => {
+    const indexes: DbIndex[] = [
+      { name: 'users_name_idx', keys: ['name', '(lower(name)) DESC NULLS LAST'], where: '(id > 0)' },
+      { name: 'users_name_gin', unique: true, method: 'gin', keys: ['name gin_trgm_ops'], with: { fastupdate: 'off' } },
+    ];
+    const doc = openApiDocument({ dialect: 'postgresql', tables: [{ ...postgresTables[0], indexes }] }, info);
+    assert.deepStrictEqual(tablesFromOpenApi(doc, 'postgresql').tables[0].indexes, indexes);
+    assert.strictEqual(tablesFromOpenApi(doc, 'mysql').tables[0].indexes, undefined);
+  });
+
+  it.each([
+    ['a key that leaves its list', { name: 'i', keys: ['name); DROP TABLE users; --'] }, /Unsafe expression/],
+    ['a WHERE that leaves its brackets', { name: 'i', keys: ['name'], where: 'id > 0) OR (true' }, /Unsafe expression/],
+    ['a method with SQL in it', { name: 'i', method: 'gin (name); --', keys: ['name'] }, /Invalid x-indexes/],
+    ['a storage parameter with SQL in it', { name: 'i', keys: ['name'], with: { 'a=1); --': '1' } }, /Invalid x-indexes/],
+    ['a storage value with SQL in it', { name: 'i', keys: ['name'], with: { fillfactor: '70); --' } }, /Invalid x-indexes/],
+    ['no keys', { name: 'i', keys: [] }, /Invalid x-keys/],
+  ])('rejects x-indexes with %s', (_case: string, index: object, error: RegExp) => {
+    const doc: Doc = structuredClone(openApiDocument({ dialect: 'postgresql', tables: postgresTables }, info));
+    doc.components.schemas.Users['x-indexes'] = [index];
+    assert.throws(() => tablesFromOpenApi(doc, 'postgresql'), error);
   });
 
   it('reads the keys of a generaptr 2 document from its columns', () => {

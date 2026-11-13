@@ -44,6 +44,19 @@ export type DbForeignKey = {
 /** `expression` is SQL in the table's dialect, as the database prints it. */
 export type DbCheck = { name: string; expression: string };
 
+/**
+ * Each key is SQL as the database prints it: a column or an expression, with its collation, operator class, and
+ * order. `method` is left out for btree. `with` holds storage parameters.
+ */
+export type DbIndex = {
+  name: string;
+  unique?: true;
+  method?: string;
+  keys: string[];
+  where?: string;
+  with?: Record<string, string>;
+};
+
 /** Keys are constraints of the table, with the names the database gave them. */
 export type DbTable = {
   name: string;
@@ -52,6 +65,7 @@ export type DbTable = {
   uniques?: DbUnique[];
   foreignKeys?: DbForeignKey[];
   checks?: DbCheck[];
+  indexes?: DbIndex[];
 };
 
 /** Tables plus the dialect their column types are written in. */

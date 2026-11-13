@@ -1,5 +1,5 @@
 import * as mysql from 'mysql2/promise';
-import { DbForeignKey, DbSchema, DbTable, ReferentialAction } from '../commons/types.js';
+import { DbForeignKey, DbIndex, DbSchema, DbTable, ReferentialAction } from '../commons/types.js';
 
 /** MySQL stores literal defaults unquoted and marks expressions with DEFAULT_GENERATED. */
 const defaultOf = (row: mysql.RowDataPacket, autoIncrement: boolean): string | undefined => {
@@ -27,8 +27,26 @@ const KEYS: string = `
     AND k.TABLE_NAME = c.TABLE_NAME AND k.CONSTRAINT_NAME = c.CONSTRAINT_NAME
   LEFT JOIN REFERENTIAL_CONSTRAINTS r ON r.CONSTRAINT_SCHEMA = c.CONSTRAINT_SCHEMA
     AND r.TABLE_NAME = c.TABLE_NAME AND r.CONSTRAINT_NAME = c.CONSTRAINT_NAME
-  WHERE c.CONSTRAINT_SCHEMA = ? AND c.CONSTRAINT_TYPE IN ('PRIMARY KEY', 'UNIQUE', 'FOREIGN KEY')
+  WHERE c.CONSTRAINT_SCHEMA = ? AND c.CONSTRAINT_TYPE IN ('PRIMARY KEY', 'FOREIGN KEY')
   ORDER BY c.TABLE_NAME, c.CONSTRAINT_NAME, k.ORDINAL_POSITION`;
+
+// Unique keys come from here too: KEY_COLUMN_USAGE has no row for an expression or a prefix.
+const INDEXES: string = `
+  SELECT TABLE_NAME, INDEX_NAME, NON_UNIQUE, COLUMN_NAME, SUB_PART, COLLATION, INDEX_TYPE, EXPRESSION
+  FROM STATISTICS
+  WHERE TABLE_SCHEMA = ? AND INDEX_NAME <> 'PRIMARY'
+  ORDER BY TABLE_NAME, INDEX_NAME, SEQ_IN_INDEX`;
+
+/**
+ * CHECK_CLAUSE and STATISTICS.EXPRESSION escape quotes and backslashes once more than the SQL they hold. A quote in
+ * a literal then becomes '' so the SQL holds no backslash, which an OpenAPI document may not carry.
+ */
+const printedSql = (text: string): string => text.replace(/\\(.)/g, '$1').replace(/\\'/g, "''");
+
+/** One key of an index as SQL: a column with its prefix length, or an expression, then its order. */
+const indexKey = (row: mysql.RowDataPacket): string =>
+  (row.COLUMN_NAME === null ? `(${printedSql(row.EXPRESSION)})` : `\`${row.COLUMN_NAME}\`${row.SUB_PART === null ? '' : `(${row.SUB_PART})`}`)
+  + (row.COLLATION === 'D' ? ' DESC' : '');
 
 const CHECKS: string = `
   SELECT t.TABLE_NAME, c.CONSTRAINT_NAME, c.CHECK_CLAUSE
@@ -100,14 +118,6 @@ export default class MysqlHandler {
       if (row.CONSTRAINT_TYPE === 'PRIMARY KEY') {
         table.primaryKey ??= { name: row.CONSTRAINT_NAME, columns: [] };
         table.primaryKey.columns.push(row.COLUMN_NAME);
-      } else if (row.CONSTRAINT_TYPE === 'UNIQUE') {
-        table.uniques ??= [];
-        const unique = table.uniques.find((u: { name: string }) => u.name === row.CONSTRAINT_NAME);
-        if (unique) {
-          unique.columns.push(row.COLUMN_NAME);
-        } else {
-          table.uniques.push({ name: row.CONSTRAINT_NAME, columns: [row.COLUMN_NAME] });
-        }
       } else {
         table.foreignKeys ??= [];
         const key: DbForeignKey | undefined = table.foreignKeys.find((k: DbForeignKey) => k.name === row.CONSTRAINT_NAME);
@@ -126,14 +136,41 @@ export default class MysqlHandler {
       }
     }
 
+    const [indexRows] = await this.pool.query<mysql.RowDataPacket[]>(INDEXES, [this.database]);
+    const indexes: Map<string, mysql.RowDataPacket[]> = new Map();
+    for (const row of indexRows) {
+      const key = `${row.TABLE_NAME}.${row.INDEX_NAME}`;
+      indexes.set(key, [...indexes.get(key) ?? [], row]);
+    }
+    for (const rows of indexes.values()) {
+      const [first] = rows;
+      if (first.INDEX_TYPE === 'FULLTEXT' || first.INDEX_TYPE === 'SPATIAL') {
+        throw new Error(`Unsupported index ${first.INDEX_NAME} on ${first.TABLE_NAME}: Drizzle has no ${first.INDEX_TYPE} index`);
+      }
+      const table: DbTable | undefined = tables.get(first.TABLE_NAME);
+      if (!table) {
+        continue;
+      }
+      const unique: boolean = Number(first.NON_UNIQUE) === 0;
+      const plain: boolean = rows.every((row: mysql.RowDataPacket) =>
+        row.COLUMN_NAME !== null && row.SUB_PART === null && row.COLLATION !== 'D');
+      if (unique && plain) {
+        table.uniques = [...table.uniques ?? [], {
+          name: first.INDEX_NAME, columns: rows.map((row: mysql.RowDataPacket) => row.COLUMN_NAME),
+        }];
+      } else {
+        const index: DbIndex = {
+          name: first.INDEX_NAME, ...(unique ? { unique: true as const } : {}), keys: rows.map(indexKey),
+        };
+        table.indexes = [...table.indexes ?? [], index];
+      }
+    }
+
     const [checks] = await this.pool.query<mysql.RowDataPacket[]>(CHECKS, [this.database]);
     for (const row of checks) {
       const table: DbTable | undefined = tables.get(row.TABLE_NAME);
       if (table) {
-        // CHECK_CLAUSE escapes quotes and backslashes once more than the SQL it holds. A quote in a literal then
-        // becomes '' so the expression holds no backslash, which an OpenAPI document may not carry.
-        const expression: string = String(row.CHECK_CLAUSE).replace(/\\(.)/g, '$1').replace(/\\'/g, "''");
-        table.checks = [...table.checks ?? [], { name: row.CONSTRAINT_NAME, expression }];
+        table.checks = [...table.checks ?? [], { name: row.CONSTRAINT_NAME, expression: printedSql(row.CHECK_CLAUSE) }];
       }
     }
 

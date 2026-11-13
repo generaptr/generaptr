@@ -3,7 +3,7 @@ import {
 } from '../../commons/columns.js';
 import { type Relation, routedRelations } from '../../commons/relations.js';
 import {
-  DbCheck, DbColumn, DbForeignKey, DbSchema, DbTable, DbUnique, Dialect, PackageJsonInfo, REFERENTIAL_ACTIONS, ReferentialAction,
+  DbCheck, DbColumn, DbForeignKey, DbIndex, DbSchema, DbTable, DbUnique, Dialect, PackageJsonInfo, REFERENTIAL_ACTIONS, ReferentialAction,
 } from '../../commons/types.js';
 
 // razor: plain objects typed loosely; switch to `openapi-types` if callers need deep typing.
@@ -65,6 +65,7 @@ const rowSchema = (table: DbTable, dialect: Dialect): JsonSchema => ({
   'x-table': table.name,
   'x-keys': keysOf(table),
   ...(table.checks ? { 'x-checks': table.checks } : {}),
+  ...(table.indexes ? { 'x-indexes': table.indexes } : {}),
   required: table.columns.map((column: DbColumn) => camel(column.name)),
   properties: Object.fromEntries(table.columns.map((column: DbColumn) => [
     camel(column.name),
@@ -338,6 +339,37 @@ const checksFromDocument = (raw: unknown, dialect: Dialect): DbCheck[] => {
   });
 };
 
+const WORD: RegExp = /^[a-z_][a-z0-9_]*$/;
+const STORAGE_VALUE: RegExp = /^[A-Za-z0-9_.]+$/;
+
+const indexesFromDocument = (raw: unknown, dialect: Dialect): DbIndex[] => {
+  const invalidIndex = (): Error => new Error('Invalid x-indexes: method and storage parameters must be plain words');
+  if (raw !== undefined && !Array.isArray(raw)) {
+    throw invalidIndex();
+  }
+  return (raw ?? []).map((index: JsonSchema): DbIndex => {
+    const keys: string[] = names(index.keys);
+    for (const sql of [...keys, ...(index.where === undefined ? [] : [text(index.where)])]) {
+      assertSafeExpression(sql, dialect);
+    }
+    if (index.method !== undefined && !WORD.test(text(index.method))) {
+      throw invalidIndex();
+    }
+    const options: [string, unknown][] = Object.entries(index.with ?? {});
+    if (options.some(([key, value]: [string, unknown]) => !WORD.test(key) || !STORAGE_VALUE.test(text(value)))) {
+      throw invalidIndex();
+    }
+    return {
+      name: text(index.name),
+      ...(index.unique === true ? { unique: true as const } : {}),
+      ...(index.method === undefined ? {} : { method: index.method }),
+      keys,
+      ...(index.where === undefined ? {} : { where: index.where }),
+      ...(options.length ? { with: Object.fromEntries(options) as Record<string, string> } : {}),
+    };
+  });
+};
+
 type LegacyColumn = DbColumn & { primary?: boolean; unique?: boolean; references?: { table: string; column: string } };
 
 /**
@@ -395,9 +427,13 @@ export const tablesFromOpenApi = (
       const primaryKey = !exact && keys.primaryKey
         ? { ...keys.primaryKey, name: dialect === 'mysql' ? 'PRIMARY' : keys.primaryKey.name === 'PRIMARY' ? `${name}_pkey` : keys.primaryKey.name }
         : keys.primaryKey;
-      // A CHECK expression is SQL in the document's dialect; another dialect cannot run it.
+      // CHECK and index SQL is in the document's dialect; another dialect cannot run it.
       const checks: DbCheck[] = exact ? checksFromDocument(schema['x-checks'], dialect) : [];
-      return { name, columns: converted, ...keys, ...(primaryKey ? { primaryKey } : {}), ...(checks.length ? { checks } : {}) };
+      const indexes: DbIndex[] = exact ? indexesFromDocument(schema['x-indexes'], dialect) : [];
+      return {
+        name, columns: converted, ...keys, ...(primaryKey ? { primaryKey } : {}),
+        ...(checks.length ? { checks } : {}), ...(indexes.length ? { indexes } : {}),
+      };
     })
     : schemas
       .filter(([, schema]: [string, JsonSchema]) => schema.type === 'object' && schema.properties)

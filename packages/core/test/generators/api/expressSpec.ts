@@ -108,6 +108,23 @@ describe('Express + Drizzle generator', () => {
     ));
   });
 
+  it('writes indexes with raw SQL keys, a method, a WHERE, and storage parameters', () => {
+    const file: string = schemaFile({
+      dialect: 'postgresql',
+      tables: [{
+        name: 'documents',
+        columns: [column('title', 'text'), column('body', 'jsonb')],
+        indexes: [
+          { name: 'documents_title_key', unique: true, keys: ['lower(title)'], where: '(body IS NOT NULL)' },
+          { name: 'documents_body_gin', method: 'gin', keys: ['body jsonb_path_ops'], with: { fastupdate: 'off' } },
+        ],
+      }],
+    });
+    assert.match(file, /^import \{ sql \} from 'drizzle-orm';\nimport \{ index, jsonb, pgTable, text, uniqueIndex \}/);
+    assert.ok(file.includes('uniqueIndex("documents_title_key").on(sql.raw("lower(title)")).where(sql.raw("(body IS NOT NULL)")),'));
+    assert.ok(file.includes('index("documents_body_gin").using("gin", sql.raw("body jsonb_path_ops")).with({"fastupdate":"off"}),'));
+  });
+
   it('refuses a referential action that is not one, since Drizzle writes it into DDL', () => {
     assert.throws(() => schemaFile({
       dialect: 'mysql',

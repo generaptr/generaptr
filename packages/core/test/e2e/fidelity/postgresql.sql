@@ -59,3 +59,23 @@ CREATE TABLE prices (
   CONSTRAINT prices_discount_below_amount CHECK (discount IS NULL OR discount < amount),
   CONSTRAINT prices_currency_known CHECK (currency = ANY (ARRAY['EUR', 'USD', 'it''s']))
 );
+
+-- Indexes: one feature per index.
+CREATE TABLE documents (
+  id serial PRIMARY KEY,
+  owner_id integer NOT NULL,
+  title text NOT NULL,
+  body jsonb,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  deleted_at timestamptz
+);
+CREATE INDEX documents_owner_idx ON documents (owner_id);
+CREATE INDEX documents_owner_created_idx ON documents (owner_id, created_at DESC NULLS LAST) WHERE deleted_at IS NULL;
+CREATE UNIQUE INDEX documents_title_lower_key ON documents (lower(title)) WHERE deleted_at IS NULL;
+CREATE INDEX documents_body_gin ON documents USING gin (body jsonb_path_ops);
+CREATE INDEX documents_body_section_idx ON documents ((body ->> 'section'));
+CREATE INDEX documents_title_pattern_idx ON documents (title text_pattern_ops);
+CREATE INDEX documents_created_brin ON documents USING brin (created_at) WITH (pages_per_range = 32);
+CREATE INDEX documents_title_c_idx ON documents (title COLLATE "C");
+CREATE INDEX documents_deleted_nulls_first_idx ON documents (deleted_at NULLS FIRST);
+CREATE INDEX documents_title_hash ON documents USING hash (title);

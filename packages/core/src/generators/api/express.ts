@@ -166,6 +166,15 @@ const constraintsFor = (table: DbTable, dialect: Dialect, builders: Set<string>)
       + `foreignColumns: [${columns(key.foreignColumns, target)}] })`
       + `${key.onDelete ? `.onDelete(${JSON.stringify(key.onDelete)})` : ''}${key.onUpdate ? `.onUpdate(${JSON.stringify(key.onUpdate)})` : ''}`);
   }
+  for (const index of table.indexes ?? []) {
+    const builder: string = index.unique ? 'uniqueIndex' : 'index';
+    builders.add(builder);
+    const keys: string = index.keys.map((key: string) => `sql.raw(${JSON.stringify(key)})`).join(', ');
+    constraints.push(`${builder}(${JSON.stringify(index.name)})`
+      + (index.method ? `.using(${JSON.stringify(index.method)}, ${keys})` : `.on(${keys})`)
+      + (index.where ? `.where(sql.raw(${JSON.stringify(index.where)}))` : '')
+      + (index.with ? `.with(${JSON.stringify(index.with)})` : ''));
+  }
   for (const check of table.checks ?? []) {
     builders.add('check');
     constraints.push(`check(${JSON.stringify(check.name)}, sql.raw(${JSON.stringify(check.expression)}))`);
@@ -206,7 +215,7 @@ export const schemaFile = (schema: DbSchema): string => {
 
   return eta.render('src/db/schema.js.eta', {
     usesSql: schema.tables.some((table: DbTable) =>
-      table.checks?.length || table.columns.some((column: DbColumn) => column.default !== undefined)),
+      table.checks?.length || table.indexes?.length || table.columns.some((column: DbColumn) => column.default !== undefined)),
     builders: [...builders].sort().join(', '),
     core,
     tableFunction,

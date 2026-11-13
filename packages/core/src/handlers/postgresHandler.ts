@@ -1,5 +1,6 @@
 import { Pool, type PoolConfig } from 'pg';
-import { DbForeignKey, DbSchema, DbTable, ReferentialAction } from '../commons/types.js';
+import { splitList } from '../commons/columns.js';
+import { DbForeignKey, DbIndex, DbSchema, DbTable, ReferentialAction } from '../commons/types.js';
 
 type ColumnRow = {
   table_name: string;
@@ -14,7 +15,7 @@ type ColumnRow = {
 
 type ConstraintRow = {
   name: string;
-  kind: 'p' | 'u' | 'f' | 'c';
+  kind: 'p' | 'u' | 'f' | 'c' | 'x';
   table_name: string;
   columns: string[];
   ref_table: string | null;
@@ -23,6 +24,18 @@ type ConstraintRow = {
   on_update: string;
   nulls_not_distinct: boolean;
   expression: string | null;
+};
+
+type IndexRow = {
+  table_name: string;
+  name: string;
+  method: string;
+  is_unique: boolean;
+  definition: string;
+  where_expr: string | null;
+  options: string[] | null;
+  has_include: boolean;
+  nulls_not_distinct: boolean;
 };
 
 /** pg_constraint action codes. `a` (no action) is the default and is not stored. */
@@ -64,8 +77,48 @@ const CONSTRAINTS: string = `
   JOIN pg_namespace n ON n.oid = src.relnamespace
   LEFT JOIN pg_class ref ON ref.oid = con.confrelid
   LEFT JOIN pg_index i ON i.indexrelid = con.conindid AND con.contype = 'u'
-  WHERE n.nspname = $1 AND con.contype IN ('p', 'u', 'f', 'c')
+  WHERE n.nspname = $1 AND con.contype IN ('p', 'u', 'f', 'c', 'x')
   ORDER BY src.relname, con.conname`;
+
+// Indexes that back a constraint belong to the constraint.
+const INDEXES: string = `
+  SELECT c.relname AS table_name, ic.relname AS name, am.amname AS method, i.indisunique AS is_unique,
+    pg_get_indexdef(i.indexrelid) AS definition, pg_get_expr(i.indpred, i.indrelid) AS where_expr,
+    ic.reloptions AS options, i.indnatts > i.indnkeyatts AS has_include,
+    coalesce((to_jsonb(i) ->> 'indnullsnotdistinct')::boolean, false) AS nulls_not_distinct
+  FROM pg_index i
+  JOIN pg_class c ON c.oid = i.indrelid
+  JOIN pg_namespace n ON n.oid = c.relnamespace
+  JOIN pg_class ic ON ic.oid = i.indexrelid
+  JOIN pg_am am ON am.oid = ic.relam
+  WHERE n.nspname = $1 AND NOT EXISTS (SELECT 1 FROM pg_constraint k WHERE k.conindid = i.indexrelid)
+  ORDER BY c.relname, ic.relname`;
+
+/** Drizzle cannot write these, so a schema with one cannot be rebuilt. */
+const unsupportedIndex = (row: IndexRow): string | undefined => {
+  if (row.has_include) {
+    return 'INCLUDE columns';
+  }
+  return row.is_unique && row.nulls_not_distinct ? 'NULLS NOT DISTINCT on a unique index' : undefined;
+};
+
+/** Keys from `CREATE INDEX ... USING method (keys) ...`, each with its collation, operator class, and order. */
+const indexOf = (row: IndexRow): DbIndex => {
+  const using: string = ` USING ${row.method} (`;
+  const options: [string, string][] = (row.options ?? []).map((option: string) => {
+    const [key, ...value] = option.split('=');
+    return [key, value.join('=')];
+  });
+
+  return {
+    name: row.name,
+    ...(row.is_unique ? { unique: true as const } : {}),
+    ...(row.method === 'btree' ? {} : { method: row.method }),
+    keys: splitList(row.definition, row.definition.indexOf(using) + using.length),
+    ...(row.where_expr ? { where: row.where_expr } : {}),
+    ...(options.length ? { with: Object.fromEntries(options) } : {}),
+  };
+};
 
 /**
  * Reads a Postgres schema from pg_catalog.
@@ -97,6 +150,7 @@ export default class PostgresHandler {
   public async readSchema(): Promise<DbSchema> {
     const { rows: columns } = await this.pool.query<ColumnRow>(COLUMNS, [this.schema]);
     const { rows: constraints } = await this.pool.query<ConstraintRow>(CONSTRAINTS, [this.schema]);
+    const { rows: indexes } = await this.pool.query<IndexRow>(INDEXES, [this.schema]);
 
     const tables: Map<string, DbTable> = new Map();
     for (const row of columns) {
@@ -118,6 +172,9 @@ export default class PostgresHandler {
       if (!table) {
         continue;
       }
+      if (row.kind === 'x') {
+        throw new Error(`Unsupported constraint ${row.name} on ${row.table_name}: Drizzle has no exclusion constraints`);
+      }
       if (row.kind === 'p') {
         table.primaryKey = { name: row.name, columns: row.columns };
       } else if (row.kind === 'u') {
@@ -134,6 +191,17 @@ export default class PostgresHandler {
           ...(onDelete ? { onDelete } : {}), ...(onUpdate ? { onUpdate } : {}),
         };
         table.foreignKeys = [...table.foreignKeys ?? [], key];
+      }
+    }
+
+    for (const row of indexes) {
+      const unsupported: string | undefined = unsupportedIndex(row);
+      if (unsupported) {
+        throw new Error(`Unsupported index ${row.name} on ${row.table_name}: Drizzle has no ${unsupported}`);
+      }
+      const table: DbTable | undefined = tables.get(row.table_name);
+      if (table) {
+        table.indexes = [...table.indexes ?? [], indexOf(row)];
       }
     }
 

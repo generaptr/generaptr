@@ -101,8 +101,12 @@ const dialects = [
       for (const row of tables) {
         const [[created]] = await connection.query<mysql.RowDataPacket[]>(`SHOW CREATE TABLE \`${Object.values(row)[0]}\``);
         // drizzle-kit writes every default in parentheses, so CURRENT_TIMESTAMP comes back as the same default, (now()).
-        lines.push(String(created['Create Table']).replace(/ AUTO_INCREMENT=\d+/, '')
-          .replace(/DEFAULT CURRENT_TIMESTAMP(?:\((\d)\))?/g, (_: string, fsp?: string) => `DEFAULT (now(${fsp ?? ''}))`));
+        // MySQL lists indexes in the order it made them, which carries no meaning, so they sort.
+        const definition: string[] = String(created['Create Table']).replace(/ AUTO_INCREMENT=\d+/, '')
+          .replace(/DEFAULT CURRENT_TIMESTAMP(?:\((\d)\))?/g, (_: string, fsp?: string) => `DEFAULT (now(${fsp ?? ''}))`)
+          .split('\n').map((line: string) => line.replace(/,$/, ''));
+        const isKey = (line: string): boolean => /^ {2}(UNIQUE )?KEY /.test(line);
+        lines.push([...definition.filter((line: string) => !isKey(line)), ...definition.filter(isKey).sort()].join('\n'));
       }
       await connection.end();
       return lines.sort();

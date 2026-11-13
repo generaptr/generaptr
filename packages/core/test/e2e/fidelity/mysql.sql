@@ -59,3 +59,18 @@ CREATE TABLE prices (
   CONSTRAINT prices_discount_below_amount CHECK (discount IS NULL OR discount < amount),
   CONSTRAINT prices_currency_known CHECK (currency IN ('EUR', 'USD', 'it''s'))
 );
+
+-- Indexes: one feature per index.
+CREATE TABLE documents (
+  id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  owner_id int NOT NULL,
+  title varchar(200) NOT NULL,
+  body text,
+  created_at datetime NOT NULL,
+  KEY documents_owner_idx (owner_id),
+  KEY documents_owner_created_idx (owner_id, created_at DESC),
+  KEY documents_body_prefix_idx (body(20)),
+  KEY documents_title_section_idx ((substring(title, 1, 3))),
+  KEY documents_title_tagged_idx ((concat(title, 'it''s'))),
+  UNIQUE KEY documents_title_lower_key ((lower(title)))
+);

@@ -1,4 +1,4 @@
-import { DbCheck, DbColumn, DbForeignKey, DbTable, DbUnique, Dialect } from './types.js';
+import { DbCheck, DbColumn, DbForeignKey, DbIndex, DbTable, DbUnique, Dialect } from './types.js';
 
 export const camel = (name: string): string => name.replace(/[_\-\s]+(\w)/g, (_: string, c: string) => c.toUpperCase());
 
@@ -137,6 +137,30 @@ export const routedTables = (tables: DbTable[]): DbTable[] =>
 
 export const routePath = (table: DbTable): string => `/${table.name.replace(/_/g, '-')}`;
 
+/**
+ * Splits `text` at the commas outside quotes and brackets, from `start` to the bracket that closes the one before
+ * `start`. Returns the parts, trimmed.
+ */
+export const splitList = (text: string, start: number): string[] => {
+  const parts: string[] = [];
+  let depth = 0;
+  let from: number = start;
+  for (let i = start; i < text.length; i++) {
+    const char: string = text[i];
+    if (char === "'" || char === '"') {
+      i = text.indexOf(char, i + 1);
+    } else if (char === '(') {
+      depth++;
+    } else if (char === ')' && depth-- === 0) {
+      return [...parts, text.slice(from, i).trim()];
+    } else if (char === ',' && depth === 0) {
+      parts.push(text.slice(from, i).trim());
+      from = i + 1;
+    }
+  }
+  throw new Error(`Unbalanced list in ${text}`);
+};
+
 const SAFE_NAME: RegExp = /^[A-Za-z_][A-Za-z0-9_]*$/;
 
 /** Names become JS identifiers, URL paths, and file names in generated code. */
@@ -148,6 +172,7 @@ export const assertSafeNames = (tables: DbTable[]): void => {
     ...(table.uniques ?? []).flatMap((unique: DbUnique) => [unique.name, ...unique.columns]),
     ...(table.foreignKeys ?? []).flatMap((key: DbForeignKey) => [key.name, key.table, ...key.columns, ...key.foreignColumns]),
     ...(table.checks ?? []).map((check: DbCheck) => check.name),
+    ...(table.indexes ?? []).map((index: DbIndex) => index.name),
   ]);
   const unsafe: string | undefined = names.find((name: string) => !SAFE_NAME.test(name));
   if (unsafe !== undefined) {
