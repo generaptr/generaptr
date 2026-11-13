@@ -4,7 +4,7 @@ import {
   assertSafeNames, camel, type ParsedType, parseColumnType, primaryColumns, routedTables, routePath,
 } from '../../commons/columns.js';
 import { type Relation, routedRelations } from '../../commons/relations.js';
-import { DbColumn, DbSchema, DbTable, Dialect, PackageJsonInfo } from '../../commons/types.js';
+import { DbColumn, DbSchema, DbTable, Dialect, PackageJsonInfo, REFERENTIAL_ACTIONS, ReferentialAction } from '../../commons/types.js';
 import { openApiDocument } from '../spec/openapi.js';
 
 export { routedTables };
@@ -154,6 +154,12 @@ const constraintsFor = (table: DbTable, dialect: Dialect, builders: Set<string>)
     constraints.push(`unique(${JSON.stringify(unique.name)}).on(${columns(unique.columns, 'table')})${unique.nullsNotDistinct ? '.nullsNotDistinct()' : ''}`);
   }
   for (const key of table.foreignKeys ?? []) {
+    // Drizzle writes the action into DDL as it is.
+    const unsafe: unknown = [key.onDelete, key.onUpdate]
+      .find((value: unknown) => value !== undefined && !REFERENTIAL_ACTIONS.includes(value as ReferentialAction));
+    if (unsafe !== undefined) {
+      throw new Error(`Invalid referential action "${String(unsafe)}"`);
+    }
     builders.add('foreignKey');
     const target: string = key.table === table.name ? 'table' : camel(key.table);
     constraints.push(`foreignKey({ name: ${JSON.stringify(key.name)}, columns: [${columns(key.columns, 'table')}], `

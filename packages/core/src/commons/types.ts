@@ -25,7 +25,8 @@ export type DbColumn = {
 };
 
 /** `no action` is the default and is never stored. */
-export type ReferentialAction = 'restrict' | 'cascade' | 'set null' | 'set default';
+export const REFERENTIAL_ACTIONS = ['restrict', 'cascade', 'set null', 'set default'] as const;
+export type ReferentialAction = (typeof REFERENTIAL_ACTIONS)[number];
 
 export type DbPrimaryKey = { name: string; columns: string[] };
 

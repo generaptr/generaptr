@@ -80,7 +80,7 @@ describe('Express + Drizzle generator', () => {
     assert.match(file, /^import \{ foreignKey, int, mysqlTable, primaryKey \} from 'drizzle-orm\/mysql-core';/);
     assert.match(file, /id: int\("id"\)\.autoincrement\(\)\.primaryKey\(\),/);
     assert.match(file, /userId: int\("user_id"\)\.notNull\(\),/);
-    assert.match(file, /  primaryKey\(\{ columns: \[table\.userId, table\.groupId\] \}\),/);
+    assert.match(file, / {2}primaryKey\(\{ columns: \[table\.userId, table\.groupId\] \}\),/);
     assert.ok(file.includes(
       'foreignKey({ name: "users_groups_ibfk_1", columns: [table.userId], foreignColumns: [users.id] }).onDelete("cascade"),',
     ));
@@ -106,6 +106,17 @@ describe('Express + Drizzle generator', () => {
     assert.ok(file.includes(
       'foreignKey({ name: "nodes_parent_fk", columns: [table.parentId], foreignColumns: [table.id] }).onDelete("set null").onUpdate("restrict"),',
     ));
+  });
+
+  it('refuses a referential action that is not one, since Drizzle writes it into DDL', () => {
+    assert.throws(() => schemaFile({
+      dialect: 'mysql',
+      tables: [{
+        name: 'users',
+        columns: [column('id', 'int')],
+        foreignKeys: [{ name: 'fk', columns: ['id'], table: 'users', foreignColumns: ['id'], onDelete: 'cascade; drop' as never }],
+      }],
+    }), /Invalid referential action "cascade; drop"/);
   });
 
   it('writes database defaults as raw SQL inside a JS string', () => {

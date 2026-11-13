@@ -7,6 +7,8 @@ const column = (name: string, columnType: string, extra: Partial<DbColumn> = {})
   name, columnType, nullable: false, autoIncrement: false, ...extra,
 });
 
+type Doc = ReturnType<typeof openApiDocument>;
+
 const info = { name: 'demo-api', version: '1.2.3', description: 'Demo', author: '', license: 'MIT' };
 
 const tables: DbTable[] = [
@@ -176,6 +178,25 @@ describe('OpenAPI generator', () => {
     assert.deepStrictEqual(converted[1].foreignKeys, tables[1].foreignKeys);
     assert.deepStrictEqual(converted[0].primaryKey, { name: 'users_pkey', columns: ['id'] });
     assert.strictEqual(converted[0].columns[0].autoIncrement, true);
+  });
+
+  it.each([
+    ['an action that is not one', { foreignKeys: [{ name: 'fk', columns: ['id'], table: 'users', foreignColumns: ['id'], onDelete: 'cascade; DROP TABLE users' }] }, /Invalid referential action/],
+    ['columns that are not a list', { primaryKey: { name: 'pk', columns: 'id' } }, /Invalid x-keys/],
+    ['a name that is not a string', { uniques: [{ name: { toString: 'x' }, columns: ['id'] }] }, /Invalid x-keys/],
+    ['a key name with SQL in it', { uniques: [{ name: 'u"; DROP TABLE users; --', columns: ['id'] }] }, /Unsafe name/],
+  ])('rejects x-keys with %s', (_case: string, keys: object, error: RegExp) => {
+    const doc: Doc = structuredClone(openApiDocument({ dialect: 'mysql', tables }, info));
+    doc.components.schemas.Users['x-keys'] = keys;
+    assert.throws(() => tablesFromOpenApi(doc, 'mysql'), error);
+  });
+
+  it('builds keys from x-keys fields only', () => {
+    const doc: Doc = structuredClone(openApiDocument({ dialect: 'mysql', tables }, info));
+    doc.components.schemas.Users['x-keys'] = { ...doc.components.schemas.Users['x-keys'], name: 'evil', columns: [] };
+    const [users] = tablesFromOpenApi(doc, 'mysql').tables;
+    assert.strictEqual(users.name, 'users');
+    assert.strictEqual(users.columns.length, tables[0].columns.length);
   });
 
   it('reads the keys of a generaptr 2 document from its columns', () => {

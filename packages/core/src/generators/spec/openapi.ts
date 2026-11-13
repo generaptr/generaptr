@@ -2,7 +2,9 @@ import {
   assertSafeNames, camel, type ParsedType, parseColumnType, pascal, primaryColumns, routedTables, routePath,
 } from '../../commons/columns.js';
 import { type Relation, routedRelations } from '../../commons/relations.js';
-import { DbColumn, DbForeignKey, DbSchema, DbTable, DbUnique, Dialect, PackageJsonInfo } from '../../commons/types.js';
+import {
+  DbColumn, DbForeignKey, DbSchema, DbTable, DbUnique, Dialect, PackageJsonInfo, REFERENTIAL_ACTIONS, ReferentialAction,
+} from '../../commons/types.js';
 
 // razor: plain objects typed loosely; switch to `openapi-types` if callers need deep typing.
 type JsonSchema = Record<string, any>;
@@ -241,6 +243,53 @@ const assertSafeDefaults = (tables: DbTable[]): void => {
   }
 };
 
+const invalid = (): Error => new Error('Invalid x-keys: names must be strings and columns lists of strings');
+const text = (value: unknown): string => {
+  if (typeof value !== 'string') {
+    throw invalid();
+  }
+  return value;
+};
+const names = (value: unknown): string[] => {
+  if (!Array.isArray(value) || !value.length) {
+    throw invalid();
+  }
+  return value.map(text);
+};
+const action = (value: unknown): ReferentialAction | undefined => {
+  if (value !== undefined && !REFERENTIAL_ACTIONS.includes(value as ReferentialAction)) {
+    throw new Error(`Invalid referential action "${String(value)}"`);
+  }
+  return value as ReferentialAction | undefined;
+};
+
+/** `x-keys` comes from a document. Builds new keys from known fields only; actions reach DDL as they are. */
+const keysFromDocument = (raw: JsonSchema): Partial<DbTable> => {
+  const list = (value: unknown): JsonSchema[] => {
+    if (value !== undefined && !Array.isArray(value)) {
+      throw invalid();
+    }
+    return value ?? [];
+  };
+  const uniques: DbUnique[] = list(raw.uniques).map((unique: JsonSchema) => ({
+    name: text(unique.name), columns: names(unique.columns), ...(unique.nullsNotDistinct === true ? { nullsNotDistinct: true as const } : {}),
+  }));
+  const foreignKeys: DbForeignKey[] = list(raw.foreignKeys).map((key: JsonSchema) => {
+    const onDelete: ReferentialAction | undefined = action(key.onDelete);
+    const onUpdate: ReferentialAction | undefined = action(key.onUpdate);
+    return {
+      name: text(key.name), columns: names(key.columns), table: text(key.table), foreignColumns: names(key.foreignColumns),
+      ...(onDelete ? { onDelete } : {}), ...(onUpdate ? { onUpdate } : {}),
+    };
+  });
+
+  return {
+    ...(raw.primaryKey ? { primaryKey: { name: text(raw.primaryKey.name), columns: names(raw.primaryKey.columns) } } : {}),
+    ...(uniques.length ? { uniques } : {}),
+    ...(foreignKeys.length ? { foreignKeys } : {}),
+  };
+};
+
 type LegacyColumn = DbColumn & { primary?: boolean; unique?: boolean; references?: { table: string; column: string } };
 
 /**
@@ -287,7 +336,7 @@ export const tablesFromOpenApi = (
       const name: string = schema['x-table'];
       const properties: JsonSchema[] = Object.values(schema.properties as Record<string, JsonSchema>);
       const { columns, keys } = schema['x-keys']
-        ? { columns: properties.map((property: JsonSchema) => property['x-column'] as DbColumn), keys: schema['x-keys'] }
+        ? { columns: properties.map((property: JsonSchema) => property['x-column'] as DbColumn), keys: keysFromDocument(schema['x-keys']) }
         : legacyKeys(name, properties.map((property: JsonSchema) => property['x-column']), dialect);
       const converted: DbColumn[] = exact ? columns : columns.map((column: DbColumn, index: number) => {
         const { enumName, ...rest }: DbColumn = column;
