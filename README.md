@@ -69,12 +69,16 @@ web/
 └── src/
     ├── pages.json      # json-render specs, written from openapi.json
     ├── main.jsx        # renders the specs; the same for every API
-    └── index.css       # shadcn theme tokens
+    ├── theme.css       # colors and radius for light and dark mode
+    └── index.css       # Tailwind setup
 ```
+
+![The generated web app: the list of users](https://raw.githubusercontent.com/generaptr/generaptr/master/site/web-app-light.jpg)
 
 - Each table with a route gets a list page with paging, a detail page with its related rows, and create and edit forms.
 - `src/pages.json` holds one [json-render](https://github.com/vercel-labs/json-render) spec per page. Edit it to change a page; generate again to start over.
 - A form takes its fields from the API's input schema. A foreign key becomes a select of the rows it can point to. The form checks required fields and lengths, and shows the API's message when the API rejects a row.
+- A switch in the sidebar sets light mode, dark mode, or the system mode. To change the colors, edit `src/theme.css`, or paste a theme from [ui.shadcn.com/themes](https://ui.shadcn.com/themes).
 - The browser calls `/api` on the web app's own server, which forwards to the API, so the API needs no CORS.
 
 ```sh

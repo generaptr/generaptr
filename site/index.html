@@ -84,10 +84,10 @@
     gap: 0; align-items: stretch;
     background: var(--code-bg); color: var(--code-ink);
     border-radius: 16px; overflow: hidden;
-    margin: 24px 0 96px;
+    margin: 24px 0 16px;
   }
   .transform figure { margin: 0; padding: 28px 28px 32px; min-width: 0; }
-  .transform figcaption { font: 600 0.9375rem var(--sans); color: var(--moss); margin-bottom: 14px; }
+  .transform figcaption, .demo figcaption { font: 600 0.9375rem var(--sans); color: var(--moss); margin-bottom: 14px; }
   .transform pre { margin: 0; overflow-x: auto; line-height: 1.65; color: var(--code-ink); }
   .transform .arrow span { display: inline-block; }
   .transform .arrow {
@@ -101,6 +101,11 @@
   .routes { margin-top: 22px; border-top: 1px solid #23392D; padding-top: 18px; }
   .routes div { display: grid; grid-template-columns: 4.5rem 1fr; font-family: var(--mono); font-size: 0.875rem; line-height: 1.9; }
   .routes b { color: var(--sand); font-weight: 500; }
+
+  .demo { margin: 0 0 96px; background: var(--code-bg); border-radius: 16px; padding: 28px; }
+  .demo video { display: block; width: 100%; height: auto; border-radius: 8px; }
+  .shots { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 24px 0; }
+  .shots a img { display: block; width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--line); }
 
   section.doc { display: grid; grid-template-columns: 15rem minmax(0, 1fr); gap: 48px; padding: 56px 0; border-top: 1px solid var(--line); }
   section.doc > h2 {
@@ -156,6 +161,8 @@
     .command { display: flex; }
     .command code { flex: 1; overflow-x: auto; font-size: 0.9375rem; }
     .transform figure { padding: 22px 18px 24px; }
+    .demo { padding: 18px; }
+    .shots { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -217,6 +224,11 @@
       </figure>
     </section>
 
+    <figure class="demo">
+      <figcaption>Your web app, from the same tables</figcaption>
+      <video id="demo" src="web-app.mp4" poster="web-app-poster.jpg" width="1280" height="800" muted loop playsinline controls preload="metadata" aria-label="The generated web app: a list of users, a user with a JSON value and related rows, dark mode, and a form"></video>
+    </figure>
+
     <section class="doc" id="generated-api" aria-labelledby="h-generated">
       <h2 id="h-generated">The generated API</h2>
       <div class="body">
@@ -256,12 +268,18 @@ npm start</pre>
 └── src/
     ├── pages.json      <span class="c"># one json-render spec per page, from openapi.json</span>
     ├── main.jsx        <span class="c"># renders the specs; the same for every API</span>
+    ├── theme.css       <span class="c"># colors and radius for light and dark mode</span>
     └── index.css</pre>
+        <div class="shots">
+          <a href="web-app-light.jpg"><img src="web-app-light.jpg" width="1280" height="800" alt="The list of users in light mode" loading="lazy"></a>
+          <a href="web-app-dark.jpg"><img src="web-app-dark.jpg" width="1280" height="800" alt="A user in dark mode, with a JSON value as a tree" loading="lazy"></a>
+        </div>
         <ul>
           <li>Each table with routes gets a list with paging, a detail page with its related rows, and forms to create and edit a row. A filter in the sidebar finds a table.</li>
           <li>The pages are <a href="https://github.com/vercel-labs/json-render">json-render</a> specs drawn with shadcn components and Tailwind. Edit <code>src/pages.json</code> to change a page.</li>
           <li>A foreign key links to its row on a detail page, and is a select of rows in a form. JSON values show as a tree that folds.</li>
           <li>Forms check required fields, lengths, and JSON as you type, and show the API's message when the API rejects a row.</li>
+          <li>A switch in the sidebar sets light mode, dark mode, or the system mode. To change the colors, edit <code>src/theme.css</code>, or paste a theme from <a href="https://ui.shadcn.com/themes">ui.shadcn.com/themes</a>.</li>
           <li>The browser calls <code>/api</code> on the web app's own server, which forwards to the API, so the API needs no CORS.</li>
         </ul>
         <pre class="block">cd web
@@ -362,6 +380,13 @@ npm run db:migrate    <span class="c"># applies the SQL</span></pre>
   </footer>
 </div>
 <script>
+  // The demo plays by itself only when the reader allows motion.
+  const demo = document.getElementById('demo');
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    demo.removeAttribute('controls');
+    demo.autoplay = true;
+    demo.play().catch(() => demo.setAttribute('controls', ''));
+  }
   document.querySelectorAll('[data-copy]').forEach((button) => {
     button.addEventListener('click', async () => {
       const text = document.getElementById(button.dataset.copy).textContent;
