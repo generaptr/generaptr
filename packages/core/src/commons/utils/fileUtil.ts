@@ -1,5 +1,4 @@
-import * as fs from 'fs';
-import * as fse from 'fs-extra';
+import * as fs from 'node:fs/promises';
 import * as path from 'path';
 
 /**
@@ -44,22 +43,13 @@ export class FileUtil {
    */
   public async createDirectory(filePath: string): Promise<boolean> {
     const normalizedFilePath: string = this.normalizePath(filePath);
+    try {
+      return (await fs.stat(normalizedFilePath)).isDirectory();
+    } catch {
+      await fs.mkdir(normalizedFilePath, { recursive: true });
 
-    return new Promise((resolve: Function, reject: Function): void => {
-      fs.stat(normalizedFilePath, async (error: Error, stats: fs.Stats) => {
-        if (error) {
-          try {
-            await fse.ensureDir(normalizedFilePath);
-            resolve(true);
-          } catch (ensureDirError) {
-            /* istanbul ignore next */
-            reject(ensureDirError);
-          }
-        } else {
-          resolve(stats.isDirectory());
-        }
-      });
-    });
+      return true;
+    }
   }
 
   /**
@@ -79,16 +69,9 @@ export class FileUtil {
    * @returns file written
    */
   public async writeFile(filePath: string, content: string): Promise<boolean> {
-    return new Promise<boolean>((resolve: Function, reject: Function): void => {
-      fs.writeFile(filePath, content, { encoding: 'UTF-8' }, (err: Error) => {
-        if (err) {
-          /* istanbul ignore next */
-          reject(err);
-        } else {
-          resolve();
-        }
-      });
-    });
+    await fs.writeFile(filePath, content, 'utf-8');
+
+    return true;
   }
 }
 

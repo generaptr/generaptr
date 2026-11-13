@@ -7,10 +7,12 @@
   },
   "scripts": {
     "build": "turbo run build",
-    "lint": "turbo run lint",
-    "test": "turbo run test"
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "lint": "biome lint ."
   },
   "devDependencies": {
-    "turbo": "^2.11.11"
+    "turbo": "^2.11.11",
+    "@biomejs/biome": "2.6.7"
   }
 }

@@ -47,6 +47,7 @@ export class ConfigurationFileOperations {
     switch (connection.dialect) {
       case 'MySql':
         configContent = modelGenerator.sequelize.getConfig(connection);
+        break;
       default:
     }
 

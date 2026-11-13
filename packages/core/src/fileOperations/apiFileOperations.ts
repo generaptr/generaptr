@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import { exec } from 'child_process';
+import { run } from '../commons/utils/run';
 import fileUtil from '../commons/utils/fileUtil';
 import DIRECTORY_STRUCTURE from '../commons/constants/directoryStructure';
 import packageJsonGenerator from '../generators/api/packageJson';
@@ -11,6 +11,11 @@ import servicesFileOperations from './api/servicesFileOperations';
 import controllersFileOperations from './api/controllersFileOperations';
 import commonsFileOperations from './api/commonsFileOperations';
 import { PackageJsonInfo, ConnectionData, Schema } from '../commons/types';
+// Generated code calls `sequelize.import`, which Sequelize 6 removed.
+const BASE_DEPENDENCIES: string[] = ['express@4.22.3', 'body-parser@1.20.9', 'morgan@1.12.1'];
+const MYSQL_DEPENDENCIES: string[] = ['sequelize@5.22.5', 'sequelize-cli@5.5.1', 'mysql2@3.24.6'];
+const DEV_DEPENDENCIES: string[] = ['nodemon@3.1.14'];
+
 /**
  * Class which implements the logic for implementing api generation file related actions.
  *
@@ -40,7 +45,7 @@ export default class ApiFileOperations {
       return Promise.reject('Invalid directory path');
     }
     Object.keys(DIRECTORY_STRUCTURE.API_STRUCTURE)
-      .map((directory: string) => {
+      .forEach((directory: string) => {
         promises.push(
           fileUtil.createDirectory(
             fileUtil.joinPaths(
@@ -77,28 +82,13 @@ export default class ApiFileOperations {
    * @return installed dependencies
    */
   public async installDependencies(dialect: string): Promise<boolean> {
-    return new Promise<boolean>((resolve: (value: boolean) => void, reject: (reason: Error) => void): void => {
-      console.log(
-        `running: ${chalk.green(`npm i --save express body-parser morgan ${this.getDependenciesForDb(dialect)}`)}`,
-      );
-      exec(
-        `cd ${this.filePath} && npm i --save express body-parser morgan ${this.getDependenciesForDb(dialect)}`,
-        (errDependencies: Error) => {
-          /* istanbul ignore next */
-          if (errDependencies) {
-            return reject(errDependencies);
-          }
-          console.log(`running: ${chalk.green('npm i --save-dev nodemon')}`);
-          exec(`cd ${this.filePath} && npm i --save-dev nodemon`, (errDev: Error) => {
-            /* istanbul ignore next */
-            if (errDev) {
-              return reject(errDev);
-            }
-            resolve(true);
-          });
-        },
-      );
-    });
+    const dependencies: string[] = [...BASE_DEPENDENCIES, ...this.getDependenciesForDb(dialect)];
+    console.log(`running: ${chalk.green(`npm i --save ${dependencies.join(' ')}`)}`);
+    await run('npm', ['i', '--save', ...dependencies], this.filePath);
+    console.log(`running: ${chalk.green(`npm i --save-dev ${DEV_DEPENDENCIES.join(' ')}`)}`);
+    await run('npm', ['i', '--save-dev', ...DEV_DEPENDENCIES], this.filePath);
+
+    return true;
   }
 
   /**
@@ -210,15 +200,8 @@ export default class ApiFileOperations {
    * @param databaseType database type
    * @return required dependencies for the database type
    */
-  private getDependenciesForDb(dialect: string): string {
-    switch (dialect) {
-      case 'MySql': {
-        return 'sequelize sequelize-cli mysql2';
-      }
-      default: {
-        return '';
-      }
-    }
+  private getDependenciesForDb(dialect: string): string[] {
+    return dialect === 'MySql' ? MYSQL_DEPENDENCIES : [];
   }
 
   /**

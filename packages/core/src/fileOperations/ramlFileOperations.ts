@@ -33,7 +33,7 @@ export default class RamlFileOperations {
     if (!fileUtil.isDirectory(this.filePath)) {
       return Promise.reject('Invalid directory path');
     }
-    Object.keys(DIRECTORY_STRUCTURE.RAML_STRUCTURE).map((directory: string) => {
+    Object.keys(DIRECTORY_STRUCTURE.RAML_STRUCTURE).forEach((directory: string) => {
       promises.push(
         fileUtil.createDirectory(
           fileUtil.joinPaths(
@@ -55,7 +55,7 @@ export default class RamlFileOperations {
   public async generateSchemaTypeFiles(schema: Schema): Promise<boolean[]> {
     const promises: [Promise<boolean>] = [Promise.resolve(true)];
 
-    schema.map((table: Table) => {
+    schema.forEach((table: Table) => {
       promises.push(
         fileUtil.writeFile(
           fileUtil.joinPaths(
@@ -94,7 +94,7 @@ export default class RamlFileOperations {
   public async generateSchemaExampleFiles(schema: Schema): Promise<boolean[]> {
     const promises: [Promise<boolean>] = [Promise.resolve(true)];
 
-    schema.map((table: Table) => {
+    schema.forEach((table: Table) => {
       const typeExampleGenerated: Example = examplesGenerator.generateTypeExampleContent(
         schema,
         table,
@@ -125,7 +125,7 @@ export default class RamlFileOperations {
 
     Object.keys(cacheUtil.getByPrimeKey(examplesGenerator.PRIME_KEY))
       .filter((key: string) => key.includes('[]'))
-      .map((key: string) => {
+      .forEach((key: string) => {
         promises.push(
           fileUtil.writeFile(
             fileUtil.joinPaths(

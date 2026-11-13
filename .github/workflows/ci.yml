@@ -33,6 +33,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Load MySQL fixture
         run: mysql -h 127.0.0.1 -uroot -psecret test < packages/core/test/handlers/mysql/data.sql
-      - run: pnpm build
       - run: pnpm lint
+      - run: pnpm build
+      - run: pnpm typecheck
       - run: pnpm test

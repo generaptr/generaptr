@@ -42,7 +42,7 @@ export default class RamlHandler extends BaseHandler {
             columns: [],
           };
 
-          Object.keys(columns).map((name: string) => {
+          Object.keys(columns).forEach((name: string) => {
             table.columns.push(this.normalizeColumnSchema(columns[name]));
           });
 

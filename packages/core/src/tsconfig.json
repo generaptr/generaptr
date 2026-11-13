@@ -1,34 +1,24 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "target": "es2023",
+    "lib": [
+      "es2023",
+      "esnext.disposable"
+    ],
+    "types": [
+      "node"
+    ],
     "noImplicitAny": false,
     "noImplicitReturns": true,
     "noImplicitThis": true,
     "noUnusedParameters": true,
     "noUnusedLocals": true,
     "strictNullChecks": true,
-    "importHelpers": true,
     "declaration": true,
-    "sourceMap": false,
-    "target": "es6",
-    "lib": [
-      "es6"
-    ],
-    "outDir": "../lib",
-    "types": [
-      "assert",
-      "faker",
-      "mocha",
-      "node",
-      "pluralize",
-      "bunyan",
-      "chalk",
-      "fs-extra",
-      "mysql2"
-    ],
-    "typeRoots": [
-      "../node_modules/@types"
-    ]
+    "skipLibCheck": true,
+    "rootDir": ".",
+    "outDir": "../lib"
   }
 }

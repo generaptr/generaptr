@@ -1,4 +1,4 @@
-import * as mysql from 'mysql2';
+import * as mysql from 'mysql2/promise';
 import Utils from '../commons/utils/utils';
 import BaseHandler from './baseHandler';
 import { Schema, Table, Column, MySqlColumnSchema, TableReference, RawTableReference } from '../commons/types';
@@ -9,175 +9,107 @@ import { Schema, Table, Column, MySqlColumnSchema, TableReference, RawTableRefer
  * @export
  */
 export default class MysqlHandler extends BaseHandler {
-  /**
-   * Mysql connection object.
-   *
-   */
-  private readonly connection: mysql.Connection;
+  private readonly pool: mysql.Pool;
+
+  private readonly database: string | undefined;
 
   /**
-   * Mysql connection options
-   *
-   */
-  private readonly options: mysql.ConnectionOptions;
-  /**
-   * Constructor for the MySqlHandler.
-   *
-   * @param options Connection parameters.
+   * @param options Connection parameters. `database` names the schema to read.
    */
   public constructor(options: mysql.ConnectionOptions) {
     super('mysql');
 
-    this.options = options;
-
-    this.connection = mysql.createConnection({
-      host: this.options.host,
-      port: this.options.port,
-      user: this.options.user,
-      password: this.options.password,
+    this.database = options.database;
+    this.pool = mysql.createPool({
+      host: options.host,
+      port: Number(options.port),
+      user: options.user,
+      password: options.password,
       database: 'information_schema',
+      connectionLimit: 4,
     });
   }
 
   /**
-   * Connect to MySql based on the connection data.
+   * Checks that the connection data is valid.
    */
-  public connect(): void {
-    this.connection.connect();
+  public async connect(): Promise<void> {
+    (await this.pool.getConnection()).release();
   }
 
   /**
    * Reads the database schema, processes it and returns a normalized version of it.
-   *
-   * @returns database schema
    */
   public async readSchema(): Promise<Schema> {
-    return new Promise<Schema>((resolve: (schema: Schema) => void, reject: (reason: Error) => void): void => {
-      this.getTables().then((tablesNames: string[]) => {
-        const tables: Promise<Table>[] = tablesNames.map(async (tableName: string) => this.getTableSchema(tableName));
+    const tableNames: string[] = await this.getTables();
+    const schema: Schema = await Promise.all(tableNames.map(async (name: string) => this.getTableSchema(name)));
 
-        Promise.all(tables).then((schema: Schema) => {
-          resolve(this.normalizeRelations(schema));
-        }).catch(reject);
-      }).catch(reject);
-    });
+    return this.normalizeRelations(schema);
   }
 
   /**
    * Reads the information schema and returns an array of tables.
-   *
-   * @returns array of table names.
    */
   public async getTables(): Promise<string[]> {
-    return new Promise<string[]>((resolve: (tables: string[]) => void, reject: (reason: Error) => void): void => {
-      this.connection.query(
-        `SELECT TABLE_NAME FROM TABLES WHERE TABLE_SCHEMA = '${this.options.database}';`,
-        (err: Error, results: [{ TABLE_NAME: string }]) => {
-          /* istanbul ignore next */
-          if (err) {
-            return reject(err);
-          }
-          const tables: string[] = results.map((result: { TABLE_NAME: string }) => result.TABLE_NAME);
+    const [rows] = await this.pool.query<(mysql.RowDataPacket & { TABLE_NAME: string })[]>(
+      'SELECT TABLE_NAME FROM TABLES WHERE TABLE_SCHEMA = ?',
+      [this.database],
+    );
 
-          return resolve(tables);
-        },
-      );
-    });
+    return rows.map((row: { TABLE_NAME: string }) => row.TABLE_NAME);
   }
 
   /**
    * Reads the schema for a given table.
-   *
-   * @param  tableName table name
-   * @returns table schema
    */
   public async getTableSchema(tableName: string): Promise<Table> {
-    return new Promise<Table>((resolve: (table: Table) => void, reject: (reason: Error) => void): void => {
-      const table: Table = {
-        name: tableName,
-        columns: [],
-      };
+    const [columns] = await this.pool.query<(mysql.RowDataPacket & MySqlColumnSchema)[]>(
+      `SELECT COLUMN_NAME, IS_NULLABLE, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, COLUMN_KEY, COLUMN_TYPE
+        FROM COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? ORDER BY ORDINAL_POSITION`,
+      [this.database, tableName],
+    );
+    const relations: TableReference[] = await this.getRelationsForTable(tableName);
 
-      this.connection.query(
-        `SELECT
-          COLUMN_NAME,
-          IS_NULLABLE,
-          DATA_TYPE,
-          CHARACTER_MAXIMUM_LENGTH,
-          COLUMN_KEY,
-          COLUMN_TYPE
-        FROM COLUMNS WHERE TABLE_SCHEMA = '${this.options.database}' AND TABLE_NAME = '${tableName}';`,
-        (err: Error, columns: MySqlColumnSchema[]) => {
-          /* istanbul ignore next */
-          if (err) {
-            return reject(err);
-          }
-          this.getRelationsForTable(tableName).then((relations: TableReference[]) => {
-            columns.forEach((result: MySqlColumnSchema) => {
-              const column: Column = this.normalizeColumnSchema(result);
-              const relation: TableReference | undefined = relations.find(
-                (rel: TableReference) => rel.name === column.name,
-              );
-              if (relation) {
-                column.foreignKey = true;
-                column.dataType.references = relation;
-                column.dataType.type = Utils.toTitleCase(relation.table);
-                column.name = Utils.singular(relation.table);
-              }
-              table.columns.push(column);
-            });
+    return {
+      name: tableName,
+      columns: columns.map((raw: MySqlColumnSchema) => {
+        const column: Column = this.normalizeColumnSchema(raw);
+        const relation: TableReference | undefined = relations.find((rel: TableReference) => rel.name === column.name);
+        if (relation) {
+          column.foreignKey = true;
+          column.dataType.references = relation;
+          column.dataType.type = Utils.toTitleCase(relation.table);
+          column.name = Utils.singular(relation.table);
+        }
 
-            return resolve(table);
-          }).catch(reject);
-        },
-      );
-    });
+        return column;
+      }),
+    };
   }
 
   /**
-   * Reads all the relations for a given table.
-   *
-   * @param  table table name
-   * @return  foreign key relations
+   * Reads all the foreign key relations for a given table.
    */
   public async getRelationsForTable(table: string): Promise<TableReference[]> {
-    return new Promise<TableReference[]>(
-      (resolve: (references: TableReference[]) => void, reject: (reason: Error) => void): void => {
-        this.connection.query(
-          `SELECT
-          COLUMN_NAME,
-          rc.REFERENCED_TABLE_NAME,
-          REFERENCED_COLUMN_NAME
-        FROM REFERENTIAL_CONSTRAINTS rc JOIN
-          KEY_COLUMN_USAGE cu ON cu.CONSTRAINT_NAME = rc.CONSTRAINT_NAME
-        WHERE rc.CONSTRAINT_SCHEMA = '${this.options.database}' AND rc.TABLE_NAME = '${table}'`,
-          (err: Error, relations: RawTableReference[]) => {
-            /* istanbul ignore next */
-            if (err) {
-              return reject(err);
-            }
-
-            const references: TableReference[] = relations.map((relation: RawTableReference) => {
-              const reference: TableReference = {
-                name: relation.COLUMN_NAME,
-                table: relation.REFERENCED_TABLE_NAME,
-                column: relation.REFERENCED_COLUMN_NAME,
-              };
-
-              return reference;
-            });
-
-            resolve(references);
-          },
-        );
-      },
+    const [relations] = await this.pool.query<(mysql.RowDataPacket & RawTableReference)[]>(
+      `SELECT COLUMN_NAME, rc.REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME
+        FROM REFERENTIAL_CONSTRAINTS rc
+        JOIN KEY_COLUMN_USAGE cu ON cu.CONSTRAINT_NAME = rc.CONSTRAINT_NAME AND cu.CONSTRAINT_SCHEMA = rc.CONSTRAINT_SCHEMA
+        WHERE rc.CONSTRAINT_SCHEMA = ? AND rc.TABLE_NAME = ?`,
+      [this.database, table],
     );
+
+    return relations.map((relation: RawTableReference) => ({
+      name: relation.COLUMN_NAME,
+      table: relation.REFERENCED_TABLE_NAME,
+      column: relation.REFERENCED_COLUMN_NAME,
+    }));
   }
 
   /**
    * Closes the MySql connection.
    */
-  public close(): void {
-    this.connection.end();
+  public async close(): Promise<void> {
+    await this.pool.end();
   }
 }

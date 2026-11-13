@@ -75,7 +75,7 @@ export default class MysqlSchemaPreprocessor {
     let updatedSchema: Schema = schema;
     schema.forEach((table: Table) => {
       if (!this.tableHasForeignKeys(table) || this.tableIsCrossReferenceTable(table)) {
-        return table;
+        return;
       }
       table.columns.forEach((column: Column) => {
         if (column.foreignKey && column.unique && column.dataType.references) {
@@ -114,8 +114,6 @@ export default class MysqlSchemaPreprocessor {
           );
         }
       });
-
-      return table;
     });
 
     return updatedSchema;
@@ -134,7 +132,7 @@ export default class MysqlSchemaPreprocessor {
     let updatedSchema: Schema = schema;
     schema.forEach((table: Table) => {
       if (!this.tableHasForeignKeys(table) || this.tableIsCrossReferenceTable(table)) {
-        return table;
+        return;
       }
       table.columns.forEach((column: Column) => {
         if (column.foreignKey && column.dataType.references) {
@@ -176,8 +174,6 @@ export default class MysqlSchemaPreprocessor {
           }
         }
       });
-
-      return table;
     });
 
     return updatedSchema;
@@ -196,7 +192,7 @@ export default class MysqlSchemaPreprocessor {
     let updatedSchema: Schema = schema;
     schema.forEach((table: Table) => {
       if (!this.tableIsCrossReferenceTable(table) || table.columns.length !== CROSS_REFERENCE_COL_LENGTH) {
-        return table;
+        return;
       }
       const source: Column = table.columns[FIRST_INDEX];
       const target: Column = table.columns[SECOND_INDEX];
@@ -239,8 +235,6 @@ export default class MysqlSchemaPreprocessor {
       );
       updatedSchema = this.removeColumnFromTable(updatedSchema, table.name, source.name);
       updatedSchema = this.removeColumnFromTable(updatedSchema, table.name, target.name);
-
-      return table;
     });
 
     return updatedSchema;

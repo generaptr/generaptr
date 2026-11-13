@@ -5,6 +5,9 @@ import schemaUtil from '../../commons/utils/schemaUtil';
 import config from '../../configs/config';
 import { Schema, Table, Column, Example, Everything } from '../../commons/types';
 
+const isRecord = (value: Everything): value is Example['data'] =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
 /**
  * Class which holds the logic for generating example data.
  *
@@ -41,13 +44,16 @@ export class ExamplesGenerator {
       data: {},
     };
 
-    object.data = cacheUtil.get(this.PRIME_KEY, object.type) || {};
+    const cached: Everything = cacheUtil.get(this.PRIME_KEY, object.type);
+    if (isRecord(cached)) {
+      object.data = cached;
+    }
 
     if (Object.keys(object.data).length) {
       return object;
     }
 
-    table.columns.map((column: Column) => {
+    table.columns.forEach((column: Column) => {
       if (this.defaultRamlTypes.indexOf(column.dataType.type) > -1) {
         object.data[column.name] = ramlUtil.generateFakeData(column.name, column.dataType.type, column.dataType.values);
       } else {
