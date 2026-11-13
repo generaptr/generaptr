@@ -1,6 +1,6 @@
 node_modules
 .turbo
-lib
+/packages/core/lib/
 build
 coverage
 .nyc_output
