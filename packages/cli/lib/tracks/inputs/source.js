@@ -8,7 +8,7 @@ export const questions = [
     name: 'source',
     type: 'select',
     message: 'Where should generaptr read the tables from?',
-    choices: ['Database', 'OpenAPI 3.1 file (JSON)'],
+    choices: ['Database', 'OpenAPI 3.1 file (YAML or JSON)'],
   },
 ];
 

@@ -25,7 +25,7 @@ Node 22 or later is necessary.
 2. Type the output directory, name, description, version, license, and author.
 3. Select the source of the tables:
    - **Database**: select MySQL or PostgreSQL, then type the connection details. For PostgreSQL, also type the schema (default `public`). The user needs only read access.
-   - **OpenAPI 3.1 file (JSON)**: type the path to the file, then select the database engine for the generated API.
+   - **OpenAPI 3.1 file (YAML or JSON)**: type the path to the file, then select the database engine for the generated API.
 4. Generaptr writes the API. It then asks before it runs `npm install` in the output directory.
 
 ## OpenAPI specification

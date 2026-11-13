@@ -85,7 +85,6 @@ Generaptr stops with `Unsupported type` when a table has any other type. It also
 ## Known limits
 
 - PostgreSQL `bytea` and `tsvector` are not supported. JSON cannot carry them as they are.
-- Generaptr reads OpenAPI documents in JSON only, not YAML.
 - The generated API pins `drizzle-orm` and `drizzle-kit` `1.0.0-rc.5`, a release candidate.
 
 ## Contributing

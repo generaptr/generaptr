@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Generaptr reads OpenAPI documents in YAML as well as JSON, in the library and the CLI ([#169](https://github.com/generaptr/generaptr/issues/169)).
 - The generated API pins `drizzle-orm` and `drizzle-kit` `1.0.0-rc.5`. npm deprecated the beta line ([#170](https://github.com/generaptr/generaptr/issues/170)).
 - The generated API includes related rows: the list and get routes take `?with=`, and `src/db/relations.js` defines both sides of every foreign key, with many-to-many relations through link tables ([#167](https://github.com/generaptr/generaptr/issues/167)).
 

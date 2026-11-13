@@ -44,7 +44,7 @@ const fromSpec = await operations.spec.readOpenApi('./spec/openapi.json', 'mysql
 | `operations.api.generateApi(dir, info, schema)` | Writes the API into `dir`. Returns the paths it wrote. |
 | `operations.api.installApi(dir)` | Runs `npm install` in `dir`. |
 | `operations.spec.generateSpec(dir, info, schema)` | Writes `dir/openapi.json`. Returns its path. |
-| `operations.spec.readOpenApi(file, dialect)` | Reads a JSON OpenAPI document. `dialect` is `'mysql'` or `'postgresql'`. |
+| `operations.spec.readOpenApi(file, dialect)` | Reads an OpenAPI document in YAML or JSON. `dialect` is `'mysql'` or `'postgresql'`. |
 
 `readOpenApi` accepts a column default from the document only when it is a literal or a known function such as `now()`. The default goes into SQL, and a document can come from anyone.
 

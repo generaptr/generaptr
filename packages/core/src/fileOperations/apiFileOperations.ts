@@ -1,6 +1,7 @@
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import { styleText } from 'node:util';
+import { parse } from 'yaml';
 import { run } from '../commons/utils/run.js';
 import { renderApi } from '../generators/api/express.js';
 import { openApiDocument, tablesFromOpenApi } from '../generators/spec/openapi.js';
@@ -39,8 +40,8 @@ export const generateSpec = async (dir: string, info: PackageJsonInfo, schema: D
 };
 
 /**
- * Reads tables from an OpenAPI 3.1 document in JSON, with column types for `dialect`.
+ * Reads tables from an OpenAPI 3.1 document in YAML or JSON, with column types for `dialect`.
+ * YAML is a superset of JSON, so one parser reads both.
  */
-// razor: JSON only; add the `yaml` package when someone needs YAML input.
 export const readOpenApi = async (file: string, dialect: Dialect): Promise<DbSchema> =>
-  tablesFromOpenApi(JSON.parse(await fs.readFile(file, 'utf-8')), dialect);
+  tablesFromOpenApi(parse(await fs.readFile(file, 'utf-8')), dialect);
