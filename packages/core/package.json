@@ -1,9 +1,8 @@
 {
   "name": "generaptr",
   "scripts": {
-    "build": "tsc -p src",
+    "build": "node -e \"require('fs').rmSync('lib',{recursive:true,force:true})\" && tsc -p src",
     "test": "vitest run",
-    "logs": "tail -f debug-log.json | ./node_modules/.bin/bunyan",
     "typecheck": "tsc -p test --noEmit"
   },
   "version": "1.4.1",
@@ -31,23 +30,12 @@
     "node": ">=22"
   },
   "devDependencies": {
-    "@types/assert": "^1.4.3",
-    "@types/bunyan": "^1.8.6",
-    "@types/faker": "^4.1.5",
-    "@types/fs-extra": "^8.0.0",
+    "@readme/openapi-parser": "10.0.0",
     "@types/node": "^22.20.5",
-    "@types/pluralize": "^0.0.33",
-    "assert": "2.0.0",
     "typescript": "^7.0.2",
     "vitest": "^5.1.0"
   },
   "dependencies": {
-    "bunyan": "^1.8.12",
-    "chalk": "^2.4.2",
-    "faker": "^4.1.0",
-    "fs-extra": "^8.1.0",
-    "mysql2": "^3.9.8",
-    "pluralize": "^8.0.0",
-    "raml-1-parser": "^1.1.57"
+    "mysql2": "^3.9.8"
   }
 }

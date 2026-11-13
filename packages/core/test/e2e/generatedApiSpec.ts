@@ -3,7 +3,7 @@ import { type ChildProcess, spawn } from 'node:child_process';
 import * as fs from 'node:fs/promises';
 import * as os from 'node:os';
 import * as path from 'node:path';
-import config from '../../src/configs/config';
+import config from '../config';
 import { generateApi, installApi } from '../../src/fileOperations/apiFileOperations';
 import MysqlHandler from '../../src/handlers/mysqlHandler';
 

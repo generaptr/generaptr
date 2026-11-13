@@ -1,4 +1,10 @@
+import {
+  assertSafeNames, camel, type ParsedType, parseColumnType, primaryColumns, routedTables, routePath,
+} from '../../commons/columns';
 import { DbColumn, DbTable, PackageJsonInfo } from '../../commons/types';
+import { openApiDocument } from '../spec/openapi';
+
+export { routedTables };
 
 /** Versions the generated API installs. Drizzle v1 is beta: pin it exactly. */
 export const VERSIONS: Record<string, string> = {
@@ -9,94 +15,32 @@ export const VERSIONS: Record<string, string> = {
   'drizzle-kit': '1.0.0-beta.22',
 };
 
-const camel = (name: string): string => name.replace(/[_\-\s]+(\w)/g, (_: string, c: string) => c.toUpperCase());
-
-const NUMERIC: string[] = ['tinyint', 'smallint', 'mediumint', 'int', 'integer', 'bigint', 'decimal', 'float', 'double', 'year'];
-const SIZED: string[] = ['varchar', 'char', 'binary', 'varbinary'];
-const PLAIN: string[] = [
-  'text', 'tinytext', 'mediumtext', 'longtext', 'blob', 'tinyblob', 'mediumblob', 'longblob',
-  'date', 'datetime', 'timestamp', 'time', 'year', 'json', 'float', 'double',
-];
-
-const unsupported = (column: DbColumn): Error =>
-  new Error(`Unsupported MySQL type "${column.columnType}" for column ${column.name}`);
-
-/** Parses MySQL enum values (`'a','it''s'`). Returns undefined when the list is malformed. */
-const enumValues = (args: string): string[] | undefined => {
-  const values: string[] = [...args.matchAll(/'((?:[^']|'')*)'/g)].map((m: RegExpMatchArray) => m[1]);
-  const rebuilt: string = values.map((value: string) => `'${value}'`).join(',');
-
-  return values.length && rebuilt === args ? values.map((value: string) => value.replace(/''/g, "'")) : undefined;
-};
-
 /** Returns the Drizzle builder name and its call for one MySQL column. */
 export const columnBuilder = (column: DbColumn): { builder: string; call: string } => {
-  const match: RegExpMatchArray | null = column.columnType.match(/^([a-z]+)(?:\((.*)\))?( unsigned)?( zerofill)?$/);
-  if (!match) {
-    throw unsupported(column);
-  }
-  const [, base, args = '', unsignedFlag] = match;
+  const type: ParsedType = parseColumnType(column);
   const name: string = JSON.stringify(column.name);
-  const unsigned: boolean = Boolean(unsignedFlag);
-  const digits: boolean = /^\d+$/.test(args);
-
-  if (base === 'enum') {
-    const values: string[] | undefined = enumValues(args);
-    if (!values) {
-      throw unsupported(column);
+  switch (type.kind) {
+    case 'boolean':
+      return { builder: 'boolean', call: `boolean(${name})` };
+    case 'enum':
+      return { builder: 'mysqlEnum', call: `mysqlEnum(${name}, ${JSON.stringify(type.values)})` };
+    case 'decimal':
+      return { builder: 'decimal', call: `decimal(${name}, { precision: ${type.precision}, scale: ${type.scale} })` };
+    case 'sized':
+      return { builder: type.base, call: `${type.base}(${name}, { length: ${type.length} })` };
+    case 'plain':
+      return { builder: type.base, call: `${type.base}(${name})` };
+    case 'integer': {
+      if (type.base === 'bigint') {
+        return { builder: 'bigint', call: `bigint(${name}, { mode: 'number'${type.unsigned ? ', unsigned: true' : ''} })` };
+      }
+      if (type.base === 'year') {
+        return { builder: 'year', call: `year(${name})` };
+      }
+      return { builder: type.base, call: `${type.base}(${name}${type.unsigned ? ', { unsigned: true }' : ''})` };
     }
-    return { builder: 'mysqlEnum', call: `mysqlEnum(${name}, ${JSON.stringify(values)})` };
-  }
-  if (args && !digits && base !== 'decimal') {
-    throw unsupported(column);
-  }
-  if (base === 'tinyint' && args === '1') {
-    return { builder: 'boolean', call: `boolean(${name})` };
-  }
-  if (base === 'decimal') {
-    const size: RegExpMatchArray | null = args.match(/^(\d+)(?:,(\d+))?$/);
-    if (!size) {
-      throw unsupported(column);
-    }
-    return { builder: 'decimal', call: `decimal(${name}, { precision: ${size[1]}, scale: ${size[2] ?? 0} })` };
-  }
-  if (SIZED.includes(base) && digits) {
-    return { builder: base, call: `${base}(${name}, { length: ${args} })` };
-  }
-  if (base === 'bigint') {
-    return { builder: base, call: `bigint(${name}, { mode: 'number'${unsigned ? ', unsigned: true' : ''} })` };
-  }
-  if (['tinyint', 'smallint', 'mediumint', 'int'].includes(base)) {
-    return { builder: base, call: `${base}(${name}${unsigned ? ', { unsigned: true }' : ''})` };
-  }
-  if (PLAIN.includes(base)) {
-    return { builder: base, call: `${base}(${name})` };
-  }
-  throw unsupported(column);
-};
-
-const SAFE_NAME: RegExp = /^[A-Za-z_][A-Za-z0-9_]*$/;
-
-/** Names become JS identifiers, URL paths and file names in the generated code. */
-const assertSafeNames = (tables: DbTable[]): void => {
-  const names: string[] = tables.flatMap((table: DbTable) => [
-    table.name,
-    ...table.columns.flatMap((column: DbColumn) => [
-      column.name,
-      ...(column.references ? [column.references.table, column.references.column] : []),
-    ]),
-  ]);
-  const unsafe: string | undefined = names.find((name: string) => !SAFE_NAME.test(name));
-  if (unsafe !== undefined) {
-    throw new Error(`Unsafe name "${unsafe}": generaptr supports names with letters, digits, and _ only`);
   }
 };
-
-const primaryColumns = (table: DbTable): DbColumn[] => table.columns.filter((column: DbColumn) => column.primary);
-
-/** Tables with one primary key column get CRUD routes. Link tables do not. */
-export const routedTables = (tables: DbTable[]): DbTable[] =>
-  tables.filter((table: DbTable) => primaryColumns(table).length === 1);
 
 export const schemaFile = (tables: DbTable[]): string => {
   const builders: Set<string> = new Set(['mysqlTable']);
@@ -143,7 +87,7 @@ export const routeFile = (table: DbTable): string => {
   const entity: string = camel(table.name);
   const [primary] = primaryColumns(table);
   const key: string = camel(primary.name);
-  const id: string = NUMERIC.includes(primary.columnType.split(/[ (]/)[0]) ? 'Number(req.params.id)' : 'req.params.id';
+  const id: string = parseColumnType(primary).kind === 'integer' ? 'Number(req.params.id)' : 'req.params.id';
 
   return `import { eq } from 'drizzle-orm';
 import { createInsertSchema, createUpdateSchema } from 'drizzle-orm/zod';
@@ -194,7 +138,7 @@ export const appFile = (tables: DbTable[]): string => {
     .map((table: DbTable) => `import { router as ${camel(table.name)} } from './routes/${camel(table.name)}.js';`)
     .join('\n');
   const mounts: string = routed
-    .map((table: DbTable) => `app.use('/${table.name.replace(/_/g, '-')}', ${camel(table.name)});`)
+    .map((table: DbTable) => `app.use('${routePath(table)}', ${camel(table.name)});`)
     .join('\n');
 
   return `import express from 'express';
@@ -273,6 +217,7 @@ app.listen(port, () => console.log(\`Listening on port \${port}\`));
 export const db = drizzle(process.env.DATABASE_URL);
 `,
     'src/db/schema.js': schemaFile(tables),
+    'openapi.json': `${JSON.stringify(openApiDocument(tables, info), undefined, 2)}\n`,
   };
   for (const table of routedTables(tables)) {
     files[`src/routes/${camel(table.name)}.js`] = routeFile(table);

@@ -17,9 +17,9 @@ Make generaptr work again on current Node and npm, and make it generate a curren
 | Generated API | Express 5 + Drizzle v1 beta (`drizzle-orm` and `drizzle-kit` `1.0.0-beta.22` on 2026-11-13). Pin the exact beta. Move to v1 stable when it ships. | Agreed |
 | Migrations | Drizzle native: `drizzle-kit generate` + `drizzle-kit migrate`. Forward-only. No custom migration script. No rollback. A bad migration gets a new forward migration. | Agreed |
 | Generated models | generaptr writes `src/db/schema.js` itself from `MysqlHandler.readTables()` (raw `information_schema`: real names, exact `COLUMN_TYPE`, FKs, link tables). Not `drizzle-kit pull`: a spec input has no database to pull from. The relation preprocessor is lossy and stays for spec output only. | Done |
-| Spec format | OpenAPI 3.1 replaces RAML (`raml-1-parser` is deprecated upstream). | Proposed |
+| Spec format | OpenAPI 3.1 (JSON) replaces RAML. The spec is built from the same `DbTable[]` as the API, so it describes the generated API exactly. `x-table` / `x-column` make generaptr specs read back exactly; other specs map by convention. YAML input is not supported yet. | Done |
 | Generated API shape | ESM JavaScript, Node 22+. `express.json()` (no body-parser), `node --watch` (no nodemon), `--env-file-if-exists=.env`. One route file per table with one primary key. Request bodies go through `drizzle-orm/zod`, so bad input gets 400. No relation includes yet. | Done |
-| Templates | Keep TS template literals in pure functions (`generators/api/express.ts`). No template engine. | Done |
+| Templates | Move generated files to template files with eta (or mustache if eta is not slimmer), output escaping off. | Agreed |
 | Tooling | TypeScript 7. Vitest replaces mocha + nyc. Biome (root, lint only) replaces tslint and eslint. typedoc, coveralls, commitizen, npm-run-all, rimraf removed. | Done |
 | Releases | Changesets + npm provenance from CI. | Proposed |
 
@@ -91,8 +91,10 @@ Size: core about 3.8k lines of TypeScript. CLI 428 lines of JS.
 - [ ] Skipped: `develop` branch. Its async/await work was in the Sequelize generators that PR 2 deletes.
 - [ ] Relation includes (`with`) through Drizzle relations v2.
 - [ ] Baseline for an existing database: the first `db:generate` migration creates every table, so it must not run on the database it came from.
-- [ ] PR 3: replace RAML output and input with OpenAPI 3.1. OpenAPI input must produce `DbTable[]` by convention (`<name>_id`, `<a>_<b>` link tables).
-- [ ] PR 4: core to ESM, fix items 17 and 18.
+- [x] PR 3: OpenAPI 3.1 replaces RAML as output and input. The RAML path, the relation preprocessors, the example generator, and their dependencies (`raml-1-parser`, faker, bunyan, fs-extra, chalk, pluralize) are deleted. Items 17 and 18 go away with that code.
+- [ ] PR 4: template files (eta or mustache).
+- [ ] PR 5: core to ESM.
+- [ ] Last PR: delete `PLAN.md`, update all docs, release v2.0.0.
 
 ### Phase 3: publish
 
