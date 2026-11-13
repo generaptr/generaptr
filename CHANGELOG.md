@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.1.0
 
 - The generated API has `npm run db:baseline`. On the database that generaptr read, it writes the first migration and records it as applied without running it ([#168](https://github.com/generaptr/generaptr/issues/168)).
 - Generaptr reads OpenAPI documents in YAML as well as JSON, in the library and the CLI ([#169](https://github.com/generaptr/generaptr/issues/169)).
