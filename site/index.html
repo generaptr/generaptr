@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>generaptr: a REST API from your database tables</title>
-<meta name="description" content="Generaptr reads the tables of a MySQL or PostgreSQL database and writes an Express 5 + Drizzle API and an OpenAPI 3.1 document.">
+<meta name="description" content="Generaptr reads the tables of a MySQL or PostgreSQL database and writes an Express 5 + Drizzle API, an OpenAPI 3.1 document, and a web app for the API.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -165,6 +165,7 @@
     <a href="./" aria-label="generaptr home"><img src="logo.svg" alt="generaptr" width="273" height="70"></a>
     <nav aria-label="Site">
       <a href="#generated-api">Docs</a>
+      <a href="#web-app">Web app</a>
       <a href="https://github.com/generaptr/generaptr">GitHub</a>
       <a href="https://www.npmjs.com/package/generaptr-cli">npm</a>
       <a href="https://github.com/generaptr/generaptr/blob/master/CHANGELOG.md">Changelog</a>
@@ -174,12 +175,12 @@
   <main>
     <div class="hero">
       <h1>Point it at your database. Get a working API.</h1>
-      <p>Generaptr reads the tables of a MySQL or PostgreSQL database and writes an Express&nbsp;5 + Drizzle API, with validation and an OpenAPI&nbsp;3.1 document that describes it.</p>
+      <p>Generaptr reads the tables of a MySQL or PostgreSQL database and writes an Express&nbsp;5 + Drizzle API, with validation, an OpenAPI&nbsp;3.1 document that describes it, and a web app to browse and edit the rows.</p>
       <div class="command">
         <code id="cmd">npx generaptr-cli</code>
         <button type="button" data-copy="cmd">Copy</button>
       </div>
-      <p class="after">Node 22 or later. The CLI asks for the connection, then writes the project.</p>
+      <p class="after">Node 22 or later. The CLI asks for the connection, then writes the API and the web app.</p>
     </div>
 
     <section class="transform" aria-label="Example: a table and the code generaptr writes for it">
@@ -198,12 +199,14 @@
         <figcaption>Your API: <code style="background:none;padding:0;color:inherit">src/db/schema.js</code> and its routes</figcaption>
 <pre><span class="k">export const</span> users = pgTable(<span class="s">"users"</span>, {
   id: serial(<span class="s">"id"</span>).primaryKey(),
-  email: varchar(<span class="s">"email"</span>, { length: 50 }).notNull().unique(),
+  email: varchar(<span class="s">"email"</span>, { length: 50 }).notNull(),
   active: boolean(<span class="s">"active"</span>).notNull()
     .default(sql.raw(<span class="s">"true"</span>)),
   createdAt: timestamp(<span class="s">"created_at"</span>, { withTimezone: true })
     .notNull().default(sql.raw(<span class="s">"now()"</span>)),
-});</pre>
+}, (table) =&gt; [
+  unique(<span class="s">"users_email_key"</span>).on(table.email),
+]);</pre>
         <div class="routes">
           <div><b>GET</b><span>/users?limit=20&amp;offset=0</span></div>
           <div><b>POST</b><span>/users <span class="c">201, Location: /users/1</span></span></div>
@@ -234,11 +237,36 @@
           <li>The list and get routes take <code>with</code> to include related rows: <code>GET /users/1?with=accounts,groups</code>. A foreign key <code>accounts.user_id</code> gives <code>accounts.user</code> and <code>users.accounts</code>, and a link table such as <code>users_groups</code> gives <code>users.groups</code>. A nested list returns at most 100 rows, and <code>with</code> reaches only tables that have routes.</li>
           <li>zod schemas from <code>drizzle-orm/zod</code> check each request body. A bad body gets 400 with the list of problems.</li>
           <li>Database errors get a generic 500. The response never shows the database message.</li>
-          <li>Defaults, enums, unique keys, and foreign keys come from the database, so a client can leave out the columns that the database fills.</li>
+          <li>Defaults come from the database, so a client can leave out the columns that the database fills. Identity and generated columns are not in the request bodies.</li>
+          <li><code>src/db/schema.js</code> rebuilds the database it came from: keys with their names and actions, CHECK constraints, every index, generated and identity columns, collations, enums, and sequences. A test rebuilds a schema from it and compares the catalogs of both databases.</li>
         </ul>
         <pre class="block">cd api
 cp .env.example .env    <span class="c"># set DATABASE_URL</span>
 npm start</pre>
+      </div>
+    </section>
+
+    <section class="doc" id="web-app" aria-labelledby="h-web">
+      <h2 id="h-web">The generated web app</h2>
+      <div class="body">
+        <pre class="block">web/
+├── package.json        <span class="c"># exact versions of react, vite, tailwindcss, @json-render/*</span>
+├── vite.config.js      <span class="c"># forwards /api to API_URL</span>
+├── .env.example        <span class="c"># API_URL</span>
+└── src/
+    ├── pages.json      <span class="c"># one json-render spec per page, from openapi.json</span>
+    ├── main.jsx        <span class="c"># renders the specs; the same for every API</span>
+    └── index.css</pre>
+        <ul>
+          <li>Each table with routes gets a list with paging, a detail page with its related rows, and forms to create and edit a row. A filter in the sidebar finds a table.</li>
+          <li>The pages are <a href="https://github.com/vercel-labs/json-render">json-render</a> specs drawn with shadcn components and Tailwind. Edit <code>src/pages.json</code> to change a page.</li>
+          <li>A foreign key links to its row on a detail page, and is a select of rows in a form. JSON values show as a tree that folds.</li>
+          <li>Forms check required fields, lengths, and JSON as you type, and show the API's message when the API rejects a row.</li>
+          <li>The browser calls <code>/api</code> on the web app's own server, which forwards to the API, so the API needs no CORS.</li>
+        </ul>
+        <pre class="block">cd web
+cp .env.example .env    <span class="c"># set API_URL</span>
+npm run dev</pre>
       </div>
     </section>
 
@@ -255,7 +283,7 @@ npm start</pre>
             <p>A file that generaptr wrote reads back to the same tables. Other files map by convention: each object schema becomes a table.</p>
           </div>
         </div>
-        <p>From either source, generaptr writes the full API, or only <code>openapi.json</code>. An OpenAPI file can target MySQL or PostgreSQL, so you can move a schema from one engine to the other.</p>
+        <p>From either source, generaptr writes the API and the web app, or only <code>openapi.json</code>. An OpenAPI file can target MySQL or PostgreSQL, so you can move a schema from one engine to the other.</p>
       </div>
     </section>
 
@@ -281,14 +309,16 @@ npm run db:migrate    <span class="c"># applies the SQL</span></pre>
               <tr><td>integer types, signed or <code>unsigned</code></td><td><code>smallint</code>, <code>integer</code>, <code>bigint</code>, serial and identity</td></tr>
               <tr><td><code>tinyint(1)</code> as boolean</td><td><code>boolean</code></td></tr>
               <tr><td><code>decimal(p,s)</code></td><td><code>numeric(p,s)</code></td></tr>
-              <tr><td><code>varchar(n)</code>, <code>char(n)</code>, <code>binary(n)</code></td><td><code>character varying(n)</code>, <code>character(n)</code></td></tr>
+              <tr><td><code>varchar(n)</code>, <code>char(n)</code></td><td><code>character varying(n)</code>, <code>character(n)</code></td></tr>
               <tr><td><code>enum(...)</code></td><td>enum types</td></tr>
-              <tr><td>text, blob, date and time types, <code>json</code>, <code>float</code>, <code>double</code></td><td><code>text</code>, <code>date</code>, <code>time</code>, <code>timestamp</code> with precision and time zone, <code>json</code>, <code>jsonb</code>, <code>uuid</code>, <code>real</code>, <code>double precision</code></td></tr>
+              <tr><td>text, date and time types with fractional seconds, <code>json</code>, <code>float</code>, <code>double</code></td><td><code>text</code>, <code>date</code>, <code>time</code>, <code>timestamp</code> with precision and time zone, <code>json</code>, <code>jsonb</code>, <code>uuid</code>, <code>real</code>, <code>double precision</code></td></tr>
               <tr><td></td><td>one-dimensional arrays, such as <code>text[]</code></td></tr>
+              <tr><td><code>binary</code>, <code>varbinary</code>, blob types</td><td><code>bytea</code></td></tr>
             </tbody>
           </table>
         </div>
-        <p>Generaptr stops with <code>Unsupported type</code> on any other type, and with <code>Unsafe name</code> on a table or column name that has characters other than letters, digits, and <code>_</code>.</p>
+        <p>Binary columns carry base64 strings in JSON. Any other type, such as <code>tsvector</code>, <code>inet</code>, <code>money</code>, <code>bit(3)</code>, MySQL <code>set(...)</code>, or a multi-dimensional array, becomes a Drizzle custom type with the exact SQL type.</p>
+        <p>Generaptr stops with <code>Unsafe name</code> on a table or column name that has characters other than letters, digits, and <code>_</code>.</p>
       </div>
     </section>
 
@@ -306,6 +336,7 @@ npm run db:migrate    <span class="c"># applies the SQL</span></pre>
 <span class="k">await</span> db.close();
 
 <span class="k">await</span> operations.api.generateApi(<span class="s">'./shop-api'</span>, info, schema);
+<span class="k">await</span> operations.web.generateWeb(<span class="s">'./shop-web'</span>, info, schema);
 <span class="k">await</span> operations.spec.generateSpec(<span class="s">'./spec'</span>, info, schema);</pre>
         <p><code>info</code> holds the <code>name</code>, <code>version</code>, <code>description</code>, <code>author</code>, and <code>license</code> of the generated project. The <a href="https://github.com/generaptr/generaptr/tree/master/packages/core#readme">package README</a> lists every export.</p>
       </div>
@@ -314,9 +345,13 @@ npm run db:migrate    <span class="c"># applies the SQL</span></pre>
     <section class="doc" aria-labelledby="h-limits">
       <h2 id="h-limits">Known limits</h2>
       <div class="body">
+        <p>Drizzle cannot write these, so generaptr stops with an error when a schema has one:</p>
         <ul class="limits">
-          <li>PostgreSQL <code>bytea</code> and <code>tsvector</code> columns are not supported. <a href="https://github.com/generaptr/generaptr/issues/166">#166</a></li>
+          <li>PostgreSQL: <code>INCLUDE</code> columns on an index, unique indexes with <code>NULLS NOT DISTINCT</code>, exclusion constraints, virtual generated columns, and a sequence of a type other than <code>bigint</code> that no column owns.</li>
+          <li>MySQL: <code>FULLTEXT</code> and <code>SPATIAL</code> indexes, and <code>enum</code> or <code>set</code> values with a backslash.</li>
         </ul>
+        <p>Generaptr reads one PostgreSQL schema, <code>public</code> by default. It does not read views, functions, triggers, or comments.</p>
+        <p>Coming from 2.x? Keys now belong to the table, identity columns read as identity, and MySQL binary columns carry base64. The <a href="https://github.com/generaptr/generaptr#upgrade-from-2x">README</a> lists the steps.</p>
       </div>
     </section>
   </main>
