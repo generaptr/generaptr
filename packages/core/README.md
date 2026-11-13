@@ -1,4 +1,8 @@
-# generaptr
+![](https://i.imgur.com/yCRAubA.png)
+========
+
+[![npm](https://badge.fury.io/js/generaptr.svg)](https://badge.fury.io/js/generaptr) [![CI](https://github.com/generaptr/generaptr/actions/workflows/ci.yml/badge.svg)](https://github.com/generaptr/generaptr/actions/workflows/ci.yml) [![Join the chat at https://gitter.im/generaptr/generaptr](https://badges.gitter.im/generaptr/generaptr.svg)](https://gitter.im/generaptr/generaptr?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Coverage Status](https://coveralls.io/repos/github/generaptr/generaptr/badge.svg?branch=master)](https://coveralls.io/github/generaptr/generaptr?branch=master)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fgeneraptr%2Fgeneraptr.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fgeneraptr%2Fgeneraptr?ref=badge_shield)
 
 The library behind [`generaptr-cli`](../cli). It reads tables from MySQL, PostgreSQL, or an OpenAPI 3.1 document, and writes an Express 5 + Drizzle API or an OpenAPI document. See the [root README](../../README.md) for what the generated API contains.
 
@@ -47,3 +51,5 @@ const fromSpec = await operations.spec.readOpenApi('./spec/openapi.json', 'mysql
 ## License
 
 MIT
+
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fgeneraptr%2Fgeneraptr.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fgeneraptr%2Fgeneraptr?ref=badge_large)
