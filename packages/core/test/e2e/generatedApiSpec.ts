@@ -121,6 +121,19 @@ describe.each(dialects)('generated Express + Drizzle API on $dialect', ({ dialec
     assert.strictEqual((await send('GET', `/users/${userId}`)).status, 404);
   });
 
+  it('carries binary columns as base64 and rejects anything else with 400', async () => {
+    const avatar: string = Buffer.from([0, 1, 254, 255]).toString('base64');
+    const created = await send('POST', '/groups', { name: 'bytes', avatar });
+    assert.strictEqual(created.status, 201);
+    const { id } = await json<{ id: number }>(created);
+    assert.strictEqual((await json<{ avatar: string }>(await send('GET', `/groups/${id}`))).avatar, avatar);
+
+    for (const bad of [{ length: 1e9 }, 'not base64!']) {
+      assert.strictEqual((await send('PUT', `/groups/${id}`, { avatar: bad })).status, 400);
+    }
+    assert.strictEqual((await send('DELETE', `/groups/${id}`)).status, 204);
+  });
+
   it('includes related rows with ?with and rejects unknown relations', async () => {
     const email = `rel-${Date.now()}@example.com`;
     const { id: userId } = await json<{ id: number }>(await send('POST', '/users', { firstName: 'Rel', email }));

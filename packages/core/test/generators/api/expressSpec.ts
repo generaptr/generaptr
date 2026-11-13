@@ -47,6 +47,10 @@ describe('Express + Drizzle generator', () => {
     assert.deepStrictEqual([...customs.values()], [custom]);
   });
 
+  it.each(["enum('a\\','b')", "set('a\\',') evil(')"])('rejects the MySQL type %s: a backslash ends the literal', (columnType: string) => {
+    assert.throws(() => columnBuilder(column('c', columnType)), /Unsupported type/);
+  });
+
   it('reuses one custom type for one SQL type', () => {
     const customs: CustomTypes = new Map();
     columnBuilder(column('a', 'tsvector'), 'postgresql', undefined, customs);
@@ -55,7 +59,7 @@ describe('Express + Drizzle generator', () => {
   });
 
   it('escapes enum values instead of copying them into code', () => {
-    assert.strictEqual(columnBuilder(column('c', "enum('it''s','a\\b')")).call, 'mysqlEnum("c", ["it\'s","a\\\\b"])');
+    assert.strictEqual(columnBuilder(column('c', "enum('it''s','a\"b')")).call, 'mysqlEnum("c", ["it\'s","a\\"b"])');
     assert.throws(() => columnBuilder(column('c', 'varchar(1) + evil()')), /Unsupported type/);
     assert.throws(() => columnBuilder(column('c', 'decimal(10,2);x')), /Unsupported type/);
   });

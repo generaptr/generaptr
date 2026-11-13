@@ -50,8 +50,14 @@ const quoteValues = (values: string[]): string => values.map((value: string) => 
 const unsupported = (column: DbColumn): Error =>
   new Error(`Unsupported type "${column.columnType}" for column ${column.name}`);
 
-/** Parses MySQL enum values (`'a','it''s'`). Returns undefined when the list is malformed. */
+/**
+ * Parses MySQL enum values (`'a','it''s'`). Returns undefined when the list is malformed, or when a value holds a
+ * backslash: MySQL reads it as an escape, so the value could end its literal in the DDL.
+ */
 const enumValues = (args: string): string[] | undefined => {
+  if (args.includes('\\')) {
+    return undefined;
+  }
   const values: string[] = [...args.matchAll(/'((?:[^']|'')*)'/g)].map((m: RegExpMatchArray) => m[1]);
   const rebuilt: string = values.map((value: string) => `'${value}'`).join(',');
 

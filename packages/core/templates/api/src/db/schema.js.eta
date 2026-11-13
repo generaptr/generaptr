@@ -5,11 +5,16 @@ import { <%= it.builders %> } from 'drizzle-orm/<%= it.core %>';
 <% if (it.customs.length) { %>
 <% for (const custom of it.customs) { -%>
 <% if (custom.binary) { -%>
-// JSON carries bytes as base64.
+// JSON carries bytes as base64. Buffer.from also takes array-likes, so a JSON object could allocate any size.
 const <%= custom.name %> = customType({
   dataType: () => <%= custom.sql %>,
   fromDriver: (value) => value.toString('base64'),
-  toDriver: (value) => Buffer.from(value, 'base64'),
+  toDriver: (value) => {
+    if (typeof value !== 'string' || !/^[A-Za-z0-9+/]*={0,2}$/.test(value)) {
+      throw Object.assign(new TypeError('Expected a base64 string'), { status: 400 });
+    }
+    return Buffer.from(value, 'base64');
+  },
 });
 <% } else { -%>
 const <%= custom.name %> = customType({ dataType: () => <%= custom.sql %> });

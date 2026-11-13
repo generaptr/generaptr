@@ -51,6 +51,7 @@ describe('PostgresHandler', () => {
     assert.deepStrictEqual(table('groups').slice(2), [
       column('tags', 'text[]', { nullable: true }),
       column('seen_at', 'timestamp(3) with time zone', { nullable: true }),
+      column('avatar', 'bytea', { nullable: true }),
     ]);
     assert.deepStrictEqual(table('users_groups'), [
       column('user_id', 'integer'),
