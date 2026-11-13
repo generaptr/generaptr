@@ -19,17 +19,34 @@ export type DbColumn = {
   /** Postgres only: the name of the enum type. */
   enumName?: string;
   nullable: boolean;
-  primary: boolean;
-  unique: boolean;
   autoIncrement: boolean;
   /** The column default as an SQL expression in the dialect's syntax, for example `now()` or `'x'`. */
   default?: string;
-  references?: { table: string; column: string };
 };
 
+/** `no action` is the default and is never stored. */
+export type ReferentialAction = 'restrict' | 'cascade' | 'set null' | 'set default';
+
+export type DbPrimaryKey = { name: string; columns: string[] };
+
+export type DbUnique = { name: string; columns: string[]; nullsNotDistinct?: true };
+
+export type DbForeignKey = {
+  name: string;
+  columns: string[];
+  table: string;
+  foreignColumns: string[];
+  onDelete?: ReferentialAction;
+  onUpdate?: ReferentialAction;
+};
+
+/** Keys are constraints of the table, with the names the database gave them. */
 export type DbTable = {
   name: string;
   columns: DbColumn[];
+  primaryKey?: DbPrimaryKey;
+  uniques?: DbUnique[];
+  foreignKeys?: DbForeignKey[];
 };
 
 /** Tables plus the dialect their column types are written in. */

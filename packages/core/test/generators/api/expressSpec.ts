@@ -3,7 +3,7 @@ import { DbColumn, DbTable } from '../../../src/commons/types.js';
 import { columnBuilder, renderApi, routedTables, schemaFile } from '../../../src/generators/api/express.js';
 
 const column = (name: string, columnType: string, extra: Partial<DbColumn> = {}): DbColumn => ({
-  name, columnType, nullable: true, primary: false, unique: false, autoIncrement: false, ...extra,
+  name, columnType, nullable: true, autoIncrement: false, ...extra,
 });
 
 describe('Express + Drizzle generator', () => {
@@ -49,7 +49,7 @@ describe('Express + Drizzle generator', () => {
 
   it.each(['../evil', 'users`; drop', 'a b', '1abc'])('rejects the unsafe table name %s', (name: string) => {
     const info = { name: 'x', version: '1.0.0', description: '', author: '', license: 'MIT' };
-    assert.throws(() => renderApi({ dialect: 'mysql', tables: [{ name, columns: [column('id', 'int', { primary: true })] }] }, info), /Unsafe name/);
+    assert.throws(() => renderApi({ dialect: 'mysql', tables: [{ name, columns: [column('id', 'int')], primaryKey: { name: 'PRIMARY', columns: ['id'] } }] }, info), /Unsafe name/);
   });
 
   it('rejects an unsafe column name', () => {
@@ -63,22 +63,49 @@ describe('Express + Drizzle generator', () => {
 
   it('writes keys, a foreign key, and a composite primary key', () => {
     const tables: DbTable[] = [
-      { name: 'users', columns: [column('id', 'int', { primary: true, nullable: false, autoIncrement: true })] },
+      {
+        name: 'users',
+        columns: [column('id', 'int', { nullable: false, autoIncrement: true })],
+        primaryKey: { name: 'PRIMARY', columns: ['id'] },
+      },
       {
         name: 'users_groups',
-        columns: [
-          column('user_id', 'int', { primary: true, nullable: false, references: { table: 'users', column: 'id' } }),
-          column('group_id', 'int', { primary: true, nullable: false }),
-        ],
+        columns: [column('user_id', 'int', { nullable: false }), column('group_id', 'int', { nullable: false })],
+        primaryKey: { name: 'PRIMARY', columns: ['user_id', 'group_id'] },
+        foreignKeys: [{ name: 'users_groups_ibfk_1', columns: ['user_id'], table: 'users', foreignColumns: ['id'], onDelete: 'cascade' }],
       },
     ];
     const file: string = schemaFile({ dialect: 'mysql', tables });
 
-    assert.match(file, /^import \{ int, mysqlTable, primaryKey \} from 'drizzle-orm\/mysql-core';/);
+    assert.match(file, /^import \{ foreignKey, int, mysqlTable, primaryKey \} from 'drizzle-orm\/mysql-core';/);
     assert.match(file, /id: int\("id"\)\.autoincrement\(\)\.primaryKey\(\),/);
-    assert.match(file, /userId: int\("user_id"\)\.notNull\(\)\.references\(\(\) => users\.id\),/);
-    assert.match(file, /\(table\) => \[primaryKey\(\{ columns: \[table\.userId, table\.groupId\] \}\)\]/);
+    assert.match(file, /userId: int\("user_id"\)\.notNull\(\),/);
+    assert.match(file, /  primaryKey\(\{ columns: \[table\.userId, table\.groupId\] \}\),/);
+    assert.ok(file.includes(
+      'foreignKey({ name: "users_groups_ibfk_1", columns: [table.userId], foreignColumns: [users.id] }).onDelete("cascade"),',
+    ));
     assert.deepStrictEqual(routedTables(tables).map((table: DbTable) => table.name), ['users']);
+  });
+
+  it('names Postgres keys as the database does, and points a self reference at the table', () => {
+    const file: string = schemaFile({
+      dialect: 'postgresql',
+      tables: [{
+        name: 'nodes',
+        columns: [column('id', 'integer', { nullable: false, autoIncrement: true }), column('parent_id', 'integer'), column('slug', 'text')],
+        primaryKey: { name: 'nodes_pk', columns: ['id'] },
+        uniques: [{ name: 'nodes_slug_key', columns: ['slug'], nullsNotDistinct: true }],
+        foreignKeys: [{
+          name: 'nodes_parent_fk', columns: ['parent_id'], table: 'nodes', foreignColumns: ['id'], onDelete: 'set null', onUpdate: 'restrict',
+        }],
+      }],
+    });
+    assert.match(file, /id: serial\("id"\)\.notNull\(\),/);
+    assert.ok(file.includes('primaryKey({ name: "nodes_pk", columns: [table.id] }),'));
+    assert.ok(file.includes('unique("nodes_slug_key").on(table.slug).nullsNotDistinct(),'));
+    assert.ok(file.includes(
+      'foreignKey({ name: "nodes_parent_fk", columns: [table.parentId], foreignColumns: [table.id] }).onDelete("set null").onUpdate("restrict"),',
+    ));
   });
 
   it('writes database defaults as raw SQL inside a JS string', () => {
@@ -87,10 +114,11 @@ describe('Express + Drizzle generator', () => {
       tables: [{
         name: 'events',
         columns: [
-          column('id', 'integer', { primary: true, nullable: false, autoIncrement: true }),
+          column('id', 'integer', { nullable: false, autoIncrement: true }),
           column('created_at', 'timestamp with time zone', { nullable: false, default: 'now()' }),
           column('note', 'text', { nullable: false, default: "'it''s `x` ${y}'::text" }),
         ],
+        primaryKey: { name: 'events_pkey', columns: ['id'] },
       }],
     });
     assert.match(file, /^import \{ sql \} from 'drizzle-orm';\nimport \{ pgTable, serial, text, timestamp \} from 'drizzle-orm\/pg-core';/);

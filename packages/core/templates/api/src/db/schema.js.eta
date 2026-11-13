@@ -12,5 +12,9 @@ export const <%= table.name %> = <%= it.tableFunction %>(<%= table.table %>, {
 <% for (const column of table.columns) { -%>
   <%= column.key %>: <%= column.chain %>,
 <% } -%>
-}<% if (table.primaryKeys) { %>, (table) => [primaryKey({ columns: [<%= table.primaryKeys %>] })]<% } %>);
+}<% if (table.constraints.length) { %>, (table) => [
+<% for (const constraint of table.constraints) { -%>
+  <%= constraint %>,
+<% } -%>
+]<% } %>);
 <% } -%>

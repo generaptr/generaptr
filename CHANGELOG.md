@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Breaking: keys belong to the table. `DbTable` has `primaryKey`, `uniques`, and `foreignKeys`, each with the name the database gave it. `DbColumn` has no `primary`, `unique`, or `references`. Generaptr 2 OpenAPI documents still read.
+- The generated schema keeps key names, composite unique constraints, composite foreign keys, `ON DELETE` and `ON UPDATE` actions, and Postgres `NULLS NOT DISTINCT`.
+- A fidelity test rebuilds a schema from the generated Drizzle schema and compares the catalogs of both databases.
+
 ## 2.1.0
 
 - The generated API has `npm run db:baseline`. On the database that generaptr read, it writes the first migration and records it as applied without running it ([#168](https://github.com/generaptr/generaptr/issues/168)).

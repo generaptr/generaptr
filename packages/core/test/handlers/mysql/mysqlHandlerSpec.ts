@@ -15,13 +15,13 @@ describe('MysqlHandler', () => {
     assert.strictEqual(dialect, 'mysql');
     assert.deepStrictEqual(tables.map((table) => table.name), ['accounts', 'applications', 'groups', 'users', 'users_groups']);
     const applications = tables.find((table) => table.name === 'applications');
-    assert.deepStrictEqual(applications?.columns[0], {
-      name: 'id', columnType: 'int unsigned', nullable: false, primary: true, unique: false, autoIncrement: true, references: undefined,
-    });
-    assert.deepStrictEqual(
-      applications?.columns.filter((column) => column.references).map((column) => [column.name, column.references]),
-      [['account_id', { table: 'accounts', column: 'id' }], ['owner_id', { table: 'users', column: 'id' }]],
-    );
+    assert.deepStrictEqual(applications?.columns[0], { name: 'id', columnType: 'int unsigned', nullable: false, autoIncrement: true });
+    assert.deepStrictEqual(applications?.primaryKey, { name: 'PRIMARY', columns: ['id'] });
+    assert.deepStrictEqual(applications?.foreignKeys, [
+      { name: 'applications_ibfk_1', columns: ['account_id'], table: 'accounts', foreignColumns: ['id'], onDelete: 'cascade' },
+      { name: 'applications_ibfk_2', columns: ['owner_id'], table: 'users', foreignColumns: ['id'] },
+    ]);
+    assert.deepStrictEqual(tables.find((table) => table.name === 'accounts')?.uniques, [{ name: 'unique_user_id', columns: ['user_id'] }]);
   });
 
   it('rejects a wrong password when it connects', async () => {

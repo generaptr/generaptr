@@ -2,7 +2,7 @@ import {
   assertSafeNames, camel, type ParsedType, parseColumnType, pascal, primaryColumns, routedTables, routePath,
 } from '../../commons/columns.js';
 import { type Relation, routedRelations } from '../../commons/relations.js';
-import { DbColumn, DbSchema, DbTable, Dialect, PackageJsonInfo } from '../../commons/types.js';
+import { DbColumn, DbForeignKey, DbSchema, DbTable, DbUnique, Dialect, PackageJsonInfo } from '../../commons/types.js';
 
 // razor: plain objects typed loosely; switch to `openapi-types` if callers need deep typing.
 type JsonSchema = Record<string, any>;
@@ -53,9 +53,15 @@ const propertySchema = (column: DbColumn, dialect: Dialect): JsonSchema => {
   return { ...schema, type: [schema.type, 'null'], ...(schema.enum ? { enum: [...schema.enum, null] } : {}) };
 };
 
+/** The table's keys, as `DbTable` holds them. */
+const keysOf = ({ primaryKey, uniques, foreignKeys }: DbTable): JsonSchema => ({
+  ...(primaryKey ? { primaryKey } : {}), ...(uniques ? { uniques } : {}), ...(foreignKeys ? { foreignKeys } : {}),
+});
+
 const rowSchema = (table: DbTable, dialect: Dialect): JsonSchema => ({
   type: 'object',
   'x-table': table.name,
+  'x-keys': keysOf(table),
   required: table.columns.map((column: DbColumn) => camel(column.name)),
   properties: Object.fromEntries(table.columns.map((column: DbColumn) => [
     camel(column.name),
@@ -235,6 +241,35 @@ const assertSafeDefaults = (tables: DbTable[]): void => {
   }
 };
 
+type LegacyColumn = DbColumn & { primary?: boolean; unique?: boolean; references?: { table: string; column: string } };
+
+/**
+ * Generaptr 2 kept keys on each column. Moves them to the table, with the names the database gives keys it was not
+ * told to name.
+ */
+const legacyKeys = (table: string, legacy: LegacyColumn[], dialect: Dialect): { columns: DbColumn[]; keys: Partial<DbTable> } => {
+  const postgres: boolean = dialect === 'postgresql';
+  const primary: string[] = legacy.filter((column: LegacyColumn) => column.primary).map((column: LegacyColumn) => column.name);
+  const uniques: DbUnique[] = legacy.filter((column: LegacyColumn) => column.unique)
+    .map((column: LegacyColumn) => ({ name: postgres ? `${table}_${column.name}_key` : column.name, columns: [column.name] }));
+  const foreignKeys: DbForeignKey[] = legacy.filter((column: LegacyColumn) => column.references)
+    .map((column: LegacyColumn, index: number) => ({
+      name: postgres ? `${table}_${column.name}_fkey` : `${table}_ibfk_${index + 1}`,
+      columns: [column.name],
+      table: column.references?.table as string,
+      foreignColumns: [column.references?.column as string],
+    }));
+
+  return {
+    columns: legacy.map(({ primary: _primary, unique: _unique, references: _references, ...column }: LegacyColumn) => column),
+    keys: {
+      ...(primary.length ? { primaryKey: { name: postgres ? `${table}_pkey` : 'PRIMARY', columns: primary } } : {}),
+      ...(uniques.length ? { uniques } : {}),
+      ...(foreignKeys.length ? { foreignKeys } : {}),
+    },
+  };
+};
+
 /**
  * Reads tables from an OpenAPI document into `dialect`. Documents that generaptr wrote for the same
  * dialect read back exactly through `x-table` and `x-column`. Other documents map by convention.
@@ -248,38 +283,43 @@ export const tablesFromOpenApi = (
   const exact: boolean = doc['x-dialect'] === dialect;
 
   const tables: DbTable[] = own.length
-    ? own.map(([, schema]: [string, JsonSchema]) => ({
-      name: schema['x-table'],
-      columns: Object.values(schema.properties as Record<string, JsonSchema>).map((property: JsonSchema) => {
-        if (exact) {
-          return property['x-column'];
-        }
-        const { enumName, ...column }: DbColumn = property['x-column'];
-        const columnType: string = conventionType(property, dialect);
+    ? own.map(([, schema]: [string, JsonSchema]) => {
+      const name: string = schema['x-table'];
+      const properties: JsonSchema[] = Object.values(schema.properties as Record<string, JsonSchema>);
+      const { columns, keys } = schema['x-keys']
+        ? { columns: properties.map((property: JsonSchema) => property['x-column'] as DbColumn), keys: schema['x-keys'] }
+        : legacyKeys(name, properties.map((property: JsonSchema) => property['x-column']), dialect);
+      const converted: DbColumn[] = exact ? columns : columns.map((column: DbColumn, index: number) => {
+        const { enumName, ...rest }: DbColumn = column;
+        const columnType: string = conventionType(properties[index], dialect);
         const keepsEnum: boolean = dialect === 'postgresql' && columnType.startsWith('enum(');
-        return { ...column, columnType, ...(keepsEnum ? { enumName: enumName ?? `${schema['x-table']}_${column.name}` } : {}) };
-      }),
-    }))
+        return { ...rest, columnType, ...(keepsEnum ? { enumName: enumName ?? `${name}_${column.name}` } : {}) };
+      });
+      const primaryKey = !exact && keys.primaryKey
+        ? { ...keys.primaryKey, name: dialect === 'mysql' ? 'PRIMARY' : keys.primaryKey.name === 'PRIMARY' ? `${name}_pkey` : keys.primaryKey.name }
+        : keys.primaryKey;
+      return { name, columns: converted, ...keys, ...(primaryKey ? { primaryKey } : {}) };
+    })
     : schemas
       .filter(([, schema]: [string, JsonSchema]) => schema.type === 'object' && schema.properties)
-      .map(([name, schema]: [string, JsonSchema]) => ({
-        name,
-        columns: Object.entries(schema.properties as Record<string, JsonSchema>).map(([key, property]: [string, JsonSchema]) => {
-          const required: boolean = (schema.required ?? []).includes(key);
-          const primary: boolean = key === 'id';
-          const columnType: string = conventionType(property, dialect);
+      .map(([name, schema]: [string, JsonSchema]) => {
+        const { columns, keys } = legacyKeys(name, Object.entries(schema.properties as Record<string, JsonSchema>)
+          .map(([key, property]: [string, JsonSchema]) => {
+            const required: boolean = (schema.required ?? []).includes(key);
+            const primary: boolean = key === 'id';
+            const columnType: string = conventionType(property, dialect);
 
-          return {
-            name: key,
-            columnType,
-            ...(dialect === 'postgresql' && columnType.startsWith('enum(') ? { enumName: `${name}_${key}` } : {}),
-            nullable: !required || [property.type].flat().includes('null'),
-            primary,
-            unique: false,
-            autoIncrement: primary && columnType === CONVENTION[dialect].integer,
-          };
-        }),
-      }));
+            return {
+              name: key,
+              columnType,
+              ...(dialect === 'postgresql' && columnType.startsWith('enum(') ? { enumName: `${name}_${key}` } : {}),
+              nullable: !required || [property.type].flat().includes('null'),
+              primary,
+              autoIncrement: primary && columnType === CONVENTION[dialect].integer,
+            };
+          }), dialect);
+        return { name, columns, ...keys };
+      });
   assertSafeNames(tables);
   assertSafeDefaults(tables);
 

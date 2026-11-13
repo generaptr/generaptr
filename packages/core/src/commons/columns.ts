@@ -1,4 +1,4 @@
-import { DbColumn, Dialect, DbTable } from './types.js';
+import { DbColumn, DbForeignKey, DbTable, DbUnique, Dialect } from './types.js';
 
 export const camel = (name: string): string => name.replace(/[_\-\s]+(\w)/g, (_: string, c: string) => c.toUpperCase());
 
@@ -128,7 +128,8 @@ const parsePostgresType = (column: DbColumn): ParsedType => {
 export const parseColumnType = (column: DbColumn, dialect: Dialect): ParsedType =>
   dialect === 'mysql' ? parseMysqlType(column) : parsePostgresType(column);
 
-export const primaryColumns = (table: DbTable): DbColumn[] => table.columns.filter((column: DbColumn) => column.primary);
+export const primaryColumns = (table: DbTable): DbColumn[] =>
+  (table.primaryKey?.columns ?? []).map((name: string) => table.columns.find((column: DbColumn) => column.name === name) as DbColumn);
 
 /** Tables with one primary key column get CRUD routes. Link tables do not. */
 export const routedTables = (tables: DbTable[]): DbTable[] =>
@@ -142,11 +143,10 @@ const SAFE_NAME: RegExp = /^[A-Za-z_][A-Za-z0-9_]*$/;
 export const assertSafeNames = (tables: DbTable[]): void => {
   const names: string[] = tables.flatMap((table: DbTable) => [
     table.name,
-    ...table.columns.flatMap((column: DbColumn) => [
-      column.name,
-      ...(column.enumName ? [column.enumName] : []),
-      ...(column.references ? [column.references.table, column.references.column] : []),
-    ]),
+    ...table.columns.flatMap((column: DbColumn) => [column.name, ...(column.enumName ? [column.enumName] : [])]),
+    ...(table.primaryKey ? [table.primaryKey.name, ...table.primaryKey.columns] : []),
+    ...(table.uniques ?? []).flatMap((unique: DbUnique) => [unique.name, ...unique.columns]),
+    ...(table.foreignKeys ?? []).flatMap((key: DbForeignKey) => [key.name, key.table, ...key.columns, ...key.foreignColumns]),
   ]);
   const unsafe: string | undefined = names.find((name: string) => !SAFE_NAME.test(name));
   if (unsafe !== undefined) {

@@ -118,12 +118,16 @@ const eta: Eta = new Eta({
   autoTrim: false,
 });
 
+/** The name Postgres gives a primary key it was not told to name. Drizzle's `.primaryKey()` gives the same. */
+const inlinePrimaryKey = (table: DbTable, dialect: Dialect): boolean =>
+  table.primaryKey?.columns.length === 1 && (dialect === 'mysql' || table.primaryKey.name === `${table.name}_pkey`);
+
 const chainFor = (column: DbColumn, table: DbTable, schema: DbSchema): string => {
   let chain: string = columnBuilder(column, schema.dialect, table).call;
   if (column.autoIncrement && schema.dialect === 'mysql') {
     chain += '.autoincrement()';
   }
-  if (column.primary && primaryColumns(table).length === 1) {
+  if (inlinePrimaryKey(table, schema.dialect) && table.primaryKey?.columns[0] === column.name) {
     chain += '.primaryKey()';
   } else if (!column.nullable) {
     chain += '.notNull()';
@@ -131,15 +135,33 @@ const chainFor = (column: DbColumn, table: DbTable, schema: DbSchema): string =>
   if (column.default !== undefined) {
     chain += `.default(sql.raw(${JSON.stringify(column.default)}))`;
   }
-  if (column.unique) {
-    chain += '.unique()';
-  }
-  const target: DbTable | undefined = schema.tables.find((t: DbTable) => t.name === column.references?.table);
-  if (column.references && target) {
-    chain += `.references(() => ${camel(target.name)}.${camel(column.references.column)})`;
-  }
 
   return chain;
+};
+
+/** Table-level constraints, each with the name the database gave it. Builders that they import go to `builders`. */
+const constraintsFor = (table: DbTable, dialect: Dialect, builders: Set<string>): string[] => {
+  const columns = (names: string[], owner: string): string => names.map((name: string) => `${owner}.${camel(name)}`).join(', ');
+  const constraints: string[] = [];
+  if (table.primaryKey && !inlinePrimaryKey(table, dialect)) {
+    builders.add('primaryKey');
+    // MySQL names every primary key PRIMARY.
+    const name: string = dialect === 'mysql' ? '' : `name: ${JSON.stringify(table.primaryKey.name)}, `;
+    constraints.push(`primaryKey({ ${name}columns: [${columns(table.primaryKey.columns, 'table')}] })`);
+  }
+  for (const unique of table.uniques ?? []) {
+    builders.add('unique');
+    constraints.push(`unique(${JSON.stringify(unique.name)}).on(${columns(unique.columns, 'table')})${unique.nullsNotDistinct ? '.nullsNotDistinct()' : ''}`);
+  }
+  for (const key of table.foreignKeys ?? []) {
+    builders.add('foreignKey');
+    const target: string = key.table === table.name ? 'table' : camel(key.table);
+    constraints.push(`foreignKey({ name: ${JSON.stringify(key.name)}, columns: [${columns(key.columns, 'table')}], `
+      + `foreignColumns: [${columns(key.foreignColumns, target)}] })`
+      + `${key.onDelete ? `.onDelete(${JSON.stringify(key.onDelete)})` : ''}${key.onUpdate ? `.onUpdate(${JSON.stringify(key.onUpdate)})` : ''}`);
+  }
+
+  return constraints;
 };
 
 export const schemaFile = (schema: DbSchema): string => {
@@ -147,7 +169,6 @@ export const schemaFile = (schema: DbSchema): string => {
   const builders: Set<string> = new Set([tableFunction]);
   const enums: Map<string, { name: string; type: string; values: string }> = new Map();
   const views = schema.tables.map((table: DbTable) => {
-    const primary: DbColumn[] = primaryColumns(table);
     for (const column of table.columns) {
       const { builder } = columnBuilder(column, schema.dialect, table);
       if (builder) {
@@ -164,15 +185,12 @@ export const schemaFile = (schema: DbSchema): string => {
         });
       }
     }
-    if (primary.length > 1) {
-      builders.add('primaryKey');
-    }
 
     return {
       name: camel(table.name),
       table: JSON.stringify(table.name),
       columns: table.columns.map((column: DbColumn) => ({ key: camel(column.name), chain: chainFor(column, table, schema) })),
-      primaryKeys: primary.length > 1 ? primary.map((column: DbColumn) => `table.${camel(column.name)}`).join(', ') : '',
+      constraints: constraintsFor(table, schema.dialect, builders),
     };
   });
 
