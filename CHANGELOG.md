@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.1
+
+- The package READMEs load the vector logo from the docs site at https://generaptr.github.io/generaptr/.
+
 ## 2.0.0
 
 `generaptr` and `generaptr-cli` now live in one repository and release together.
