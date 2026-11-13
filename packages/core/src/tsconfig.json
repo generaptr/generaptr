@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "target": "es2023",
+    "lib": [
+      "es2023",
+      "esnext.disposable"
+    ],
+    "types": [
+      "node"
+    ],
+    "noImplicitAny": false,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noUnusedParameters": true,
+    "noUnusedLocals": true,
+    "strictNullChecks": true,
+    "declaration": true,
+    "skipLibCheck": true,
+    "rootDir": ".",
+    "outDir": "../lib"
+  }
+}

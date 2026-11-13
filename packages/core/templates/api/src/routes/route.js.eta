@@ -1,0 +1,42 @@
+import { eq } from 'drizzle-orm';
+import { createSchemaFactory } from 'drizzle-orm/zod';
+import { Router } from 'express';
+import { db } from '../db/index.js';
+import { <%= it.entity %> } from '../db/schema.js';
+
+// JSON carries dates as ISO strings.
+const { createInsertSchema, createUpdateSchema } = createSchemaFactory({ coerce: { date: true } });
+const insertSchema = createInsertSchema(<%= it.entity %>);
+const updateSchema = createUpdateSchema(<%= it.entity %>);
+const byId = (req) => eq(<%= it.entity %>.<%= it.key %>, <%= it.id %>);
+
+export const router = Router();
+
+router.get('/', async (req, res) => {
+  const limit = Math.min(Number(req.query.limit) || 20, 100);
+  const offset = Number(req.query.offset) || 0;
+  res.json(await db.select().from(<%= it.entity %>).limit(limit).offset(offset));
+});
+
+router.get('/:id', async (req, res) => {
+  const [row] = await db.select().from(<%= it.entity %>).where(byId(req));
+  if (!row) {
+    return res.status(404).json({ message: 'Not found' });
+  }
+  res.json(row);
+});
+
+router.post('/', async (req, res) => {
+  const [created] = await db.insert(<%= it.entity %>).values(insertSchema.parse(req.body)).<%= it.returning %>;
+  res.status(201).location(`${req.baseUrl}/${created.<%= it.key %>}`).json(created);
+});
+
+router.put('/:id', async (req, res) => {
+  await db.update(<%= it.entity %>).set(updateSchema.parse(req.body)).where(byId(req));
+  res.status(204).end();
+});
+
+router.delete('/:id', async (req, res) => {
+  await db.delete(<%= it.entity %>).where(byId(req));
+  res.status(204).end();
+});

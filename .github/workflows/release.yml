@@ -1,0 +1,50 @@
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  publish:
+    needs: ci
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # npm trusted publishing
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24
+          cache: pnpm
+      # Staged publishing through trusted publishing needs npm 11.15.0 or later.
+      - run: npm install --global "npm@>=11.15.0 <12"
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: Check that the tag equals both package versions
+        run: |
+          for dir in packages/core packages/cli; do
+            version="v$(node -p "require('./$dir/package.json').version")"
+            [ "$version" = "$GITHUB_REF_NAME" ] || { echo "$dir is $version, tag is $GITHUB_REF_NAME"; exit 1; }
+          done
+      # pnpm pack writes the real version in place of workspace:*. npm stage publish does the OIDC upload.
+      # A maintainer approves each staged version with 2FA before it goes live.
+      - name: Stage core, then CLI
+        run: |
+          for dir in packages/core packages/cli; do
+            name="$(node -p "require('./$dir/package.json').name")"
+            version="$(node -p "require('./$dir/package.json').version")"
+            if npm view "$name@$version" version >/dev/null 2>&1; then
+              echo "$name@$version is on npm already"
+              continue
+            fi
+            tarball="$(cd "$dir" && pnpm pack --pack-destination "$RUNNER_TEMP" | tail -1)"
+            npm stage publish "$tarball" --provenance --access public
+          done

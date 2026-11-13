@@ -1,87 +1,18 @@
 {
-  "name": "generaptr",
-  "scripts": {
-    "clean": "npm-run-all -p clean:core clean:test",
-    "clean:core": "rimraf lib",
-    "clean:test": "rimraf build",
-    "compile": "npm-run-all -p compile:core compile:test",
-    "compile:core": "tsc -p src",
-    "compile:test": "tsc -p test",
-    "lint": "tslint --project test/tsconfig.json --format stylish # test includes 'src' too",
-    "test": "mocha build/test/**/*Spec.js build/test/**/**/*Spec.js build/test/**/**/**/*Spec.js",
-    "test:coverage": "export NODE_ENV='test' && nyc --reporter=lcov --reporter=html mocha build/test/**/*Spec.js build/test/**/**/*Spec.js build/test/**/**/**/*Spec.js",
-    "coveralls": "cat ./coverage/lcov.info | ./node_modules/.bin/coveralls",
-    "logs": "tail -f debug-log.json | ./node_modules/.bin/bunyan",
-    "doc": "typedoc --tsconfig src/tsconfig.json --out docs/",
-    "publish:local": "./scripts/npmPublish.sh",
-    "verify": "npm-run-all clean compile lint test doc",
-    "commit": "git-cz"
-  },
-  "version": "1.4.1",
-  "description": "Api generator",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https:git@github.com:generaptr/generaptr.git"
-  },
-  "author": "Darius Cupsa <cupsadarius@gmail.com>",
-  "homepage": "https://generaptr.github.io",
-  "main": "./lib/generaptr.js",
-  "bugs": {
-    "url": "https://github.com/generaptr/generaptr/issues"
-  },
-  "contributors": [
-    "Boieru Luca <luca.boieru@yahoo.com>",
-    "Balea Stefan <stefan.balea16@gmail.com>"
-  ],
-  "keywords": [
-    "nodejs"
-  ],
+  "name": "generaptr-monorepo",
+  "private": true,
+  "packageManager": "pnpm@10.34.9",
   "engines": {
-    "node": ">= 10.0.0"
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "lint": "biome lint ."
   },
   "devDependencies": {
-    "@types/assert": "^1.4.3",
-    "@types/bunyan": "^1.8.6",
-    "@types/faker": "^4.1.5",
-    "@types/fs-extra": "^8.0.0",
-    "@types/mocha": "^10.0.6",
-    "@types/mysql2": "github:types/mysql2",
-    "@types/node": "^12.7.9",
-    "@types/pluralize": "^0.0.33",
-    "assert": "2.0.0",
-    "commitizen": "^4.0.3",
-    "coveralls": "^3.0.6",
-    "cz-conventional-changelog": "^3.0.2",
-    "nyc": "^14.1.1",
-    "mocha": "^10.2.0"
-  },
-  "dependencies": {
-    "bunyan": "^1.8.12",
-    "chalk": "^2.4.2",
-    "faker": "^4.1.0",
-    "fs-extra": "^8.1.0",
-    "mysql2": "^3.9.8",
-    "npm-run-all": "^4.1.5",
-    "pluralize": "^8.0.0",
-    "raml-1-parser": "^1.1.57",
-    "rimraf": "^3.0.0",
-    "tslint": "^6.1.3",
-    "typedoc": "^0.15.0",
-    "typescript": "^5.4.5"
-  },
-  "config": {
-    "commitizen": {
-      "path": "cz-conventional-changelog"
-    }
-  },
-  "nyc": {
-    "all": true,
-    "include": [
-      "build/**/*.js"
-    ],
-    "exclude": [
-      "build/test/**/*Spec.js"
-    ]
+    "turbo": "^2.11.11",
+    "@biomejs/biome": "2.6.7"
   }
 }

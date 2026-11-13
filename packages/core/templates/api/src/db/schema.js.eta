@@ -1,0 +1,16 @@
+<% if (it.usesSql) { -%>
+import { sql } from 'drizzle-orm';
+<% } -%>
+import { <%= it.builders %> } from 'drizzle-orm/<%= it.core %>';
+<% if (it.enums.length) { %>
+<% for (const item of it.enums) { -%>
+export const <%= item.name %> = pgEnum(<%= item.type %>, <%= item.values %>);
+<% } -%>
+<% } -%>
+<% for (const table of it.tables) { %>
+export const <%= table.name %> = <%= it.tableFunction %>(<%= table.table %>, {
+<% for (const column of table.columns) { -%>
+  <%= column.key %>: <%= column.chain %>,
+<% } -%>
+}<% if (table.primaryKeys) { %>, (table) => [primaryKey({ columns: [<%= table.primaryKeys %>] })]<% } %>);
+<% } -%>

@@ -1,220 +1,63 @@
-# Contributing to generaptr
+# Contributing
 
-We would love for you to contribute to generaptr and help make it even better than it is
-today! As a contributor, here are the guidelines we would like you to follow:
+Open an issue before a large change, so we can agree on the approach first. Obey the [Code of Conduct](CODE_OF_CONDUCT.md).
 
- - [Code of Conduct](#coc)
- - [Question or Problem?](#question)
- - [Issues and Bugs](#issue)
- - [Feature Requests](#feature)
- - [Submission Guidelines](#submit)
- - [Coding Rules](#rules)
- - [Commit Message Guidelines](#commit)
+## Set up
 
-## <a name="coc"></a> Code of Conduct
-Help us keep generaptr open and inclusive. Please read and follow our [Code of Conduct][coc].
+You need Node 22 or later, Docker, and pnpm through Corepack (`corepack enable`).
 
-## <a name="question"></a> Got a Question or Problem?
-
-Do not open issues for general support questions as we want to keep GitHub issues for bug reports and feature requests. You've got much better chances of getting your question answered on [Gitter](https://gitter.im/generaptr/proposals).
-
-## <a name="issue"></a> Found a Bug?
-If you find a bug in the source code, you can help us by
-[submitting an issue](#submit-issue) to our [GitHub Repository](https://github.com/generaptr/generaptr). Even better, you can
-[submit a Pull Request](#submit-pr) with a fix.
-
-## <a name="feature"></a> Missing a Feature?
-You can *request* a new feature by [submitting an issue](#submit-issue) to our GitHub
-Repository. If you would like to *implement* a new feature, please submit an issue with
-a proposal for your work first, to be sure that we can use it.
-Please consider what kind of change it is:
-
-* For a **Major Feature**, first open an issue and outline your proposal so that it can be
-discussed. This will also allow us to better coordinate our efforts, prevent duplication of work,
-and help you to craft the change so that it is successfully accepted into the project.
-* **Small Features** can be crafted and directly [submitted as a Pull Request](#submit-pr).
-
-## <a name="submit"></a> Submission Guidelines
-
-### <a name="submit-issue"></a> Submitting an Issue
-
-Before you submit an issue, please search the issue tracker, maybe an issue for your problem already exists and the discussion might inform you of workarounds readily available.
-
-We want to fix all the issues as soon as possible, but before fixing a bug we need to reproduce and confirm it. In order to reproduce bugs we will systematically ask you to provide a minimal reproduction scenario. Having reproducible scenario gives us wealth of important information without going back & forth to you with additional questions like:
-
-- version of generaptr used
-- and most importantly - a use-case that fails
-
-We will be insisting on a minimal reproduce scenario in order to save maintainers time and ultimately be able to fix more bugs. Interestingly, from our experience users often find coding problems themselves while preparing a reproduceable scenario.
-
-Unfortunately we are not able to investigate / fix bugs without a minimal reproduction, so if we don't hear back from you we are going to close an issue that don't have enough info to be reproduced.
-
-You can file new issues by filling out our [new issue form](https://github.com/generaptr/generaptr/issues/new).
-
-
-### <a name="submit-pr"></a> Submitting a Pull Request (PR)
-Before you submit your Pull Request (PR) consider the following guidelines:
-
-* Search [GitHub](https://github.com/generaptr/generaptr/pulls) for an open or closed PR
-  that relates to your submission. You don't want to duplicate effort.
-* Make your changes in a new git branch:
-
-     ```shell
-     git checkout -b my-fix-branch master
-     ```
-
-* Create your patch, **including appropriate test cases**.
-* Follow our [Coding Rules](#rules).
-* Run the full generaptr test suite, as described in the [developer documentation](DEVELOPER.md),
-  and ensure that all tests pass.
-* Commit your changes using a descriptive commit message that follows our
-  [commit message conventions](#commit). Adherence to these conventions
-  is necessary because release notes are automatically generated from these messages.
-
-     ```shell
-     git commit -a
-     ```
-  Note: the optional commit `-a` command line option will automatically "add" and "rm" edited files.
-
-* Push your branch to GitHub:
-
-    ```shell
-    git push origin my-fix-branch
-    ```
-
-* In GitHub, send a pull request to `generaptr:develop`.
-* If we suggest changes then:
-  * Make the required updates.
-  * Re-run the generaptr test suites to ensure tests are still passing.
-  * Rebase your branch and force push to your GitHub repository (this will update your Pull Request):
-
-    ```shell
-    git rebase develop -i
-    git push -f
-    ```
-
-That's it! Thank you for your contribution!
-
-#### After your pull request is merged
-
-After your pull request is merged, you can safely delete your branch and pull the changes
-from the main (upstream) repository:
-
-* Delete the remote branch on GitHub either through the GitHub web UI or your local shell as follows:
-
-    ```shell
-    git push origin --delete my-fix-branch
-    ```
-
-* Check out the develop branch:
-
-    ```shell
-    git checkout develop -f
-    ```
-
-* Delete the local branch:
-
-    ```shell
-    git branch -D my-fix-branch
-    ```
-
-* Update your develop with the latest upstream version:
-
-    ```shell
-    git pull --ff upstream develop
-    ```
-
-## <a name="rules"></a> Coding Rules
-To ensure consistency throughout the source code, keep these rules in mind as you are working:
-
-* All features or bug fixes **must be tested** by one or more specs (unit-tests).
-* All public API methods **must be documented**. (Details TBC).
-
-## <a name="commit"></a> Commit Message Guidelines
-
-We have very precise rules over how our git commit messages can be formatted.  This leads to **more
-readable messages** that are easy to follow when looking through the **project history**.  But also,
-we use the git commit messages to **generate the generaptr change log**.
-
-### Commit Message Format
-Each commit message consists of a **header**, a **body** and a **footer**.  The header has a special
-format that includes a **type**, a **scope** and a **subject**:
-
-```
-<type>(<scope>): <subject>
-<BLANK LINE>
-<body>
-<BLANK LINE>
-<footer>
+```sh
+pnpm install
+pnpm build
 ```
 
-The **header** is mandatory and the **scope** of the header is optional.
+The tests read real databases. Start one MySQL and one PostgreSQL container, then load the fixtures:
 
-Any line of the commit message cannot be longer 100 characters! This allows the message to be easier
-to read on GitHub as well as in various git tools.
+```sh
+docker run -d --name generaptr-mysql -e MYSQL_ROOT_PASSWORD=secret -e MYSQL_DATABASE=test -p 3306:3306 mysql:8.4
+docker run -d --name generaptr-postgres -e POSTGRES_PASSWORD=secret -e POSTGRES_DB=test -p 5433:5432 postgres:17
 
-Footer should contain a [closing reference to an issue](https://help.github.com/articles/closing-issues-via-commit-messages/) if any.
-
-Samples: (even more [samples](https://github.com/generaptr/generaptr/commits/develop))
-
-```
-docs(changelog): update change log to beta.5
-```
-```
-fix(release): need to depend on latest rxjs and zone.js
-
-The version in our package.json gets copied to the one we publish, and users need the latest of these.
+docker exec -i generaptr-mysql mysql -uroot -psecret test < packages/core/test/handlers/mysql/data.sql
+docker exec -i generaptr-postgres psql -U postgres -d test < packages/core/test/handlers/postgres/data.sql
 ```
 
-### Revert
-If the commit reverts a previous commit, it should begin with `revert: `, followed by the header of the reverted commit. In the body it should say: `This reverts commit <hash>.`, where the hash is the SHA of the commit being reverted.
+Wait until MySQL accepts connections before you load its fixture. Connection details for the tests are in `packages/core/test/config.ts`.
 
-### Type
-Must be one of the following:
+## Check
 
-* **build**: Changes that affect the build system or external dependencies (example scopes: typescript, npm)
-* **ci**: Changes to our CI configuration files and scripts (example scopes: Travis, Coveralls)
-* **docs**: Documentation only changes
-* **feat**: A new feature
-* **fix**: A bug fix
-* **perf**: A code change that improves performance
-* **refactor**: A code change that neither fixes a bug nor adds a feature
-* **style**: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
-* **test**: Adding missing tests or correcting existing tests
+```sh
+pnpm lint        # Biome
+pnpm typecheck
+pnpm test        # Vitest; the end-to-end test installs and boots a generated API for each engine
+```
 
-### Scope
-The scope should be the name of the npm package affected (as perceived by person reading changelog generated from commit messages.
+CI runs the same steps on Node 22 and 24. A pull request merges only when CI passes.
 
-The following is the list of supported scopes:
+When a change alters a generated file, the snapshot test fails. Look at the diff. If the change is correct, run `pnpm --filter generaptr exec vitest run -u` and commit the new snapshot.
 
-* **handler**
-* **common**
-* **generator**
-* **track**
-* **preprocessor**
-* **file-operation**
+## Layout
 
-There are currently a few exceptions to the "use package name" rule:
+- `packages/core/src/handlers`: reads tables from MySQL (`information_schema`) and PostgreSQL (`pg_catalog`).
+- `packages/core/src/commons/columns.ts`: parses column types. Each type the generators accept is listed here.
+- `packages/core/src/generators/api`: builds view models for the API templates.
+- `packages/core/templates/api`: the eta templates of the generated files.
+- `packages/core/src/generators/spec`: writes and reads OpenAPI 3.1.
+- `packages/cli/lib`: the prompts.
 
-* **packaging**: used for changes that change the npm package layout in all of our packages, e.g. public path changes, package.json changes done to all packages, d.ts file/format changes, changes to bundles, etc.
-* **changelog**: used for updating the release notes in CHANGELOG.md
-* none/empty string: useful for `style`, `test` and `refactor` changes that are done across all packages (e.g. `style: add missing semicolons`)
+## Commits
 
-### Subject
-The subject contains succinct description of the change:
+Use [Conventional Commits](https://www.conventionalcommits.org): `type(scope): summary`, for example `fix(core): keep enum labels with quotes`.
 
-* use the imperative, present tense: "change" not "changed" nor "changes"
-* don't capitalize first letter
-* no dot (.) at the end
+## Release
 
-### Body
-Just as in the **subject**, use the imperative, present tense: "change" not "changed" nor "changes".
-The body should include the motivation for the change and contrast this with previous behavior.
+Both packages release together with the same version.
 
-### Footer
-The footer should contain any information about **Breaking Changes** and is also the place to
-reference GitHub issues that this commit **Closes**.
+1. Set the new `version` in `packages/core/package.json` and `packages/cli/package.json`.
+2. Add a section to `CHANGELOG.md`.
+3. Merge to `master`.
+4. Tag the merge commit and push the tag: `git tag v2.1.0 && git push origin v2.1.0`.
+5. Approve the staged versions with 2FA: core first, then the CLI, because the CLI depends on the new core. Use **Staged Packages** on npmjs.com, or `npm stage list generaptr` and `npm stage approve <stage-id>`.
 
-**Breaking Changes** should start with the word `BREAKING CHANGE:` with a space or two newlines. The rest of the commit message is then used for this.
+The `release` workflow runs CI. It then checks that the tag equals both versions and stages `generaptr` and `generaptr-cli` on npm with provenance. It uses npm trusted publishing, so it needs no npm token. The trusted publisher of each package allows `npm stage publish` only, so CI cannot release a version without a maintainer.
 
-A detailed explanation can be found in this [document][commit-message-format].
+A version that is already on npm is skipped. When a run fails after it staged core, approve or reject that staged version before you run the workflow again.

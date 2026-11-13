@@ -1,0 +1,1603 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`renderApi > writes .env.example 1`] = `
+"DATABASE_URL=mysql://user:password@127.0.0.1:3306/database
+PORT=3000
+"
+`;
+
+exports[`renderApi > writes .gitignore 1`] = `
+"node_modules
+.env
+"
+`;
+
+exports[`renderApi > writes drizzle.config.js 1`] = `
+"import { defineConfig } from 'drizzle-kit';
+
+try {
+  process.loadEnvFile();
+} catch {}
+
+export default defineConfig({
+  dialect: 'mysql',
+  schema: './src/db/schema.js',
+  out: './drizzle',
+  dbCredentials: { url: process.env.DATABASE_URL },
+});
+"
+`;
+
+exports[`renderApi > writes openapi.json 1`] = `
+"{
+  "openapi": "3.1.0",
+  "x-dialect": "mysql",
+  "info": {
+    "title": "demo",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/users": {
+      "get": {
+        "operationId": "listUsers",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Rows to return, at most 100. Default 20.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "description": "Rows to skip.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of users",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Users"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createUsers",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsersInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      ],
+      "get": {
+        "operationId": "getUsers",
+        "responses": {
+          "200": {
+            "description": "Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Users"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "updateUsers",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsersUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Updated"
+          },
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteUsers",
+        "responses": {
+          "204": {
+            "description": "Deleted"
+          }
+        }
+      }
+    },
+    "/accounts": {
+      "get": {
+        "operationId": "listAccounts",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Rows to return, at most 100. Default 20.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "description": "Rows to skip.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of accounts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Accounts"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createAccounts",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccountsInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "maxLength": 8
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/accounts/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 8
+          }
+        }
+      ],
+      "get": {
+        "operationId": "getAccounts",
+        "responses": {
+          "200": {
+            "description": "Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Accounts"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "updateAccounts",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccountsUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Updated"
+          },
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteAccounts",
+        "responses": {
+          "204": {
+            "description": "Deleted"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "issues": {
+            "type": "array",
+            "items": {}
+          }
+        }
+      },
+      "Users": {
+        "type": "object",
+        "x-table": "users",
+        "required": [
+          "id",
+          "firstName",
+          "email",
+          "role"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 0,
+            "x-column": {
+              "name": "id",
+              "columnType": "int unsigned",
+              "nullable": false,
+              "primary": true,
+              "unique": false,
+              "autoIncrement": true
+            }
+          },
+          "firstName": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 255,
+            "x-column": {
+              "name": "firstName",
+              "columnType": "varchar(255)",
+              "nullable": true,
+              "primary": false,
+              "unique": false,
+              "autoIncrement": false
+            }
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 50,
+            "x-column": {
+              "name": "email",
+              "columnType": "varchar(50)",
+              "nullable": false,
+              "primary": false,
+              "unique": true,
+              "autoIncrement": false
+            }
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "member"
+            ],
+            "x-column": {
+              "name": "role",
+              "columnType": "enum('admin','member')",
+              "nullable": false,
+              "primary": false,
+              "unique": false,
+              "autoIncrement": false
+            }
+          }
+        }
+      },
+      "Accounts": {
+        "type": "object",
+        "x-table": "accounts",
+        "required": [
+          "code",
+          "userId"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "maxLength": 8,
+            "x-column": {
+              "name": "code",
+              "columnType": "char(8)",
+              "nullable": false,
+              "primary": true,
+              "unique": false,
+              "autoIncrement": false
+            }
+          },
+          "userId": {
+            "type": "integer",
+            "minimum": 0,
+            "x-column": {
+              "name": "user_id",
+              "columnType": "int unsigned",
+              "nullable": false,
+              "primary": false,
+              "unique": true,
+              "autoIncrement": false,
+              "references": {
+                "table": "users",
+                "column": "id"
+              }
+            }
+          }
+        }
+      },
+      "UsersGroups": {
+        "type": "object",
+        "x-table": "users_groups",
+        "required": [
+          "userId",
+          "groupId"
+        ],
+        "properties": {
+          "userId": {
+            "type": "integer",
+            "minimum": 0,
+            "x-column": {
+              "name": "user_id",
+              "columnType": "int unsigned",
+              "nullable": false,
+              "primary": true,
+              "unique": false,
+              "autoIncrement": false,
+              "references": {
+                "table": "users",
+                "column": "id"
+              }
+            }
+          },
+          "groupId": {
+            "type": "integer",
+            "minimum": 0,
+            "x-column": {
+              "name": "group_id",
+              "columnType": "int unsigned",
+              "nullable": false,
+              "primary": true,
+              "unique": false,
+              "autoIncrement": false
+            }
+          }
+        }
+      },
+      "UsersInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "email",
+          "role"
+        ],
+        "properties": {
+          "firstName": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 255
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "member"
+            ]
+          }
+        }
+      },
+      "UsersUpdate": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "firstName": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 255
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "member"
+            ]
+          }
+        }
+      },
+      "AccountsInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "userId"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "maxLength": 8
+          },
+          "userId": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      },
+      "AccountsUpdate": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "type": "string",
+            "maxLength": 8
+          },
+          "userId": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    }
+  }
+}
+"
+`;
+
+exports[`renderApi > writes package.json 1`] = `
+"{
+  "name": "demo",
+  "version": "1.0.0",
+  "description": "",
+  "author": "me",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env src/index.js",
+    "dev": "node --env-file-if-exists=.env --watch src/index.js",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate"
+  },
+  "dependencies": {
+    "express": "5.3.0",
+    "drizzle-orm": "1.0.0-beta.22",
+    "mysql2": "3.24.6",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "drizzle-kit": "1.0.0-beta.22"
+  }
+}
+"
+`;
+
+exports[`renderApi > writes src/app.js 1`] = `
+"import express from 'express';
+import { ZodError } from 'zod';
+import { router as users } from './routes/users.js';
+import { router as accounts } from './routes/accounts.js';
+
+export const app = express();
+
+app.use(express.json());
+app.use('/users', users);
+app.use('/accounts', accounts);
+
+app.use((err, req, res, next) => {
+  if (err instanceof ZodError) {
+    return res.status(400).json({ message: 'Invalid request body', issues: err.issues });
+  }
+  if (err.status >= 400 && err.status < 500) {
+    return res.status(err.status).json({ message: err.message });
+  }
+  console.error(err);
+  res.status(500).json({ message: 'Internal Server Error' });
+});
+"
+`;
+
+exports[`renderApi > writes src/db/index.js 1`] = `
+"import { drizzle } from 'drizzle-orm/mysql2';
+
+export const db = drizzle(process.env.DATABASE_URL);
+"
+`;
+
+exports[`renderApi > writes src/db/schema.js 1`] = `
+"import { char, int, mysqlEnum, mysqlTable, primaryKey, varchar } from 'drizzle-orm/mysql-core';
+
+export const users = mysqlTable("users", {
+  id: int("id", { unsigned: true }).autoincrement().primaryKey(),
+  firstName: varchar("firstName", { length: 255 }),
+  email: varchar("email", { length: 50 }).notNull().unique(),
+  role: mysqlEnum("role", ["admin","member"]).notNull(),
+});
+
+export const accounts = mysqlTable("accounts", {
+  code: char("code", { length: 8 }).primaryKey(),
+  userId: int("user_id", { unsigned: true }).notNull().unique().references(() => users.id),
+});
+
+export const usersGroups = mysqlTable("users_groups", {
+  userId: int("user_id", { unsigned: true }).notNull().references(() => users.id),
+  groupId: int("group_id", { unsigned: true }).notNull(),
+}, (table) => [primaryKey({ columns: [table.userId, table.groupId] })]);
+"
+`;
+
+exports[`renderApi > writes src/index.js 1`] = `
+"import { app } from './app.js';
+
+const port = Number(process.env.PORT) || 3000;
+app.listen(port, () => console.log(\`Listening on port \${port}\`));
+"
+`;
+
+exports[`renderApi > writes src/routes/accounts.js 1`] = `
+"import { eq } from 'drizzle-orm';
+import { createSchemaFactory } from 'drizzle-orm/zod';
+import { Router } from 'express';
+import { db } from '../db/index.js';
+import { accounts } from '../db/schema.js';
+
+// JSON carries dates as ISO strings.
+const { createInsertSchema, createUpdateSchema } = createSchemaFactory({ coerce: { date: true } });
+const insertSchema = createInsertSchema(accounts);
+const updateSchema = createUpdateSchema(accounts);
+const byId = (req) => eq(accounts.code, req.params.id);
+
+export const router = Router();
+
+router.get('/', async (req, res) => {
+  const limit = Math.min(Number(req.query.limit) || 20, 100);
+  const offset = Number(req.query.offset) || 0;
+  res.json(await db.select().from(accounts).limit(limit).offset(offset));
+});
+
+router.get('/:id', async (req, res) => {
+  const [row] = await db.select().from(accounts).where(byId(req));
+  if (!row) {
+    return res.status(404).json({ message: 'Not found' });
+  }
+  res.json(row);
+});
+
+router.post('/', async (req, res) => {
+  const [created] = await db.insert(accounts).values(insertSchema.parse(req.body)).$returningId();
+  res.status(201).location(\`\${req.baseUrl}/\${created.code}\`).json(created);
+});
+
+router.put('/:id', async (req, res) => {
+  await db.update(accounts).set(updateSchema.parse(req.body)).where(byId(req));
+  res.status(204).end();
+});
+
+router.delete('/:id', async (req, res) => {
+  await db.delete(accounts).where(byId(req));
+  res.status(204).end();
+});
+"
+`;
+
+exports[`renderApi > writes src/routes/users.js 1`] = `
+"import { eq } from 'drizzle-orm';
+import { createSchemaFactory } from 'drizzle-orm/zod';
+import { Router } from 'express';
+import { db } from '../db/index.js';
+import { users } from '../db/schema.js';
+
+// JSON carries dates as ISO strings.
+const { createInsertSchema, createUpdateSchema } = createSchemaFactory({ coerce: { date: true } });
+const insertSchema = createInsertSchema(users);
+const updateSchema = createUpdateSchema(users);
+const byId = (req) => eq(users.id, Number(req.params.id));
+
+export const router = Router();
+
+router.get('/', async (req, res) => {
+  const limit = Math.min(Number(req.query.limit) || 20, 100);
+  const offset = Number(req.query.offset) || 0;
+  res.json(await db.select().from(users).limit(limit).offset(offset));
+});
+
+router.get('/:id', async (req, res) => {
+  const [row] = await db.select().from(users).where(byId(req));
+  if (!row) {
+    return res.status(404).json({ message: 'Not found' });
+  }
+  res.json(row);
+});
+
+router.post('/', async (req, res) => {
+  const [created] = await db.insert(users).values(insertSchema.parse(req.body)).$returningId();
+  res.status(201).location(\`\${req.baseUrl}/\${created.id}\`).json(created);
+});
+
+router.put('/:id', async (req, res) => {
+  await db.update(users).set(updateSchema.parse(req.body)).where(byId(req));
+  res.status(204).end();
+});
+
+router.delete('/:id', async (req, res) => {
+  await db.delete(users).where(byId(req));
+  res.status(204).end();
+});
+"
+`;
+
+exports[`renderApi for Postgres > writes .env.example 1`] = `
+"DATABASE_URL=postgres://user:password@127.0.0.1:5432/database
+PORT=3000
+"
+`;
+
+exports[`renderApi for Postgres > writes .gitignore 1`] = `
+"node_modules
+.env
+"
+`;
+
+exports[`renderApi for Postgres > writes drizzle.config.js 1`] = `
+"import { defineConfig } from 'drizzle-kit';
+
+try {
+  process.loadEnvFile();
+} catch {}
+
+export default defineConfig({
+  dialect: 'postgresql',
+  schema: './src/db/schema.js',
+  out: './drizzle',
+  dbCredentials: { url: process.env.DATABASE_URL },
+});
+"
+`;
+
+exports[`renderApi for Postgres > writes openapi.json 1`] = `
+"{
+  "openapi": "3.1.0",
+  "x-dialect": "postgresql",
+  "info": {
+    "title": "demo",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/users": {
+      "get": {
+        "operationId": "listUsers",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Rows to return, at most 100. Default 20.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "description": "Rows to skip.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of users",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Users"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createUsers",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsersInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ],
+      "get": {
+        "operationId": "getUsers",
+        "responses": {
+          "200": {
+            "description": "Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Users"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "updateUsers",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsersUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Updated"
+          },
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteUsers",
+        "responses": {
+          "204": {
+            "description": "Deleted"
+          }
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "listEvents",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Rows to return, at most 100. Default 20.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "description": "Rows to skip.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of events",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Events"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createEvents",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventsInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/events/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ],
+      "get": {
+        "operationId": "getEvents",
+        "responses": {
+          "200": {
+            "description": "Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Events"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "updateEvents",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventsUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Updated"
+          },
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteEvents",
+        "responses": {
+          "204": {
+            "description": "Deleted"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "issues": {
+            "type": "array",
+            "items": {}
+          }
+        }
+      },
+      "Users": {
+        "type": "object",
+        "x-table": "users",
+        "required": [
+          "id",
+          "email",
+          "role",
+          "balance",
+          "createdAt",
+          "settings"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "x-column": {
+              "name": "id",
+              "columnType": "integer",
+              "nullable": false,
+              "primary": true,
+              "unique": false,
+              "autoIncrement": true
+            }
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 50,
+            "x-column": {
+              "name": "email",
+              "columnType": "character varying(50)",
+              "nullable": false,
+              "primary": false,
+              "unique": true,
+              "autoIncrement": false
+            }
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "member"
+            ],
+            "x-column": {
+              "name": "role",
+              "columnType": "enum('admin','member')",
+              "nullable": false,
+              "primary": false,
+              "unique": false,
+              "autoIncrement": false,
+              "enumName": "user_role"
+            }
+          },
+          "balance": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "decimal(10,2)",
+            "x-column": {
+              "name": "balance",
+              "columnType": "numeric(10,2)",
+              "nullable": true,
+              "primary": false,
+              "unique": false,
+              "autoIncrement": false
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-column": {
+              "name": "created_at",
+              "columnType": "timestamp with time zone",
+              "nullable": false,
+              "primary": false,
+              "unique": false,
+              "autoIncrement": false
+            }
+          },
+          "settings": {
+            "x-column": {
+              "name": "settings",
+              "columnType": "jsonb",
+              "nullable": true,
+              "primary": false,
+              "unique": false,
+              "autoIncrement": false
+            }
+          }
+        }
+      },
+      "Events": {
+        "type": "object",
+        "x-table": "events",
+        "required": [
+          "id",
+          "userId",
+          "externalId"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "x-column": {
+              "name": "id",
+              "columnType": "bigint",
+              "nullable": false,
+              "primary": true,
+              "unique": false,
+              "autoIncrement": true
+            }
+          },
+          "userId": {
+            "type": "integer",
+            "x-column": {
+              "name": "user_id",
+              "columnType": "integer",
+              "nullable": false,
+              "primary": false,
+              "unique": false,
+              "autoIncrement": false,
+              "references": {
+                "table": "users",
+                "column": "id"
+              }
+            }
+          },
+          "externalId": {
+            "type": "string",
+            "format": "uuid",
+            "x-column": {
+              "name": "external_id",
+              "columnType": "uuid",
+              "nullable": false,
+              "primary": false,
+              "unique": false,
+              "autoIncrement": false
+            }
+          }
+        }
+      },
+      "UsersInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "email",
+          "role",
+          "createdAt"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "member"
+            ]
+          },
+          "balance": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "decimal(10,2)"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "settings": {}
+        }
+      },
+      "UsersUpdate": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "member"
+            ]
+          },
+          "balance": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "decimal(10,2)"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "settings": {}
+        }
+      },
+      "EventsInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "userId",
+          "externalId"
+        ],
+        "properties": {
+          "userId": {
+            "type": "integer"
+          },
+          "externalId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "EventsUpdate": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "userId": {
+            "type": "integer"
+          },
+          "externalId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      }
+    }
+  }
+}
+"
+`;
+
+exports[`renderApi for Postgres > writes package.json 1`] = `
+"{
+  "name": "demo",
+  "version": "1.0.0",
+  "description": "",
+  "author": "me",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env src/index.js",
+    "dev": "node --env-file-if-exists=.env --watch src/index.js",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate"
+  },
+  "dependencies": {
+    "express": "5.3.0",
+    "drizzle-orm": "1.0.0-beta.22",
+    "pg": "8.23.1",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "drizzle-kit": "1.0.0-beta.22"
+  }
+}
+"
+`;
+
+exports[`renderApi for Postgres > writes src/app.js 1`] = `
+"import express from 'express';
+import { ZodError } from 'zod';
+import { router as users } from './routes/users.js';
+import { router as events } from './routes/events.js';
+
+export const app = express();
+
+app.use(express.json());
+app.use('/users', users);
+app.use('/events', events);
+
+app.use((err, req, res, next) => {
+  if (err instanceof ZodError) {
+    return res.status(400).json({ message: 'Invalid request body', issues: err.issues });
+  }
+  if (err.status >= 400 && err.status < 500) {
+    return res.status(err.status).json({ message: err.message });
+  }
+  console.error(err);
+  res.status(500).json({ message: 'Internal Server Error' });
+});
+"
+`;
+
+exports[`renderApi for Postgres > writes src/db/index.js 1`] = `
+"import { drizzle } from 'drizzle-orm/node-postgres';
+
+export const db = drizzle(process.env.DATABASE_URL);
+"
+`;
+
+exports[`renderApi for Postgres > writes src/db/schema.js 1`] = `
+"import { bigserial, integer, jsonb, numeric, pgEnum, pgTable, serial, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
+
+export const userRoleEnum = pgEnum("user_role", ["admin","member"]);
+
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
+  email: varchar("email", { length: 50 }).notNull().unique(),
+  role: userRoleEnum("role").notNull(),
+  balance: numeric("balance", { precision: 10, scale: 2 }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+  settings: jsonb("settings"),
+});
+
+export const events = pgTable("events", {
+  id: bigserial("id", { mode: 'number' }).primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  externalId: uuid("external_id").notNull(),
+});
+"
+`;
+
+exports[`renderApi for Postgres > writes src/index.js 1`] = `
+"import { app } from './app.js';
+
+const port = Number(process.env.PORT) || 3000;
+app.listen(port, () => console.log(\`Listening on port \${port}\`));
+"
+`;
+
+exports[`renderApi for Postgres > writes src/routes/events.js 1`] = `
+"import { eq } from 'drizzle-orm';
+import { createSchemaFactory } from 'drizzle-orm/zod';
+import { Router } from 'express';
+import { db } from '../db/index.js';
+import { events } from '../db/schema.js';
+
+// JSON carries dates as ISO strings.
+const { createInsertSchema, createUpdateSchema } = createSchemaFactory({ coerce: { date: true } });
+const insertSchema = createInsertSchema(events);
+const updateSchema = createUpdateSchema(events);
+const byId = (req) => eq(events.id, Number(req.params.id));
+
+export const router = Router();
+
+router.get('/', async (req, res) => {
+  const limit = Math.min(Number(req.query.limit) || 20, 100);
+  const offset = Number(req.query.offset) || 0;
+  res.json(await db.select().from(events).limit(limit).offset(offset));
+});
+
+router.get('/:id', async (req, res) => {
+  const [row] = await db.select().from(events).where(byId(req));
+  if (!row) {
+    return res.status(404).json({ message: 'Not found' });
+  }
+  res.json(row);
+});
+
+router.post('/', async (req, res) => {
+  const [created] = await db.insert(events).values(insertSchema.parse(req.body)).returning({ id: events.id });
+  res.status(201).location(\`\${req.baseUrl}/\${created.id}\`).json(created);
+});
+
+router.put('/:id', async (req, res) => {
+  await db.update(events).set(updateSchema.parse(req.body)).where(byId(req));
+  res.status(204).end();
+});
+
+router.delete('/:id', async (req, res) => {
+  await db.delete(events).where(byId(req));
+  res.status(204).end();
+});
+"
+`;
+
+exports[`renderApi for Postgres > writes src/routes/users.js 1`] = `
+"import { eq } from 'drizzle-orm';
+import { createSchemaFactory } from 'drizzle-orm/zod';
+import { Router } from 'express';
+import { db } from '../db/index.js';
+import { users } from '../db/schema.js';
+
+// JSON carries dates as ISO strings.
+const { createInsertSchema, createUpdateSchema } = createSchemaFactory({ coerce: { date: true } });
+const insertSchema = createInsertSchema(users);
+const updateSchema = createUpdateSchema(users);
+const byId = (req) => eq(users.id, Number(req.params.id));
+
+export const router = Router();
+
+router.get('/', async (req, res) => {
+  const limit = Math.min(Number(req.query.limit) || 20, 100);
+  const offset = Number(req.query.offset) || 0;
+  res.json(await db.select().from(users).limit(limit).offset(offset));
+});
+
+router.get('/:id', async (req, res) => {
+  const [row] = await db.select().from(users).where(byId(req));
+  if (!row) {
+    return res.status(404).json({ message: 'Not found' });
+  }
+  res.json(row);
+});
+
+router.post('/', async (req, res) => {
+  const [created] = await db.insert(users).values(insertSchema.parse(req.body)).returning({ id: users.id });
+  res.status(201).location(\`\${req.baseUrl}/\${created.id}\`).json(created);
+});
+
+router.put('/:id', async (req, res) => {
+  await db.update(users).set(updateSchema.parse(req.body)).where(byId(req));
+  res.status(204).end();
+});
+
+router.delete('/:id', async (req, res) => {
+  await db.delete(users).where(byId(req));
+  res.status(204).end();
+});
+"
+`;
