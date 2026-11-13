@@ -23,6 +23,17 @@ jobs:
           --health-interval=5s
           --health-timeout=5s
           --health-retries=20
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: secret
+          POSTGRES_DB: test
+        ports: ["5433:5432"]
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -33,6 +44,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Load MySQL fixture
         run: mysql -h 127.0.0.1 -uroot -psecret test < packages/core/test/handlers/mysql/data.sql
+      - name: Load Postgres fixture
+        run: psql -v ON_ERROR_STOP=1 postgresql://postgres:secret@127.0.0.1:5433/test -f packages/core/test/handlers/postgres/data.sql
       - run: pnpm lint
       - run: pnpm build
       - run: pnpm typecheck

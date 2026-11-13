@@ -93,7 +93,10 @@ Size: core about 3.8k lines of TypeScript. CLI 428 lines of JS.
 - [ ] Baseline for an existing database: the first `db:generate` migration creates every table, so it must not run on the database it came from.
 - [x] PR 3: OpenAPI 3.1 replaces RAML as output and input. The RAML path, the relation preprocessors, the example generator, and their dependencies (`raml-1-parser`, faker, bunyan, fs-extra, chalk, pluralize) are deleted. Items 17 and 18 go away with that code.
 - [x] PR 4: template files with eta. Output stayed byte-identical (pinned by snapshots).
-- [ ] PR 5: core to ESM.
+- [x] PR 5: Postgres. `PostgresHandler` reads `pg_catalog` (enums, identity and serial keys, defaults, one-dimensional arrays, timestamp precision). The generated API and the OpenAPI document support both dialects. CI runs the end-to-end test on both.
+- [ ] Postgres `bytea` and `tsvector` stay unsupported: JSON cannot carry them as they are. A schema with one of them fails with `Unsupported type`.
+- [ ] Move the generated API from `drizzle-orm@1.0.0-beta.22` to the 1.0 release candidate. npm marks the beta line as deprecated.
+- [ ] PR 6: core to ESM.
 - [ ] Last PR: delete `PLAN.md`, update all docs, release v2.0.0.
 
 ### Phase 3: publish
@@ -102,7 +105,6 @@ Size: core about 3.8k lines of TypeScript. CLI 428 lines of JS.
 
 ## Open questions
 
-- Add Postgres introspection in Phase 2, or later?
 - Is the `develop` async API already in npm `generaptr@1.4.1`? Not checked.
 - Is the tool still worth the Phase 2 work? `drizzle-kit pull`, `prisma db pull` and LLM codegen cover part of it. Phases 0–1 are cheap either way.
 

@@ -6,10 +6,38 @@ import * as path from 'node:path';
 import config from '../config';
 import { generateApi, installApi } from '../../src/fileOperations/apiFileOperations';
 import MysqlHandler from '../../src/handlers/mysqlHandler';
+import PostgresHandler from '../../src/handlers/postgresHandler';
+import { DbSchema } from '../../src/commons/types';
 
-const connection = config.CONNECTION_INFO.MYSQL[config.ENV];
-const port = 3919;
-const base = `http://127.0.0.1:${port}`;
+const mysqlConnection = config.CONNECTION_INFO.MYSQL[config.ENV];
+const postgresConnection = config.CONNECTION_INFO.POSTGRES;
+
+const dialects = [
+  {
+    dialect: 'mysql',
+    port: 3919,
+    read: async (): Promise<DbSchema> => {
+      const handler = new MysqlHandler(mysqlConnection);
+      const schema = await handler.readSchema();
+      await handler.close();
+      return schema;
+    },
+    url: `mysql://${mysqlConnection.user}:${mysqlConnection.password}@${mysqlConnection.host}:${mysqlConnection.port}/${mysqlConnection.database}`,
+  },
+  {
+    dialect: 'postgresql',
+    port: 3921,
+    read: async (): Promise<DbSchema> => {
+      const handler = new PostgresHandler(postgresConnection);
+      const schema = await handler.readSchema();
+      await handler.close();
+      return schema;
+    },
+    url: `postgres://${postgresConnection.user}:${postgresConnection.password}@${postgresConnection.host}:${postgresConnection.port}/${postgresConnection.database}`,
+  },
+];
+
+let base: string;
 
 const send = async (method: string, url: string, body?: object): Promise<Response> =>
   fetch(`${base}${url}`, {
@@ -21,17 +49,16 @@ const send = async (method: string, url: string, body?: object): Promise<Respons
 // The API's own contract, so the test reads the body as that shape.
 const json = async <T>(response: Response): Promise<T> => (await response.json()) as T;
 
-describe('generated Express + Drizzle API', () => {
+describe.each(dialects)('generated Express + Drizzle API on $dialect', ({ dialect, port, read, url }) => {
   let dir: string;
   let server: ChildProcess;
 
   beforeAll(async () => {
-    const handler = new MysqlHandler(connection);
-    const tables = await handler.readTables();
-    await handler.close();
+    base = `http://127.0.0.1:${port}`;
+    const schema = await read();
 
     dir = await fs.mkdtemp(path.join(os.tmpdir(), 'generaptr api '));
-    await generateApi(dir, { name: 'demo-api', version: '1.0.0', description: '', author: '', license: 'MIT' }, tables);
+    await generateApi(dir, { name: 'demo-api', version: '1.0.0', description: '', author: '', license: 'MIT' }, schema);
     await installApi(dir);
 
     server = spawn('node', ['src/index.js'], {
@@ -39,7 +66,7 @@ describe('generated Express + Drizzle API', () => {
       env: {
         ...process.env,
         PORT: String(port),
-        DATABASE_URL: `mysql://${connection.user}:${connection.password}@${connection.host}:${connection.port}/${connection.database}`,
+        DATABASE_URL: url,
       },
     });
     await new Promise<void>((resolve: () => void, reject: (reason: Error) => void): void => {
@@ -63,8 +90,11 @@ describe('generated Express + Drizzle API', () => {
     assert.strictEqual(created.headers.get('location'), `/users/${userId}`);
 
     assert.strictEqual((await send('PUT', `/users/${userId}`, { lastName: 'Lovelace' })).status, 204);
-    const user = await json<object>(await send('GET', `/users/${userId}`));
-    assert.deepStrictEqual(user, { id: userId, firstName: 'Ada', lastName: 'Lovelace', email });
+    const user = await json<Record<string, unknown>>(await send('GET', `/users/${userId}`));
+    assert.deepStrictEqual(
+      { id: user.id, firstName: user.firstName, lastName: user.lastName, email: user.email },
+      { id: userId, firstName: 'Ada', lastName: 'Lovelace', email },
+    );
 
     const account = await send('POST', '/accounts', { type: 'admin', userId });
     assert.strictEqual(account.status, 201);
@@ -75,6 +105,17 @@ describe('generated Express + Drizzle API', () => {
     assert.strictEqual((await send('DELETE', `/accounts/${accountId}`)).status, 204);
     assert.strictEqual((await send('DELETE', `/users/${userId}`)).status, 204);
     assert.strictEqual((await send('GET', `/users/${userId}`)).status, 404);
+  });
+
+  it.runIf(dialect === 'postgresql')('round-trips arrays and timestamps through JSON', async () => {
+    const seenAt = '2026-11-13T10:00:00.123Z';
+    const created = await send('POST', '/groups', { name: 'ops', tags: ['a', "it's"], seenAt });
+    assert.strictEqual(created.status, 201, await created.clone().text());
+    const { id } = await json<{ id: number }>(created);
+    const group = await json<Record<string, unknown>>(await send('GET', `/groups/${id}`));
+    assert.deepStrictEqual(group.tags, ['a', "it's"]);
+    assert.strictEqual(new Date(String(group.seenAt)).toISOString(), seenAt);
+    assert.strictEqual((await send('DELETE', `/groups/${id}`)).status, 204);
   });
 
   it('hides database errors behind a generic 500', async () => {

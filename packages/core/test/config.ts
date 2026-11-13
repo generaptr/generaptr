@@ -21,5 +21,12 @@ export default {
         database: 'test',
       },
     },
+    POSTGRES: {
+      host: '127.0.0.1',
+      port: 5433,
+      user: 'postgres',
+      password: 'secret',
+      database: 'test',
+    },
   },
 };

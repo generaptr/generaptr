@@ -2,7 +2,7 @@ import { styleText } from 'node:util';
 import inquirer from 'inquirer';
 import { operations } from 'generaptr';
 
-import * as mysql from '../inputs/database/relational/mysql.js';
+import * as database from '../inputs/database.js';
 
 export const questions = [
   {
@@ -30,8 +30,8 @@ export const questions = [
 ];
 
 export const handler = async (data) => {
-  const tables = await mysql.handler(await inquirer.prompt(mysql.questions));
-  const file = await operations.spec.generateSpec(data.output, data, tables);
+  const schema = await database.handler(await inquirer.prompt(database.questions));
+  const file = await operations.spec.generateSpec(data.output, data, schema);
   console.log(styleText('green', `OpenAPI specification written to ${file}`));
 
   return true;

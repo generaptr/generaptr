@@ -43,9 +43,9 @@ export const questions = [
 ];
 
 export const handler = async (data) => {
-  const tables = await source.handler(await inquirer.prompt(source.questions));
+  const schema = await source.handler(await inquirer.prompt(source.questions));
 
-  const files = await api.generateApi(data.output, data, tables);
+  const files = await api.generateApi(data.output, data, schema);
   console.log(styleText('green', `Generated ${files.length} files in ${data.output}`));
 
   const consent = await inquirer.prompt([{

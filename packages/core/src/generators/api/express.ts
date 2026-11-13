@@ -3,7 +3,7 @@ import { Eta } from 'eta';
 import {
   assertSafeNames, camel, type ParsedType, parseColumnType, primaryColumns, routedTables, routePath,
 } from '../../commons/columns';
-import { DbColumn, DbTable, PackageJsonInfo } from '../../commons/types';
+import { DbColumn, DbSchema, DbTable, Dialect, PackageJsonInfo } from '../../commons/types';
 import { openApiDocument } from '../spec/openapi';
 
 export { routedTables };
@@ -12,27 +12,79 @@ export { routedTables };
 export const VERSIONS: Record<string, string> = {
   express: '5.3.0',
   'drizzle-orm': '1.0.0-beta.22',
-  mysql2: '3.24.6',
   zod: '4.6.7',
   'drizzle-kit': '1.0.0-beta.22',
+  mysql2: '3.24.6',
+  pg: '8.23.1',
 };
 
-/** Returns the Drizzle builder name and its call for one MySQL column. */
-export const columnBuilder = (column: DbColumn): { builder: string; call: string } => {
-  const type: ParsedType = parseColumnType(column);
+/** Everything that differs between the dialects of the generated API. */
+const DIALECTS: Record<Dialect, {
+  core: string;
+  table: string;
+  driver: string;
+  driverPackage: string;
+  url: string;
+  returning: (entity: string, key: string) => string;
+}> = {
+  mysql: {
+    core: 'mysql-core',
+    table: 'mysqlTable',
+    driver: 'mysql2',
+    driverPackage: 'mysql2',
+    url: 'mysql://user:password@127.0.0.1:3306/database',
+    returning: () => '$returningId()',
+  },
+  postgresql: {
+    core: 'pg-core',
+    table: 'pgTable',
+    driver: 'node-postgres',
+    driverPackage: 'pg',
+    url: 'postgres://user:password@127.0.0.1:5432/database',
+    returning: (entity: string, key: string) => `returning({ ${key}: ${entity}.${key} })`,
+  },
+};
+
+/** Postgres enums are types of their own: the column calls the enum declared by `pgEnum`. */
+const enumVariable = (column: DbColumn, table: DbTable): string =>
+  `${camel(column.enumName ?? `${table.name}_${column.name}`)}Enum`;
+
+const scalarBuilder = (
+  type: ParsedType,
+  column: DbColumn,
+  dialect: Dialect,
+  table: DbTable,
+): { builder?: string; call: string } => {
   const name: string = JSON.stringify(column.name);
+  const postgres: boolean = dialect === 'postgresql';
   switch (type.kind) {
     case 'boolean':
       return { builder: 'boolean', call: `boolean(${name})` };
     case 'enum':
-      return { builder: 'mysqlEnum', call: `mysqlEnum(${name}, ${JSON.stringify(type.values)})` };
-    case 'decimal':
-      return { builder: 'decimal', call: `decimal(${name}, { precision: ${type.precision}, scale: ${type.scale} })` };
+      return postgres
+        ? { call: `${enumVariable(column, table)}(${name})` }
+        : { builder: 'mysqlEnum', call: `mysqlEnum(${name}, ${JSON.stringify(type.values)})` };
+    case 'decimal': {
+      const builder: string = postgres ? 'numeric' : 'decimal';
+      return { builder, call: `${builder}(${name}, { precision: ${type.precision}, scale: ${type.scale} })` };
+    }
     case 'sized':
       return { builder: type.base, call: `${type.base}(${name}, { length: ${type.length} })` };
-    case 'plain':
-      return { builder: type.base, call: `${type.base}(${name})` };
+    case 'plain': {
+      const builder: string = type.base === 'timestamptz' ? 'timestamp' : type.base;
+      const options: string[] = [
+        ...(type.base === 'timestamptz' ? ['withTimezone: true'] : []),
+        ...(type.precision === undefined ? [] : [`precision: ${type.precision}`]),
+      ];
+      return { builder, call: `${builder}(${name}${options.length ? `, { ${options.join(', ')} }` : ''})` };
+    }
     case 'integer': {
+      if (postgres) {
+        const serials: Record<string, string> = { smallint: 'smallserial', integer: 'serial', bigint: 'bigserial' };
+        // razor: identity columns also map to serial; emit generatedByDefaultAsIdentity() if migrations need it.
+        const builder: string = column.autoIncrement ? serials[type.base] : type.base;
+        return { builder, call: `${builder}(${name}${type.base === 'bigint' ? ", { mode: 'number' }" : ''})` };
+      }
       if (type.base === 'bigint') {
         return { builder: 'bigint', call: `bigint(${name}, { mode: 'number'${type.unsigned ? ', unsigned: true' : ''} })` };
       }
@@ -44,15 +96,30 @@ export const columnBuilder = (column: DbColumn): { builder: string; call: string
   }
 };
 
+/**
+ * Returns the Drizzle call for one column, plus the `drizzle-orm/<core>` builder it imports.
+ * A Postgres enum column imports nothing: it calls its `pgEnum` declaration.
+ */
+export const columnBuilder = (
+  column: DbColumn,
+  dialect: Dialect = 'mysql',
+  table: DbTable = { name: '', columns: [] },
+): { builder?: string; call: string } => {
+  const type: ParsedType = parseColumnType(column, dialect);
+  const { builder, call } = scalarBuilder(type, column, dialect, table);
+
+  return { builder, call: type.array ? `${call}.array()` : call };
+};
+
 const eta: Eta = new Eta({
   views: path.resolve(__dirname, '../../../templates/api'),
   autoEscape: false,
   autoTrim: false,
 });
 
-const chainFor = (column: DbColumn, table: DbTable, tables: DbTable[]): string => {
-  let chain: string = columnBuilder(column).call;
-  if (column.autoIncrement) {
+const chainFor = (column: DbColumn, table: DbTable, schema: DbSchema): string => {
+  let chain: string = columnBuilder(column, schema.dialect, table).call;
+  if (column.autoIncrement && schema.dialect === 'mysql') {
     chain += '.autoincrement()';
   }
   if (column.primary && primaryColumns(table).length === 1) {
@@ -60,10 +127,13 @@ const chainFor = (column: DbColumn, table: DbTable, tables: DbTable[]): string =
   } else if (!column.nullable) {
     chain += '.notNull()';
   }
+  if (column.default !== undefined) {
+    chain += `.default(sql.raw(${JSON.stringify(column.default)}))`;
+  }
   if (column.unique) {
     chain += '.unique()';
   }
-  const target: DbTable | undefined = tables.find((t: DbTable) => t.name === column.references?.table);
+  const target: DbTable | undefined = schema.tables.find((t: DbTable) => t.name === column.references?.table);
   if (column.references && target) {
     chain += `.references(() => ${camel(target.name)}.${camel(column.references.column)})`;
   }
@@ -71,12 +141,27 @@ const chainFor = (column: DbColumn, table: DbTable, tables: DbTable[]): string =
   return chain;
 };
 
-export const schemaFile = (tables: DbTable[]): string => {
-  const builders: Set<string> = new Set(['mysqlTable']);
-  const views = tables.map((table: DbTable) => {
+export const schemaFile = (schema: DbSchema): string => {
+  const { core, table: tableFunction } = DIALECTS[schema.dialect];
+  const builders: Set<string> = new Set([tableFunction]);
+  const enums: Map<string, { name: string; type: string; values: string }> = new Map();
+  const views = schema.tables.map((table: DbTable) => {
     const primary: DbColumn[] = primaryColumns(table);
     for (const column of table.columns) {
-      builders.add(columnBuilder(column).builder);
+      const { builder } = columnBuilder(column, schema.dialect, table);
+      if (builder) {
+        builders.add(builder);
+      }
+      const type: ParsedType = parseColumnType(column, schema.dialect);
+      if (!builder && type.kind === 'enum') {
+        builders.add('pgEnum');
+        const name: string = enumVariable(column, table);
+        enums.set(name, {
+          name,
+          type: JSON.stringify(column.enumName ?? `${table.name}_${column.name}`),
+          values: JSON.stringify(type.values),
+        });
+      }
     }
     if (primary.length > 1) {
       builders.add('primaryKey');
@@ -85,21 +170,31 @@ export const schemaFile = (tables: DbTable[]): string => {
     return {
       name: camel(table.name),
       table: JSON.stringify(table.name),
-      columns: table.columns.map((column: DbColumn) => ({ key: camel(column.name), chain: chainFor(column, table, tables) })),
+      columns: table.columns.map((column: DbColumn) => ({ key: camel(column.name), chain: chainFor(column, table, schema) })),
       primaryKeys: primary.length > 1 ? primary.map((column: DbColumn) => `table.${camel(column.name)}`).join(', ') : '',
     };
   });
 
-  return eta.render('src/db/schema.js.eta', { builders: [...builders].sort().join(', '), tables: views });
+  return eta.render('src/db/schema.js.eta', {
+    usesSql: schema.tables.some((table: DbTable) => table.columns.some((column: DbColumn) => column.default !== undefined)),
+    builders: [...builders].sort().join(', '),
+    core,
+    tableFunction,
+    enums: [...enums.values()],
+    tables: views,
+  });
 };
 
-export const routeFile = (table: DbTable): string => {
+export const routeFile = (table: DbTable, dialect: Dialect): string => {
   const [primary] = primaryColumns(table);
+  const entity: string = camel(table.name);
+  const key: string = camel(primary.name);
 
   return eta.render('src/routes/route.js.eta', {
-    entity: camel(table.name),
-    key: camel(primary.name),
-    id: parseColumnType(primary).kind === 'integer' ? 'Number(req.params.id)' : 'req.params.id',
+    entity,
+    key,
+    id: parseColumnType(primary, dialect).kind === 'integer' ? 'Number(req.params.id)' : 'req.params.id',
+    returning: DIALECTS[dialect].returning(entity, key),
   });
 };
 
@@ -108,8 +203,9 @@ export const appFile = (tables: DbTable[]): string =>
     routes: routedTables(tables).map((table: DbTable) => ({ name: camel(table.name), path: routePath(table) })),
   });
 
-export const packageJson = (info: PackageJsonInfo): string => {
-  const { 'drizzle-kit': drizzleKit, ...dependencies } = VERSIONS;
+export const packageJson = (info: PackageJsonInfo, dialect: Dialect): string => {
+  const { express, 'drizzle-orm': drizzleOrm, zod, 'drizzle-kit': drizzleKit } = VERSIONS;
+  const driver: string = DIALECTS[dialect].driverPackage;
 
   return `${JSON.stringify({
     name: info.name,
@@ -126,27 +222,28 @@ export const packageJson = (info: PackageJsonInfo): string => {
       'db:generate': 'drizzle-kit generate',
       'db:migrate': 'drizzle-kit migrate',
     },
-    dependencies,
+    dependencies: { express, 'drizzle-orm': drizzleOrm, [driver]: VERSIONS[driver], zod },
     devDependencies: { 'drizzle-kit': drizzleKit },
   }, undefined, 2)}\n`;
 };
 
 /** Every file of the generated API, keyed by path relative to the output directory. */
-export const renderApi = (tables: DbTable[], info: PackageJsonInfo): Record<string, string> => {
-  assertSafeNames(tables);
+export const renderApi = (schema: DbSchema, info: PackageJsonInfo): Record<string, string> => {
+  assertSafeNames(schema.tables);
+  const dialect = DIALECTS[schema.dialect];
   const files: Record<string, string> = {
-    'package.json': packageJson(info),
+    'package.json': packageJson(info, schema.dialect),
     '.gitignore': eta.render('gitignore.eta', {}),
-    '.env.example': eta.render('env.example.eta', {}),
-    'drizzle.config.js': eta.render('drizzle.config.js.eta', {}),
+    '.env.example': eta.render('env.example.eta', { url: dialect.url }),
+    'drizzle.config.js': eta.render('drizzle.config.js.eta', { dialect: schema.dialect }),
     'src/index.js': eta.render('src/index.js.eta', {}),
-    'src/app.js': appFile(tables),
-    'src/db/index.js': eta.render('src/db/index.js.eta', {}),
-    'src/db/schema.js': schemaFile(tables),
-    'openapi.json': `${JSON.stringify(openApiDocument(tables, info), undefined, 2)}\n`,
+    'src/app.js': appFile(schema.tables),
+    'src/db/index.js': eta.render('src/db/index.js.eta', { driver: dialect.driver }),
+    'src/db/schema.js': schemaFile(schema),
+    'openapi.json': `${JSON.stringify(openApiDocument(schema, info), undefined, 2)}\n`,
   };
-  for (const table of routedTables(tables)) {
-    files[`src/routes/${camel(table.name)}.js`] = routeFile(table);
+  for (const table of routedTables(schema.tables)) {
+    files[`src/routes/${camel(table.name)}.js`] = routeFile(table, schema.dialect);
   }
 
   return files;

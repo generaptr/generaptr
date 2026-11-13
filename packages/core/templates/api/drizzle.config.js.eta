@@ -5,7 +5,7 @@ try {
 } catch {}
 
 export default defineConfig({
-  dialect: 'mysql',
+  dialect: '<%= it.dialect %>',
   schema: './src/db/schema.js',
   out: './drizzle',
   dbCredentials: { url: process.env.DATABASE_URL },
