@@ -105,7 +105,10 @@
   .demo { margin: 0 0 96px; background: var(--code-bg); border-radius: 16px; padding: 28px; }
   .demo video { display: block; width: 100%; height: auto; border-radius: 8px; }
   .shots { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 24px 0; }
-  .shots a img { display: block; width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--line); }
+  .zoom { padding: 0; border: 0; border-radius: 10px; max-width: min(1280px, 94vw); background: none; cursor: zoom-out; }
+  .zoom::backdrop { background: rgb(16 33 26 / 0.85); }
+  dialog.zoom > img { display: block; width: 100%; height: auto; }
+  .shots a img { cursor: zoom-in; display: block; width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--line); }
 
   section.doc { display: grid; grid-template-columns: 15rem minmax(0, 1fr); gap: 48px; padding: 56px 0; border-top: 1px solid var(--line); }
   section.doc > h2 {
@@ -274,6 +277,7 @@ npm start</pre>
           <a href="web-app-light.jpg"><img src="web-app-light.jpg" width="1280" height="800" alt="The list of users in light mode" loading="lazy"></a>
           <a href="web-app-dark.jpg"><img src="web-app-dark.jpg" width="1280" height="800" alt="A user in dark mode, with a JSON value as a tree" loading="lazy"></a>
         </div>
+        <dialog class="zoom" id="zoom" aria-label="Screenshot"><img src="" alt=""></dialog>
         <ul>
           <li>Each table with routes gets a list with paging, a detail page with its related rows, and forms to create and edit a row. A filter in the sidebar finds a table.</li>
           <li>The pages are <a href="https://github.com/vercel-labs/json-render">json-render</a> specs drawn with shadcn components and Tailwind. Edit <code>src/pages.json</code> to change a page.</li>
@@ -387,6 +391,18 @@ npm run db:migrate    <span class="c"># applies the SQL</span></pre>
     demo.autoplay = true;
     demo.play().catch(() => demo.setAttribute('controls', ''));
   }
+  // A screenshot opens in a dialog. Esc or a click closes it.
+  const zoom = document.getElementById('zoom');
+  document.querySelectorAll('.shots a').forEach((link) => {
+    link.addEventListener('click', (event) => {
+      event.preventDefault();
+      const img = link.querySelector('img');
+      zoom.querySelector('img').src = link.href;
+      zoom.querySelector('img').alt = img.alt;
+      zoom.showModal();
+    });
+  });
+  zoom.addEventListener('click', () => zoom.close());
   document.querySelectorAll('[data-copy]').forEach((button) => {
     button.addEventListener('click', async () => {
       const text = document.getElementById(button.dataset.copy).textContent;
