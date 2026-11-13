@@ -1,0 +1,47 @@
+{
+  "name": "generaptr-cli",
+  "version": "0.2.1",
+  "description": "Generaptr is a node cli package that helps when starting up a project by generating boilerplate code.",
+  "license": "MIT",
+  "scripts": {
+    "lint": "eslint -c .eslintrc.js lib",
+    "commit": "git-cz"
+  },
+  "keywords": [
+    "nodejs"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/generaptr/generaptr-cli.git"
+  },
+  "author": "Darius Cupsa <cupsadarius@gmail.com>",
+  "homepage": "https://generaptr.github.io",
+  "bin": {
+    "generaptr": "./bin/generaptr"
+  },
+  "bugs": {
+    "url": "https://github.com/generaptr/generaptr-cli/issues"
+  },
+  "engines": {
+    "node": ">= 7.5.0"
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
+  },
+  "devDependencies": {
+    "commitizen": "^4.0.3",
+    "cz-conventional-changelog": "^3.0.2",
+    "eslint": "^6.5.1",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-plugin-import": "^2.18.2"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "clear": "^0.1.0",
+    "figlet": "^1.2.4",
+    "inquirer": "^9.2.20",
+    "generaptr": "^1.2.0"
+  }
+}
