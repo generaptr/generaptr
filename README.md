@@ -30,6 +30,8 @@ api/
 ├── drizzle.config.js
 ├── .env.example        # DATABASE_URL
 ├── openapi.json
+├── scripts/
+│   └── baseline.js     # npm run db:baseline
 └── src/
     ├── index.js
     ├── app.js          # mounts one router per table
@@ -65,8 +67,12 @@ npm run db:generate     # writes SQL from src/db/schema.js
 npm run db:migrate      # applies the SQL
 ```
 
-> [!WARNING]
-> The first `db:generate` writes `CREATE TABLE` for every table. Do not run `db:migrate` against the database that generaptr read: those tables exist there already.
+> [!IMPORTANT]
+> On the database that generaptr read, run `npm run db:baseline` once, before the first `db:migrate`. It writes the first migration and records it as applied without running it, because those tables exist there already. A new, empty database skips this step: `db:migrate` creates the tables.
+
+```sh
+npm run db:baseline     # once, on the database that generaptr read
+```
 
 ## Supported column types
 

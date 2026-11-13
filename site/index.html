@@ -222,6 +222,7 @@
 ├── drizzle.config.js
 ├── .env.example        <span class="c"># DATABASE_URL</span>
 ├── openapi.json
+├── scripts/baseline.js <span class="c"># npm run db:baseline</span>
 └── src/
     ├── index.js
     ├── app.js          <span class="c"># one router per table</span>
@@ -265,7 +266,7 @@ npm start</pre>
         <pre class="block">npm run db:generate   <span class="c"># writes SQL from src/db/schema.js</span>
 npm run db:migrate    <span class="c"># applies the SQL</span></pre>
         <div class="warning" role="note">
-          <strong>Warning:</strong> the first <code>db:generate</code> writes <code>CREATE TABLE</code> for every table. Do not run <code>db:migrate</code> against the database that generaptr read: those tables exist there already. <a href="https://github.com/generaptr/generaptr/issues/168">Issue #168</a> tracks a baseline migration.
+          <strong>Before the first migration:</strong> on the database that generaptr read, run <code>npm run db:baseline</code> once. It writes the first migration and records it as applied without running it, because those tables exist there already. A new, empty database skips this step: <code>db:migrate</code> creates the tables.
         </div>
       </div>
     </section>
@@ -315,7 +316,6 @@ npm run db:migrate    <span class="c"># applies the SQL</span></pre>
       <div class="body">
         <ul class="limits">
           <li>PostgreSQL <code>bytea</code> and <code>tsvector</code> columns are not supported. <a href="https://github.com/generaptr/generaptr/issues/166">#166</a></li>
-          <li>The first migration has no baseline for an existing database. <a href="https://github.com/generaptr/generaptr/issues/168">#168</a></li>
         </ul>
       </div>
     </section>

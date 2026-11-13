@@ -771,7 +771,8 @@ exports[`renderApi > writes package.json 1`] = `
     "start": "node --env-file-if-exists=.env src/index.js",
     "dev": "node --env-file-if-exists=.env --watch src/index.js",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate"
+    "db:migrate": "drizzle-kit migrate",
+    "db:baseline": "drizzle-kit generate && node --env-file-if-exists=.env scripts/baseline.js"
   },
   "dependencies": {
     "express": "5.3.0",
@@ -782,6 +783,32 @@ exports[`renderApi > writes package.json 1`] = `
   "devDependencies": {
     "drizzle-kit": "1.0.0-rc.5"
   }
+}
+"
+`;
+
+exports[`renderApi > writes scripts/baseline.js 1`] = `
+"// Records the first migration in ./drizzle as applied, without running it. Run this once, on the
+// database that generaptr read: its tables exist already. A fresh database runs \`npm run db:migrate\`.
+import { drizzle } from 'drizzle-orm/mysql2';
+import { migrate } from 'drizzle-orm/mysql2/migrator';
+
+const errors = {
+  databaseMigrations: 'The database already has applied migrations. Use \`npm run db:migrate\` instead.',
+  localMigrations: './drizzle has more than one migration. Baseline records only the first; remove the others, then run it again.',
+};
+
+const db = drizzle(process.env.DATABASE_URL);
+try {
+  const result = await migrate(db, { migrationsFolder: './drizzle', init: true });
+  if (result?.exitCode) {
+    console.error(errors[result.exitCode]);
+    process.exitCode = 1;
+  } else {
+    console.log('Recorded the first migration as applied. No table changed.');
+  }
+} finally {
+  await db.$client.end();
 }
 "
 `;
@@ -1753,7 +1780,8 @@ exports[`renderApi for Postgres > writes package.json 1`] = `
     "start": "node --env-file-if-exists=.env src/index.js",
     "dev": "node --env-file-if-exists=.env --watch src/index.js",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate"
+    "db:migrate": "drizzle-kit migrate",
+    "db:baseline": "drizzle-kit generate && node --env-file-if-exists=.env scripts/baseline.js"
   },
   "dependencies": {
     "express": "5.3.0",
@@ -1764,6 +1792,32 @@ exports[`renderApi for Postgres > writes package.json 1`] = `
   "devDependencies": {
     "drizzle-kit": "1.0.0-rc.5"
   }
+}
+"
+`;
+
+exports[`renderApi for Postgres > writes scripts/baseline.js 1`] = `
+"// Records the first migration in ./drizzle as applied, without running it. Run this once, on the
+// database that generaptr read: its tables exist already. A fresh database runs \`npm run db:migrate\`.
+import { drizzle } from 'drizzle-orm/node-postgres';
+import { migrate } from 'drizzle-orm/node-postgres/migrator';
+
+const errors = {
+  databaseMigrations: 'The database already has applied migrations. Use \`npm run db:migrate\` instead.',
+  localMigrations: './drizzle has more than one migration. Baseline records only the first; remove the others, then run it again.',
+};
+
+const db = drizzle(process.env.DATABASE_URL);
+try {
+  const result = await migrate(db, { migrationsFolder: './drizzle', init: true });
+  if (result?.exitCode) {
+    console.error(errors[result.exitCode]);
+    process.exitCode = 1;
+  } else {
+    console.log('Recorded the first migration as applied. No table changed.');
+  }
+} finally {
+  await db.$client.end();
 }
 "
 `;
