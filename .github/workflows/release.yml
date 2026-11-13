@@ -1,0 +1,49 @@
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  publish:
+    needs: ci
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # npm trusted publishing
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      # Trusted publishing needs npm 11.5.1 or later.
+      - run: npm install --global npm@11
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: Check that the tag equals both package versions
+        run: |
+          for dir in packages/core packages/cli; do
+            version="v$(node -p "require('./$dir/package.json').version")"
+            [ "$version" = "$GITHUB_REF_NAME" ] || { echo "$dir is $version, tag is $GITHUB_REF_NAME"; exit 1; }
+          done
+      # pnpm pack writes the real version in place of workspace:*. npm publish does the OIDC upload.
+      - name: Publish core, then CLI
+        run: |
+          for dir in packages/core packages/cli; do
+            name="$(node -p "require('./$dir/package.json').name")"
+            version="$(node -p "require('./$dir/package.json').version")"
+            if npm view "$name@$version" version >/dev/null 2>&1; then
+              echo "$name@$version is on npm already"
+              continue
+            fi
+            tarball="$(cd "$dir" && pnpm pack --pack-destination "$RUNNER_TEMP" | tail -1)"
+            npm publish "$tarball" --provenance --access public
+          done
