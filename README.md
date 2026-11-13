@@ -1,4 +1,8 @@
-# generaptr
+![](https://i.imgur.com/yCRAubA.png)
+========
+
+[![npm](https://badge.fury.io/js/generaptr.svg)](https://badge.fury.io/js/generaptr) [![npm](https://badge.fury.io/js/generaptr-cli.svg)](https://badge.fury.io/js/generaptr-cli) [![CI](https://github.com/generaptr/generaptr/actions/workflows/ci.yml/badge.svg)](https://github.com/generaptr/generaptr/actions/workflows/ci.yml) [![Join the chat at https://gitter.im/generaptr/generaptr](https://badges.gitter.im/generaptr/generaptr.svg)](https://gitter.im/generaptr/generaptr?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Coverage Status](https://coveralls.io/repos/github/generaptr/generaptr/badge.svg?branch=master)](https://coveralls.io/github/generaptr/generaptr?branch=master)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fgeneraptr%2Fgeneraptr.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fgeneraptr%2Fgeneraptr?ref=badge_shield)
 
 Generaptr reads the tables of a MySQL or PostgreSQL database and writes two things:
 
@@ -90,3 +94,5 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) and the [Code of Conduct](CODE_OF_CONDUCT
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fgeneraptr%2Fgeneraptr.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fgeneraptr%2Fgeneraptr?ref=badge_large)

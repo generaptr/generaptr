@@ -1,4 +1,8 @@
-# generaptr-cli
+![](https://i.imgur.com/yCRAubA.png)
+========
+
+[![npm](https://badge.fury.io/js/generaptr-cli.svg)](https://badge.fury.io/js/generaptr-cli) [![CI](https://github.com/generaptr/generaptr/actions/workflows/ci.yml/badge.svg)](https://github.com/generaptr/generaptr/actions/workflows/ci.yml) [![Join the chat at https://gitter.im/generaptr/generaptr](https://badges.gitter.im/generaptr/generaptr.svg)](https://gitter.im/generaptr/generaptr?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fgeneraptr%2Fgeneraptr-cli.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fgeneraptr%2Fgeneraptr-cli?ref=badge_shield)
 
 Prompts for a database or an OpenAPI file, then writes a REST API or an OpenAPI 3.1 document. See the [root README](../../README.md) for what the generated API contains.
 
@@ -36,3 +40,5 @@ An `openapi.json` that generaptr wrote reads back to the same tables. Other Open
 ## License
 
 MIT
+
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fgeneraptr%2Fgeneraptr-cli.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fgeneraptr%2Fgeneraptr-cli?ref=badge_large)
