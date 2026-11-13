@@ -14,7 +14,7 @@ Make generaptr work again on current Node and npm, and make it generate a curren
 | Workspace tool | pnpm workspaces + Turbo. CLI depends on `"generaptr": "workspace:*"`. | Agreed |
 | History | Merge both repos with `git merge --allow-unrelated-histories`. Keep both histories. | Proposed |
 | Runtime | `engines.node >= 22`. CI on Node 22 and 24. CLI is ESM. Core stays CommonJS until Phase 2 rewrites it. | Done |
-| Generated API | Express 5 + Drizzle (v1). | Agreed |
+| Generated API | Express 5 + Drizzle v1 beta (`drizzle-orm` and `drizzle-kit` `1.0.0-beta.22` on 2026-11-13). Pin the exact beta. Move to v1 stable when it ships. | Agreed |
 | Migrations | Drizzle native: `drizzle-kit generate` + `drizzle-kit migrate`. Forward-only. No custom migration script. No rollback. A bad migration gets a new forward migration. | Agreed |
 | Generated models | Use `drizzle-kit pull` output for `schema.ts`. Delete the Sequelize model generator. | Proposed |
 | Spec format | OpenAPI 3.1 replaces RAML (`raml-1-parser` is deprecated upstream). | Proposed |
@@ -64,9 +64,11 @@ Size: core about 3.8k lines of TypeScript. CLI 428 lines of JS.
 - [x] Add `pnpm-workspace.yaml` and `turbo.json` with `build`, `typecheck` and `test` tasks. Lint runs once at the root.
 - [x] Add a GitHub Actions workflow for Node 22 and 24, with a MySQL service container.
 - [x] Point dependabot at the monorepo (grouped weekly npm updates, monthly actions updates).
-- [ ] Push the branch and open a PR. Make CI a required check on `master`.
+- [x] Push the branch and open PR #153. CI passes on Node 22 and 24.
+- [ ] Make CI a required check on `master`.
+- [ ] Ship later phases as PRs stacked on #153. Merge the whole stack at once.
 - [ ] Delete the stale branches.
-- [ ] Archive the old `generaptr-cli` repo with a pointer to the monorepo.
+- [x] Archive the old `generaptr-cli` repo with a pointer to the monorepo. Its open issues #4 (path autocomplete) and #5 (choose models from the schema) are frozen there.
 
 ### Phase 1: revive (1–2 days)
 
@@ -95,7 +97,6 @@ Size: core about 3.8k lines of TypeScript. CLI 428 lines of JS.
 
 ## Open questions
 
-- Is Drizzle v1 stable when Phase 2 starts? On 2026-11-13 npm has `drizzle-orm` 0.45.4 stable and `1.0.0-beta.22`. Decide: build on the v1 beta, or on 0.45 and upgrade later.
 - Add Postgres introspection in Phase 2, or later?
 - Is the `develop` async API already in npm `generaptr@1.4.1`? Not checked.
 - Is the tool still worth the Phase 2 work? `drizzle-kit pull`, `prisma db pull` and LLM codegen cover part of it. Phases 0–1 are cheap either way.
