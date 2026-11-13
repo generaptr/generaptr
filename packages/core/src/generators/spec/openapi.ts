@@ -1,7 +1,7 @@
 import {
   assertSafeNames, camel, type ParsedType, parseColumnType, pascal, primaryColumns, routedTables, routePath,
-} from '../../commons/columns';
-import { DbColumn, DbSchema, DbTable, Dialect, PackageJsonInfo } from '../../commons/types';
+} from '../../commons/columns.js';
+import { DbColumn, DbSchema, DbTable, Dialect, PackageJsonInfo } from '../../commons/types.js';
 
 // razor: plain objects typed loosely; switch to `openapi-types` if callers need deep typing.
 type JsonSchema = Record<string, any>;

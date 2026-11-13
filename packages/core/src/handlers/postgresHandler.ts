@@ -1,5 +1,5 @@
 import { Pool, type PoolConfig } from 'pg';
-import { DbSchema, DbTable } from '../commons/types';
+import { DbSchema, DbTable } from '../commons/types.js';
 
 type ColumnRow = {
   table_name: string;

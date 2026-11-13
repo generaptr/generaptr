@@ -1,5 +1,5 @@
 import * as mysql from 'mysql2/promise';
-import { DbSchema, DbTable } from '../commons/types';
+import { DbSchema, DbTable } from '../commons/types.js';
 
 /** MySQL stores literal defaults unquoted and marks expressions with DEFAULT_GENERATED. */
 const defaultOf = (row: mysql.RowDataPacket, autoIncrement: boolean): string | undefined => {

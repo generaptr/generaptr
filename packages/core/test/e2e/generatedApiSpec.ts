@@ -3,11 +3,11 @@ import { type ChildProcess, spawn } from 'node:child_process';
 import * as fs from 'node:fs/promises';
 import * as os from 'node:os';
 import * as path from 'node:path';
-import config from '../config';
-import { generateApi, installApi } from '../../src/fileOperations/apiFileOperations';
-import MysqlHandler from '../../src/handlers/mysqlHandler';
-import PostgresHandler from '../../src/handlers/postgresHandler';
-import { DbSchema } from '../../src/commons/types';
+import config from '../config.js';
+import { generateApi, installApi } from '../../src/fileOperations/apiFileOperations.js';
+import MysqlHandler from '../../src/handlers/mysqlHandler.js';
+import PostgresHandler from '../../src/handlers/postgresHandler.js';
+import { DbSchema } from '../../src/commons/types.js';
 
 const mysqlConnection = config.CONNECTION_INFO.MYSQL[config.ENV];
 const postgresConnection = config.CONNECTION_INFO.POSTGRES;

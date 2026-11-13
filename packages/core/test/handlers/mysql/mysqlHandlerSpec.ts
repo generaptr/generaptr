@@ -1,7 +1,7 @@
 import assert from 'node:assert';
 import type * as mysql from 'mysql2/promise';
-import MysqlHandler from '../../../src/handlers/mysqlHandler';
-import config from '../../config';
+import MysqlHandler from '../../../src/handlers/mysqlHandler.js';
+import config from '../../config.js';
 
 const connection: mysql.ConnectionOptions = config.CONNECTION_INFO.MYSQL[config.ENV];
 

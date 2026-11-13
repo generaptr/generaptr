@@ -1,7 +1,7 @@
 import assert from 'node:assert';
 import { compileErrors, validate } from '@readme/openapi-parser';
-import { DbColumn, DbTable } from '../../../src/commons/types';
-import { openApiDocument, tablesFromOpenApi } from '../../../src/generators/spec/openapi';
+import { DbColumn, DbTable } from '../../../src/commons/types.js';
+import { openApiDocument, tablesFromOpenApi } from '../../../src/generators/spec/openapi.js';
 
 const column = (name: string, columnType: string, extra: Partial<DbColumn> = {}): DbColumn => ({
   name, columnType, nullable: false, primary: false, unique: false, autoIncrement: false, ...extra,

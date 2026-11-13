@@ -1,4 +1,4 @@
-import { DbColumn, Dialect, DbTable } from './types';
+import { DbColumn, Dialect, DbTable } from './types.js';
 
 export const camel = (name: string): string => name.replace(/[_\-\s]+(\w)/g, (_: string, c: string) => c.toUpperCase());
 

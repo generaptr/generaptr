@@ -1,10 +1,10 @@
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import { styleText } from 'node:util';
-import { run } from '../commons/utils/run';
-import { renderApi } from '../generators/api/express';
-import { openApiDocument, tablesFromOpenApi } from '../generators/spec/openapi';
-import { DbSchema, Dialect, PackageJsonInfo } from '../commons/types';
+import { run } from '../commons/utils/run.js';
+import { renderApi } from '../generators/api/express.js';
+import { openApiDocument, tablesFromOpenApi } from '../generators/spec/openapi.js';
+import { DbSchema, Dialect, PackageJsonInfo } from '../commons/types.js';
 
 /**
  * Writes an Express 5 + Drizzle API for the given tables into `dir`.

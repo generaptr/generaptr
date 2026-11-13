@@ -1,6 +1,6 @@
-import { generateApi, generateSpec, installApi, readOpenApi } from './fileOperations/apiFileOperations';
-import MysqlHandler from './handlers/mysqlHandler';
-import PostgresHandler from './handlers/postgresHandler';
+import { generateApi, generateSpec, installApi, readOpenApi } from './fileOperations/apiFileOperations.js';
+import MysqlHandler from './handlers/mysqlHandler.js';
+import PostgresHandler from './handlers/postgresHandler.js';
 
 export const operations = {
   api: { generateApi, installApi },

@@ -1,5 +1,6 @@
 {
   "name": "generaptr",
+  "type": "module",
   "scripts": {
     "build": "node -e \"require('fs').rmSync('lib',{recursive:true,force:true})\" && tsc -p src",
     "test": "vitest run",
@@ -16,6 +17,13 @@
   "author": "Darius Cupsa <cupsadarius@gmail.com>",
   "homepage": "https://generaptr.github.io",
   "main": "./lib/generaptr.js",
+  "types": "./lib/generaptr.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/generaptr.d.ts",
+      "default": "./lib/generaptr.js"
+    }
+  },
   "bugs": {
     "url": "https://github.com/generaptr/generaptr/issues"
   },

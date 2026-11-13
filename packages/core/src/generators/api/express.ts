@@ -2,9 +2,9 @@ import * as path from 'node:path';
 import { Eta } from 'eta';
 import {
   assertSafeNames, camel, type ParsedType, parseColumnType, primaryColumns, routedTables, routePath,
-} from '../../commons/columns';
-import { DbColumn, DbSchema, DbTable, Dialect, PackageJsonInfo } from '../../commons/types';
-import { openApiDocument } from '../spec/openapi';
+} from '../../commons/columns.js';
+import { DbColumn, DbSchema, DbTable, Dialect, PackageJsonInfo } from '../../commons/types.js';
+import { openApiDocument } from '../spec/openapi.js';
 
 export { routedTables };
 
@@ -112,7 +112,7 @@ export const columnBuilder = (
 };
 
 const eta: Eta = new Eta({
-  views: path.resolve(__dirname, '../../../templates/api'),
+  views: path.resolve(import.meta.dirname, '../../../templates/api'),
   autoEscape: false,
   autoTrim: false,
 });

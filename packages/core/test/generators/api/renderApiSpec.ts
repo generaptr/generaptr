@@ -1,5 +1,5 @@
-import { DbColumn, DbTable } from '../../../src/commons/types';
-import { renderApi } from '../../../src/generators/api/express';
+import { DbColumn, DbTable } from '../../../src/commons/types.js';
+import { renderApi } from '../../../src/generators/api/express.js';
 
 const column = (name: string, columnType: string, extra: Partial<DbColumn> = {}): DbColumn => ({
   name, columnType, nullable: false, primary: false, unique: false, autoIncrement: false, ...extra,

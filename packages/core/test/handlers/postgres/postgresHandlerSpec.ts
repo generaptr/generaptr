@@ -1,7 +1,7 @@
 import assert from 'node:assert';
-import { DbColumn, DbTable } from '../../../src/commons/types';
-import PostgresHandler from '../../../src/handlers/postgresHandler';
-import config from '../../config';
+import { DbColumn, DbTable } from '../../../src/commons/types.js';
+import PostgresHandler from '../../../src/handlers/postgresHandler.js';
+import config from '../../config.js';
 
 const connection = config.CONNECTION_INFO.POSTGRES;
 

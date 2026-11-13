@@ -96,7 +96,7 @@ Size: core about 3.8k lines of TypeScript. CLI 428 lines of JS.
 - [x] PR 5: Postgres. `PostgresHandler` reads `pg_catalog` (enums, identity and serial keys, defaults, one-dimensional arrays, timestamp precision). The generated API and the OpenAPI document support both dialects. CI runs the end-to-end test on both.
 - [ ] Postgres `bytea` and `tsvector` stay unsupported: JSON cannot carry them as they are. A schema with one of them fails with `Unsupported type`.
 - [ ] Move the generated API from `drizzle-orm@1.0.0-beta.22` to the 1.0 release candidate. npm marks the beta line as deprecated.
-- [ ] PR 6: core to ESM.
+- [x] PR 6: core to ESM. `"type": "module"` with an `exports` map; the CJS shim `index.js` is deleted. `require("generaptr")` still works on Node 22.12+ through `require(esm)`.
 - [ ] Last PR: delete `PLAN.md`, update all docs, release v2.0.0.
 
 ### Phase 3: publish

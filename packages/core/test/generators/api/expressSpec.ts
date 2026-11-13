@@ -1,6 +1,6 @@
 import assert from 'node:assert';
-import { DbColumn, DbTable } from '../../../src/commons/types';
-import { columnBuilder, renderApi, routedTables, schemaFile } from '../../../src/generators/api/express';
+import { DbColumn, DbTable } from '../../../src/commons/types.js';
+import { columnBuilder, renderApi, routedTables, schemaFile } from '../../../src/generators/api/express.js';
 
 const column = (name: string, columnType: string, extra: Partial<DbColumn> = {}): DbColumn => ({
   name, columnType, nullable: true, primary: false, unique: false, autoIncrement: false, ...extra,
