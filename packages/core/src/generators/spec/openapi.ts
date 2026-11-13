@@ -243,14 +243,17 @@ const SAFE_DEFAULT: RegExp =
 const assertSafeExpression = (expression: string, dialect: Dialect): void => {
   const unsafe = (): Error => new Error(`Unsafe expression "${expression}"`);
   const quotes: string = dialect === 'mysql' ? "'\"`" : "'\"";
-  const forbidden: RegExp = dialect === 'mysql' ? /[;\\#\x00-\x1f\x7f]|--|\/\*/ : /[;\\$`\x00-\x1f\x7f]|--|\/\*/;
+  const forbidden: RegExp = dialect === 'mysql' ? /[;\\#]|--|\/\*/ : /[;\\$`]|--|\/\*/;
+  if ([...expression].some((char: string) => char.charCodeAt(0) < 0x20 || char.charCodeAt(0) === 0x7f)) {
+    throw unsafe();
+  }
   let depth = 0;
   let code = '';
   for (let i = 0; i < expression.length; i++) {
     const char: string = expression[i];
     if (quotes.includes(char)) {
       const end: number = expression.indexOf(char, i + 1);
-      if (end < 0 || /[\\\x00-\x1f\x7f]/.test(expression.slice(i, end))) {
+      if (end < 0 || expression.slice(i, end).includes('\\')) {
         throw unsafe();
       }
       i = end;
