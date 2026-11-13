@@ -1,66 +1,49 @@
-![](http://i.imgur.com/yCRAubA.png)
-========
+# generaptr
 
-[![npm](https://badge.fury.io/js/generaptr.svg)](http://badge.fury.io/js/generaptr) [![Join the chat at https://gitter.im/generaptr/generaptr](https://badges.gitter.im/generaptr/generaptr.svg)](https://gitter.im/generaptr/generaptr?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Coverage Status](https://coveralls.io/repos/github/generaptr/generaptr/badge.svg?branch=master)](https://coveralls.io/github/generaptr/generaptr?branch=master) 
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fgeneraptr%2Fgeneraptr.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fgeneraptr%2Fgeneraptr?ref=badge_shield)
+The library behind [`generaptr-cli`](../cli). It reads tables from MySQL, PostgreSQL, or an OpenAPI 3.1 document, and writes an Express 5 + Drizzle API or an OpenAPI document. See the [root README](../../README.md) for what the generated API contains.
 
-Generaptr is a node package that helps when starting up a project by generating boilerplate code for Express api.
-
--------
-
-# Announcement
-
-**As of `generaptr@1.2.0` this package would only hold the logic and core functionality of what was once `generaptr`. If you want to use the cli please use the new [generaptr-cli](https://github.com/generaptr/generaptr-cli) package.**
-
--------
-## Table of Contents
-1. [Documentation](#documentation)
-2. [Minimum Requirements](#minimum-requirements)
-3. [Installation](#instalation)
-6. [Code of Conduct](#code-conduct)
-7. [Contributing](#contributing)
-8. [License](#license)
-9. [References](#references)
-
-## Goal and Philosophy
-**`Generaptr`** holds the core logic and functionality of [generaptr-cli](https://github.com/generaptr/generaptr-cli)
- 
-**`Generaptr`** should ease the process of:
-- starting a new backend project
-- writing boilerplate crud operations
-- writing api specs
-
-## [Documentation](#documentation)
-<a name="documentation"></a>
-### [Minimum Requirements](#minimum-requirements)
-<a name="minimum-requirements"></a>
-The package was developed under `node 7.5` so a minimum requirement would be:
-* `node >= v7.5.0`
-* `npm >= v3.10.10`
-### [Installation](#instalation)
-<a name="instalation"></a>
-
-``` shell
+```sh
 npm install generaptr
 ```
 
-**Unit test**
+Node 22 or later is necessary. The package is ESM. `require('generaptr')` also works through Node's `require(esm)`.
 
-Unit test are written in [Mocha](https://mochajs.org/) and [Assert](https://nodejs.org/api/assert.html). Please add a unit test for every new feature or bug fix. `npm test` to run the test suite.
+## Usage
 
-**Documentation**
+```js
+import { handlers, operations } from 'generaptr';
 
-Add documentation for every API change. Feel free to send typo fixes and better docs!
+const info = { name: 'shop-api', version: '1.0.0', description: '', author: '', license: 'MIT' };
 
-## [License](#license)
-<a name="license"></a>
+// Read the tables. Use handlers.MySql with the same options, without `schema`.
+const db = new handlers.Postgres({
+  host: '127.0.0.1', port: 5432, user: 'postgres', password: 'secret', database: 'shop', schema: 'public',
+});
+await db.connect();
+const schema = await db.readSchema();
+await db.close();
 
-Copyright (c) 2017 Darius Cupsa (twitter: [@cupsadarius](https://twitter.com/cupsadarius))
-Licensed under the MIT license.
+// Write the API, then install its dependencies.
+await operations.api.generateApi('./shop-api', info, schema);
+await operations.api.installApi('./shop-api');
 
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fgeneraptr%2Fgeneraptr.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fgeneraptr%2Fgeneraptr?ref=badge_large)
+// Write only the OpenAPI document.
+await operations.spec.generateSpec('./spec', info, schema);
 
-## [References](#references)
-<a name="references"></a>
-* [RAML](http://raml.org)
-* [Express.js](https://expressjs.com)
+// Read an OpenAPI document as tables for one engine.
+const fromSpec = await operations.spec.readOpenApi('./spec/openapi.json', 'mysql');
+```
+
+| Export | Does |
+|---|---|
+| `handlers.MySql`, `handlers.Postgres` | `connect()` checks the connection. `readSchema()` returns `{ dialect, tables }`. `close()` ends the pool. |
+| `operations.api.generateApi(dir, info, schema)` | Writes the API into `dir`. Returns the paths it wrote. |
+| `operations.api.installApi(dir)` | Runs `npm install` in `dir`. |
+| `operations.spec.generateSpec(dir, info, schema)` | Writes `dir/openapi.json`. Returns its path. |
+| `operations.spec.readOpenApi(file, dialect)` | Reads a JSON OpenAPI document. `dialect` is `'mysql'` or `'postgresql'`. |
+
+`readOpenApi` accepts a column default from the document only when it is a literal or a known function such as `now()`. The default goes into SQL, and a document can come from anyone.
+
+## License
+
+MIT

@@ -1,9 +1,8 @@
 {
   "name": "generaptr-cli",
-  "version": "0.2.1",
+  "version": "2.0.0",
   "description": "Generaptr is a node cli package that helps when starting up a project by generating boilerplate code.",
   "license": "MIT",
-  "scripts": {},
   "keywords": [
     "nodejs"
   ],
@@ -23,11 +22,14 @@
   "engines": {
     "node": ">=22"
   },
-  "devDependencies": {},
   "dependencies": {
     "figlet": "^1.12.0",
     "inquirer": "^14.3.0",
     "generaptr": "workspace:*"
   },
-  "type": "module"
+  "type": "module",
+  "files": [
+    "bin",
+    "lib"
+  ]
 }

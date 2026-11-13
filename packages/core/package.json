@@ -6,7 +6,7 @@
     "test": "vitest run",
     "typecheck": "tsc -p test --noEmit"
   },
-  "version": "1.4.1",
+  "version": "2.0.0",
   "description": "Api generator",
   "license": "MIT",
   "repository": {
