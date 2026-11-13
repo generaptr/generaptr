@@ -9,6 +9,7 @@
 - The generated schema keeps generated columns (MySQL `STORED` and `VIRTUAL`, Postgres `STORED`), Postgres identity columns with their sequence options, column collations, and MySQL `ON UPDATE CURRENT_TIMESTAMP`. The insert and update schemas leave out identity and generated columns. A generated expression from an OpenAPI document must stay inside its parentheses, and a document read into another dialect keeps an identity column as a serial and drops the rest.
 - A type without a Drizzle builder becomes a Drizzle custom type with the exact SQL type, for example `tsvector`, `inet`, `money`, `bit(3)`, MySQL `set(...)`, and multi-dimensional arrays. Binary types (`bytea`, MySQL `blob` and `binary`) carry base64 strings in JSON ([#166](https://github.com/generaptr/generaptr/issues/166)).
 - The generated schema keeps Postgres enums that no column uses and sequences that no column owns, with their options. A column that takes its default from such a sequence keeps that default. Drizzle writes every sequence as `bigint`, so generaptr stops with an error on a sequence of another type.
+- Breaking: MySQL `binary`, `varbinary`, and blob columns carry base64 strings in the generated API.
 - Breaking: a Postgres identity column reads as `DbColumn.identity`, not as `autoIncrement`.
 - A fidelity test rebuilds a schema from the generated Drizzle schema and compares the catalogs of both databases.
 

@@ -81,17 +81,44 @@ npm run db:baseline     # once, on the database that generaptr read
 | `tinyint`, `smallint`, `mediumint`, `int`, `bigint`, `year` (signed or `unsigned`) | `smallint`, `integer`, `bigint`, serial and identity columns |
 | `tinyint(1)` as boolean | `boolean` |
 | `decimal(p,s)` | `numeric(p,s)` |
-| `varchar(n)`, `char(n)`, `binary(n)`, `varbinary(n)` | `character varying(n)`, `character(n)` |
+| `varchar(n)`, `char(n)` | `character varying(n)`, `character(n)` |
 | `enum(...)` | enum types (`CREATE TYPE ... AS ENUM`) |
-| text and blob types, `date`, `datetime`, `timestamp`, `time`, `json`, `float`, `double` | `text`, `date`, `time`, `timestamp` with or without time zone and precision, `json`, `jsonb`, `uuid`, `real`, `double precision` |
+| text types, `date`, `datetime`, `timestamp`, `time` (with fractional seconds), `json`, `float`, `double` | `text`, `date`, `time`, `timestamp` with or without time zone and precision, `json`, `jsonb`, `uuid`, `real`, `double precision` |
 | | One-dimensional arrays of the types above, for example `text[]` |
 
-Generaptr stops with `Unsupported type` when a table has any other type. It also stops when a table or column name has characters other than letters, digits, and `_`.
+Binary types (MySQL `binary`, `varbinary`, and blob types, PostgreSQL `bytea`) carry base64 strings in JSON. Any other type, for example `tsvector`, `inet`, `money`, `bit(3)`, MySQL `set(...)`, or a multi-dimensional array, becomes a Drizzle custom type with the exact SQL type.
+
+Generaptr stops when a table or column name has characters other than letters, digits, and `_`.
+
+## What the generated schema keeps
+
+`src/db/schema.js` rebuilds the database that generaptr read. A test in this repository rebuilds a schema from it and compares the catalogs of both databases.
+
+- Primary keys, unique constraints, and foreign keys with their names, composite columns, and `ON DELETE` and `ON UPDATE` actions.
+- CHECK constraints.
+- Indexes: method, column and expression keys, collation, operator class, order, `NULLS FIRST` or `LAST`, `WHERE`, storage parameters, and MySQL prefix lengths.
+- Defaults, generated columns, identity columns with their sequence options, column collations, and MySQL `ON UPDATE CURRENT_TIMESTAMP`.
+- PostgreSQL enums and sequences, also the ones that no column uses.
 
 ## Known limits
 
-- PostgreSQL `bytea` and `tsvector` are not supported. JSON cannot carry them as they are.
+Drizzle cannot write these, so generaptr stops with an error when a schema has one:
+
+- PostgreSQL `INCLUDE` columns on an index, unique indexes with `NULLS NOT DISTINCT` (unique constraints with it work), exclusion constraints, virtual generated columns, and sequences of a type other than `bigint` that no column owns.
+- MySQL `FULLTEXT` and `SPATIAL` indexes, and `enum` or `set` values with a backslash.
+
+Other limits:
+
+- Generaptr reads one PostgreSQL schema (`public` by default). Views, functions, triggers, and comments are not read.
+- A serial column keeps the default options of its sequence.
 - The generated API pins `drizzle-orm` and `drizzle-kit` `1.0.0-rc.5`, a release candidate.
+
+## Upgrade from 2.x
+
+- Keys belong to the table: `DbTable` has `primaryKey`, `uniques`, and `foreignKeys`. `DbColumn` has no `primary`, `unique`, or `references`. Generaptr 2 OpenAPI documents still read.
+- A PostgreSQL identity column reads as `DbColumn.identity`, not as `autoIncrement`.
+- MySQL `binary`, `varbinary`, and blob columns carry base64 strings in the generated API.
+- Generate the API again. Then run `npm run db:generate` to see the difference between the old schema and the new one.
 
 ## Contributing
 
