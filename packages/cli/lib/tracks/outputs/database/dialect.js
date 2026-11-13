@@ -1,16 +1,16 @@
-const inquirer = require('inquirer');
-const mysql = require('./mysql');
+import inquirer from 'inquirer';
+import * as mysql from './mysql.js';
 
-module.exports.questions = [
+export const questions = [
   {
     name: 'dialect',
-    type: 'list',
+    type: 'select',
     message: 'Database engine:',
     choices: ['MySql'],
   },
 ];
 
-module.exports.handler = async (data) => {
+export const handler = async (data) => {
   let action;
   switch (data.dialect) {
     case 'MySql': {
@@ -22,9 +22,7 @@ module.exports.handler = async (data) => {
     }
   }
 
+  const connection = await action.handler(await inquirer.prompt(action.questions));
 
-  const connection = action.handler(await inquirer.prompt(action.questions));
-  Object.assign(connection, { dialect: data.dialect });
-
-  return connection;
+  return { ...connection, dialect: data.dialect };
 };

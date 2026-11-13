@@ -1,16 +1,16 @@
-const inquirer = require('inquirer');
-const dialect = require('./relational/dialect');
+import inquirer from 'inquirer';
+import * as dialect from './relational/dialect.js';
 
-module.exports.questions = [
+export const questions = [
   {
     name: 'type',
-    type: 'list',
+    type: 'select',
     message: 'What type of database are we dealing with?',
     choices: ['relational', 'non-relational'],
   },
 ];
 
-module.exports.handler = async (data) => {
+export const handler = async (data) => {
   let action;
   switch (data.type) {
     case 'relational':

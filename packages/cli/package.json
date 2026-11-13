@@ -3,9 +3,7 @@
   "version": "0.2.1",
   "description": "Generaptr is a node cli package that helps when starting up a project by generating boilerplate code.",
   "license": "MIT",
-  "scripts": {
-    "lint": "eslint -c .eslintrc.js lib"
-  },
+  "scripts": {},
   "keywords": [
     "nodejs"
   ],
@@ -20,23 +18,16 @@
     "generaptr": "./bin/generaptr"
   },
   "bugs": {
-    "url": "https://github.com/generaptr/generaptr-cli/issues"
+    "url": "https://github.com/generaptr/generaptr/issues"
   },
   "engines": {
-    "node": ">= 7.5.0"
+    "node": ">=22"
   },
-  "devDependencies": {
-    "commitizen": "^4.0.3",
-    "cz-conventional-changelog": "^3.0.2",
-    "eslint": "^6.5.1",
-    "eslint-config-airbnb-base": "^14.0.0",
-    "eslint-plugin-import": "^2.18.2"
-  },
+  "devDependencies": {},
   "dependencies": {
-    "chalk": "^5.3.0",
-    "clear": "^0.1.0",
-    "figlet": "^1.2.4",
-    "inquirer": "^9.2.20",
+    "figlet": "^1.12.0",
+    "inquirer": "^14.3.0",
     "generaptr": "workspace:*"
-  }
+  },
+  "type": "module"
 }

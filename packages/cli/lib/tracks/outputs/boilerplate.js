@@ -1,10 +1,13 @@
-const chalk = require('chalk');
-const inquirer = require('inquirer');
-const { api: Api } = require('generaptr').operations;
-const input = require('../inputs/input');
-const dialect = require('./database/dialect');
+import { styleText } from 'node:util';
+import inquirer from 'inquirer';
+import { operations } from 'generaptr';
 
-module.exports.questions = [
+import * as input from '../inputs/input.js';
+import * as dialect from './database/dialect.js';
+
+const { api: Api } = operations;
+
+export const questions = [
   {
     name: 'output',
     type: 'input',
@@ -40,7 +43,7 @@ module.exports.questions = [
   },
 ];
 
-module.exports.handler = async (data) => {
+export const handler = async (data) => {
   const api = new Api(data.output);
 
   await api.createDirectoryStructure();
@@ -50,7 +53,7 @@ module.exports.handler = async (data) => {
   const consent = await inquirer.prompt([{
     name: 'allow',
     type: 'confirm',
-    message: chalk.yellow('Allow generaptr to install required packages:'),
+    message: styleText('yellow', 'Allow generaptr to install required packages:'),
   }]);
 
   if (!consent.allow) {

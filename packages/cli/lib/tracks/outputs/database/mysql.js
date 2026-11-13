@@ -1,6 +1,6 @@
-const chalk = require('chalk');
+import { styleText } from 'node:util';
 
-module.exports.questions = [
+export const questions = [
   {
     name: 'host',
     type: 'input',
@@ -12,14 +12,7 @@ module.exports.questions = [
     type: 'input',
     message: 'Port:',
     default: '3306',
-    validate: (value) => {
-      if (Number.isNaN(Number(value))) {
-        return true;
-      }
-      console.log(chalk.red('Port must be a number'));
-
-      return false;
-    },
+    validate: (value) => (Number.isInteger(Number(value)) ? true : 'Port must be a number'),
   },
   {
     name: 'database',
@@ -29,7 +22,7 @@ module.exports.questions = [
       if (value.length) {
         return true;
       }
-      console.log(chalk.red('Database not provided'));
+      console.log(styleText('red', 'Database not provided'));
 
       return false;
     },
@@ -48,4 +41,4 @@ module.exports.questions = [
   },
 ];
 
-module.exports.handler = async (data) => data;
+export const handler = async (data) => data;

@@ -1,16 +1,16 @@
-const inquirer = require('inquirer');
-const mysql = require('./mysql');
+import inquirer from 'inquirer';
+import * as mysql from './mysql.js';
 
-module.exports.questions = [
+export const questions = [
   {
     name: 'dialect',
-    type: 'list',
+    type: 'select',
     message: 'Database engine:',
     choices: ['MySql', 'Postgresql', 'Sqlite'],
   },
 ];
 
-module.exports.handler = async (data) => {
+export const handler = async (data) => {
   let action;
   switch (data.dialect) {
     case 'MySql': {

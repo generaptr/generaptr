@@ -1,9 +1,12 @@
-const chalk = require('chalk');
-const inquirer = require('inquirer');
-const { raml: RAML } = require('generaptr').operations;
-const type = require('../inputs/database/type');
+import { styleText } from 'node:util';
+import inquirer from 'inquirer';
+import { operations } from 'generaptr';
 
-module.exports.questions = [
+import * as type from '../inputs/database/type.js';
+
+const { raml: RAML } = operations;
+
+export const questions = [
   {
     name: 'output',
     type: 'input',
@@ -27,18 +30,17 @@ module.exports.questions = [
   },
 ];
 
-module.exports.handler = async (data) => {
+export const handler = async (data) => {
   const raml = new RAML(data.output);
 
   const schemaInfo = await type.handler(await inquirer.prompt(type.questions));
 
   await raml.generateSchemaTypeFiles(schemaInfo);
-  await raml.generateSchemaTypeFiles(schemaInfo);
   await raml.generateSchemaExampleFiles(schemaInfo);
   await raml.generateSchemaExamplesFilesFromCache();
   await raml.generateSchemaApiFiles(schemaInfo, data);
 
-  console.log(chalk.green(`RAML Specification has been generated in: ${data.output}`));
+  console.log(styleText('green', `RAML Specification has been generated in: ${data.output}`));
 
   return true;
 };

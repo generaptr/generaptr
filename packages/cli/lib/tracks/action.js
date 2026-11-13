@@ -1,17 +1,17 @@
-const inquirer = require('inquirer');
-const specification = require('./outputs/specification');
-const boilerplate = require('./outputs/boilerplate');
+import inquirer from 'inquirer';
+import * as specification from './outputs/specification.js';
+import * as boilerplate from './outputs/boilerplate.js';
 
-module.exports.questions = [
+export const questions = [
   {
     name: 'action',
-    type: 'list',
+    type: 'select',
     message: 'What would you want to generate?',
     choices: ['Boilerplate API', 'RAML Specification'],
   },
 ];
 
-module.exports.handler = async (data) => {
+export const handler = async (data) => {
   let action;
   switch (data.action) {
     case 'RAML Specification': {

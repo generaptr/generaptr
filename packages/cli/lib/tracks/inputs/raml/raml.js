@@ -1,7 +1,7 @@
-const chalk = require('chalk');
-const { handlers } = require('generaptr');
+import { styleText } from 'node:util';
+import { handlers } from 'generaptr';
 
-module.exports.questions = [
+export const questions = [
   {
     name: 'path',
     type: 'input',
@@ -10,14 +10,14 @@ module.exports.questions = [
       if (value.length) {
         return true;
       }
-      console.log(chalk.red('Path to the RAML specification not provided.'));
+      console.log(styleText('red', 'Path to the RAML specification not provided.'));
 
       return false;
     },
   },
 ];
 
-module.exports.handler = (data) => {
+export const handler = (data) => {
   const ramlHandler = new handlers.RAML(data);
 
   return ramlHandler.parseSchema();

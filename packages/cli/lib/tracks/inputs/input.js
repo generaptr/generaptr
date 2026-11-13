@@ -1,17 +1,17 @@
-const inquirer = require('inquirer');
-const type = require('./database/type');
-const raml = require('./raml/raml');
+import inquirer from 'inquirer';
+import * as type from './database/type.js';
+import * as raml from './raml/raml.js';
 
-module.exports.questions = [
+export const questions = [
   {
     name: 'input',
-    type: 'list',
+    type: 'select',
     message: 'From where should we read the schema?',
     choices: ['Existing Database', 'RAML specification'],
   },
 ];
 
-module.exports.handler = async (data) => {
+export const handler = async (data) => {
   let action;
   switch (data.input) {
     case 'Existing Database':

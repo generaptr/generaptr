@@ -1,21 +1,16 @@
-const chalk = require('chalk');
-const clear = require('clear');
-const figlet = require('figlet');
-const inquirer = require('inquirer');
-const action = require('./tracks/action');
+import { styleText } from 'node:util';
+import figlet from 'figlet';
+import inquirer from 'inquirer';
+import * as action from './tracks/action.js';
 
-clear();
+console.clear();
 console.log(
-  chalk.cyan(
-    figlet.textSync('generaptr', { horizontalLayout: 'full' }),
-  ),
+  styleText('cyan', figlet.textSync('generaptr', { horizontalLayout: 'full' })),
 );
 
-(async () => {
-  try {
-    const answers = await inquirer.prompt(action.questions);
-    await action.handler(answers);
-  } catch (error) {
-    console.log(chalk.red(error.message));
-  }
-})();
+try {
+  await action.handler(await inquirer.prompt(action.questions));
+} catch (error) {
+  console.log(styleText('red', error.message));
+  process.exitCode = 1;
+}
