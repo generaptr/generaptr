@@ -25,7 +25,7 @@ const words = (key: string): string => {
 const singular = (name: string): string => name.replace(/s$/, '');
 const refName = (schema: JsonSchema | undefined): string => String(schema?.$ref).split('/').pop() as string;
 const types = (property: JsonSchema): string[] => [property.type ?? []].flat();
-const show = (value: unknown) => ({ $computed: 'show', args: { value } });
+const show = (value: unknown, full = false) => ({ $computed: 'show', args: { value, ...(full ? { full } : {}) } });
 const navigate = (to: unknown) => ({ press: { action: 'navigate', params: { to } } });
 const openRow = (base: string, id: string) => ({ press: { action: 'navigate', params: { base, id: { $item: id } } } });
 
@@ -37,12 +37,16 @@ const kindOf = (property: JsonSchema): Kind => {
   return plain.find((kind: Kind) => types(property).includes(kind)) ?? 'json';
 };
 
-/** Element ids follow creation order, so the same document always gives the same spec. */
+/**
+ * Element ids follow creation order, so the same document always gives the same spec. A vertical stack stretches
+ * its children: the shadcn Stack aligns them to the start, which shrinks each card to its content.
+ */
 const builder = () => {
   const elements: Record<string, Element> = {};
   const el = (type: string, props: Record<string, unknown>, children: string[] = [], extra: object = {}): string => {
     const id = `${type.toLowerCase()}-${Object.keys(elements).length}`;
-    elements[id] = { type, props, children, ...extra };
+    const stretch: boolean = type === 'Stack' && props.direction === 'vertical';
+    elements[id] = { type, props: stretch ? { align: 'stretch', ...props } : props, children, ...extra };
     return id;
   };
   return { elements, el };
@@ -96,7 +100,8 @@ export const webPages = (doc: OpenApiDocument): { title: string; resources: Reso
       const { elements, el } = builder();
       const columns: string[] = Object.keys(row.properties)
         .filter((field: string) => kindOf(row.properties[field]) !== 'json').slice(0, COLUMNS);
-      const grid = { columns: columns.length + 1, gap: 'md', className: 'w-full items-center py-2 border-b' };
+      // Long values end with an ellipsis instead of running into the next column.
+      const grid = { columns: columns.length + 1, gap: 'md', className: 'w-full items-center py-2 border-b [&>*]:min-w-0 [&_p]:truncate' };
       const head = el('Grid', grid, [
         ...columns.map((field: string) => el('Text', { text: words(field), variant: 'caption' })),
         el('Text', { text: '', variant: 'caption' }),
@@ -126,10 +131,22 @@ export const webPages = (doc: OpenApiDocument): { title: string; resources: Reso
 
     const detail = (): Page => {
       const { elements, el } = builder();
-      const fields = el('Grid', { columns: 2, gap: 'md' }, Object.keys(row.properties).flatMap((field: string) => [
-        el('Text', { text: words(field), variant: 'muted' }),
-        el('Text', { text: show({ $state: `/row/${field}` }), variant: 'body' }),
-      ]));
+      const value = (field: string): string => {
+        const foreignKey: DbForeignKey | undefined = references.get(field);
+        if (!foreignKey) {
+          return el('Text', { text: show({ $state: `/row/${field}` }, true), variant: 'body' });
+        }
+        return el('Stack', { direction: 'horizontal', gap: 'none' }, [
+          el('Link', {
+            label: { $state: `/row/${field}` },
+            href: { $template: `#${pathOfTable(foreignKey.table)}/\${/row/${field}}` },
+          }, [], { visible: { $state: `/row/${field}` } }),
+          el('Text', { text: '—', variant: 'body' }, [], { visible: { $state: `/row/${field}`, not: true } }),
+        ]);
+      };
+      const fields = el('Grid', {
+        columns: 2, gap: 'md', className: 'grid-cols-[minmax(0,12rem)_minmax(0,1fr)] [&_p]:whitespace-pre-wrap [&_p]:break-words [&_p]:max-h-80 [&_p]:overflow-auto',
+      }, Object.keys(row.properties).flatMap((field: string) => [el('Text', { text: words(field), variant: 'muted' }), value(field)]));
       const related: string[] = relations.map(([relation, schema]: [string, JsonSchema]) => {
         const many: boolean = schema.type === 'array';
         const target: JsonSchema = schemas[refName(many ? schema.items : schema.anyOf[0])];
@@ -140,9 +157,8 @@ export const webPages = (doc: OpenApiDocument): { title: string; resources: Reso
             el('Link', {
               label: { $template: `\${/row/${relation}/${label}}` },
               href: { $template: `#${targetPath}/\${/row/${relation}/${keyOf(target)}}` },
-            }, [], { visible: { $state: `/row/${relation}` } }),
-            el('Text', { text: 'None', variant: 'muted' }, [], { visible: { $state: `/row/${relation}`, not: true } }),
-          ]);
+            }),
+          ], { visible: { $state: `/row/${relation}` } });
         }
         const line = el('Stack', { direction: 'horizontal', justify: 'between', align: 'center', className: 'py-1' }, [
           el('Text', { text: show({ $item: label }), variant: 'body' }),
@@ -150,8 +166,7 @@ export const webPages = (doc: OpenApiDocument): { title: string; resources: Reso
         ]);
         return el('Card', { title: words(relation) }, [
           el('Stack', { direction: 'vertical', gap: 'none' }, [line], { repeat: { statePath: `/row/${relation}`, key: keyOf(target) } }),
-          el('Text', { text: 'None', variant: 'muted' }, [], { visible: { $state: `/row/${relation}/0`, not: true } }),
-        ]);
+        ], { visible: { $state: `/row/${relation}/0` } });
       });
       const root = el('Stack', { direction: 'vertical', gap: 'md' }, [
         el('Stack', { direction: 'horizontal', justify: 'between', align: 'center' }, [
@@ -179,6 +194,7 @@ export const webPages = (doc: OpenApiDocument): { title: string; resources: Reso
       const schema: JsonSchema = body(mode === 'create' ? 'post' : 'put');
       const fields: Record<string, Field> = fieldsOf(schema);
       const required: Set<string> = new Set(schema.required ?? []);
+      const filled = (field: string): string | undefined => row.properties[field]?.['x-column']?.default;
       const load: Load[] = [];
       const inputs: string[] = propertiesOf(schema).map(([field, value]: [string, JsonSchema]) => {
         const label: string = words(field);
@@ -206,7 +222,7 @@ export const webPages = (doc: OpenApiDocument): { title: string; resources: Reso
             return el('Input', {
               label, name: field, value: bind, checks,
               type: numeric ? 'number' : /email/i.test(field) ? 'email' : 'text',
-              placeholder: placeholders[fields[field].kind] ?? placeholders[value.format] ?? placeholders[value.contentEncoding] ?? value.description ?? null,
+              placeholder: (filled(field) && `Leave empty for ${filled(field)}`) ?? placeholders[fields[field].kind] ?? placeholders[value.format] ?? placeholders[value.contentEncoding] ?? value.description ?? null,
             });
           }
         }

@@ -82,21 +82,24 @@ const toBody = (form, fields, partial) => Object.fromEntries(Object.entries(fiel
   return [[key, field.kind === 'json' ? parsed(String(value)) : value]];
 }));
 
-const show = ({ value }) => {
-  if (value === null || value === undefined || value === '') {
+// A list cell shows one line; a detail page (`full`) shows objects as indented JSON.
+const show = ({ value, full }) => {
+  if (value === null || value === undefined || value === '' || (Array.isArray(value) && !value.length)) {
     return '—';
   }
   if (typeof value === 'boolean') {
     return value ? 'Yes' : 'No';
   }
-  if (Array.isArray(value)) {
-    return value.join(', ') || '—';
+  if (Array.isArray(value) && value.every((item) => typeof item !== 'object' || item === null)) {
+    return value.join(', ');
   }
-  return typeof value === 'object' ? JSON.stringify(value) : String(value);
+  return typeof value === 'object' ? JSON.stringify(value, null, full ? 2 : undefined) : String(value);
 };
 
 function App() {
   const [hash, setHash] = useState(location.hash || `#${resources[0]?.path ?? ''}`);
+  const [filter, setFilter] = useState('');
+  const shown = resources.filter((r) => r.title.toLowerCase().includes(filter.trim().toLowerCase()));
   useEffect(() => {
     const onHash = () => setHash(location.hash);
     addEventListener('hashchange', onHash);
@@ -154,9 +157,17 @@ function App() {
 
   return (
     <div className="min-h-screen grid md:grid-cols-[14rem_1fr]">
-      <nav className="border-r bg-muted/40 p-4 flex md:flex-col gap-1 overflow-x-auto">
+      <nav className="border-r bg-muted/40 p-4 flex flex-col gap-1 max-h-64 md:max-h-screen md:sticky md:top-0 overflow-y-auto">
         <p className="px-2 pb-2 text-sm font-semibold">{title}</p>
-        {resources.map((r) => (
+        <input
+          type="search"
+          aria-label="Find a table"
+          placeholder="Find a table"
+          value={filter}
+          onChange={(event) => setFilter(event.target.value)}
+          className="mb-2 rounded-md border bg-background px-2 py-1.5 text-sm"
+        />
+        {shown.map((r) => (
           <a
             key={r.path}
             href={`#${r.path}`}
@@ -167,7 +178,7 @@ function App() {
           </a>
         ))}
       </nav>
-      <main className="p-6 max-w-5xl w-full">
+      <main className="p-6 max-w-screen-2xl w-full min-w-0">
         <JSONUIProvider key={hash} registry={registry} store={store} handlers={handlers} functions={{ show }}>
           <Renderer spec={current.page.spec} registry={registry} />
         </JSONUIProvider>

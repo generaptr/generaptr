@@ -54,4 +54,6 @@
 @layer base {
   * { @apply border-border outline-ring/50; }
   body { @apply bg-background text-foreground; }
+  /* The theme colors links like text, so an underline marks them. */
+  main a { @apply underline underline-offset-4; }
 }

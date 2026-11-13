@@ -17,6 +17,7 @@ const tables: DbTable[] = [
       column('active', 'tinyint(1)'),
       column('role', "enum('admin','member')"),
       column('avatar', 'blob', { nullable: true }),
+      column('created_at', 'datetime', { default: 'CURRENT_TIMESTAMP' }),
     ],
     primaryKey: { name: 'PRIMARY', columns: ['id'] },
   },
@@ -54,6 +55,24 @@ describe('web pages', () => {
     assert.deepStrictEqual(resource('user_accounts').pages.detail.load, [{ path: { $template: '/user-accounts/${/route/id}?with=owner' }, into: '/row' }]);
   });
 
+  it('links a foreign key to its row, and shows a relation only when it has rows', () => {
+    const { detail } = resource('user_accounts').pages;
+    const link = elements(detail).find((element: Element) => element.type === 'Link' && element.props.label?.toString() !== undefined
+      && JSON.stringify(element.props.href) === JSON.stringify({ $template: '#/users/${/row/ownerId}' }));
+    assert.deepStrictEqual(link?.visible, { $state: '/row/ownerId' });
+    const owner = elements(detail).find((element: Element) => element.type === 'Card' && element.props.title === 'Owner');
+    assert.deepStrictEqual(owner?.visible, { $state: '/row/owner' });
+    const accounts = elements(resource('users').pages.detail).find((element: Element) => element.props.title === 'User accounts');
+    assert.deepStrictEqual(accounts?.visible, { $state: '/row/userAccounts/0' });
+  });
+
+  it('fills the page width with every vertical stack', () => {
+    for (const page of Object.values(resource('users').pages)) {
+      const stacks: Element[] = elements(page).filter((element: Element) => element.type === 'Stack' && element.props.direction === 'vertical');
+      assert.ok(stacks.length && stacks.every((stack: Element) => stack.props.align === 'stretch'));
+    }
+  });
+
   it('builds the create form from the input schema, with a select of rows for a foreign key', () => {
     const { create } = resource('user_accounts').pages;
     assert.strictEqual(labelled(create, 'Owner id (Users)')?.type, 'Select');
@@ -71,6 +90,7 @@ describe('web pages', () => {
     assert.deepStrictEqual(labelled(create, 'Role')?.props.options, ['admin', 'member']);
     assert.strictEqual(labelled(create, 'Email')?.props.type, 'email');
     assert.strictEqual(labelled(create, 'Avatar')?.props.placeholder, 'Base64');
+    assert.strictEqual(labelled(create, 'Created at')?.props.placeholder, 'Leave empty for CURRENT_TIMESTAMP');
     const save = (page: Page): object => {
       const button = labelled(page, page === create ? 'Create user' : 'Save changes') as Element;
       return (button.on as { press: { params: object }[] }).press[1].params;
