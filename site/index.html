@@ -230,7 +230,7 @@
     └── routes/users.js <span class="c"># list, get, create, update, delete</span></pre>
         <ul>
           <li>Each table with one primary key gets five routes. Link tables with a composite key get none.</li>
-          <li>The list and get routes take <code>with</code> to include related rows: <code>GET /users/1?with=accounts,groups</code>. A foreign key <code>accounts.user_id</code> gives <code>accounts.user</code> and <code>users.accounts</code>, and a link table such as <code>users_groups</code> gives <code>users.groups</code>.</li>
+          <li>The list and get routes take <code>with</code> to include related rows: <code>GET /users/1?with=accounts,groups</code>. A foreign key <code>accounts.user_id</code> gives <code>accounts.user</code> and <code>users.accounts</code>, and a link table such as <code>users_groups</code> gives <code>users.groups</code>. A nested list returns at most 100 rows, and <code>with</code> reaches only tables that have routes.</li>
           <li>zod schemas from <code>drizzle-orm/zod</code> check each request body. A bad body gets 400 with the list of problems.</li>
           <li>Database errors get a generic 500. The response never shows the database message.</li>
           <li>Defaults, enums, unique keys, and foreign keys come from the database, so a client can leave out the columns that the database fills.</li>

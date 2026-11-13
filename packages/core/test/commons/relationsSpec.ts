@@ -1,5 +1,5 @@
 import assert from 'node:assert';
-import { tableRelations } from '../../src/commons/relations.js';
+import { routedRelations, tableRelations } from '../../src/commons/relations.js';
 import type { DbColumn, DbTable } from '../../src/commons/types.js';
 
 const column = (name: string, extra: Partial<DbColumn> = {}): DbColumn => ({
@@ -63,6 +63,18 @@ describe('tableRelations', () => {
     ]);
     assert.deepStrictEqual(names(relations, 'posts'), ['one users2']);
     assert.deepStrictEqual(names(relations, 'users'), ['many posts']);
+  });
+
+  it('keeps only relations between tables that have routes', () => {
+    const relations = routedRelations([
+      ...tables,
+      { name: 'audit_log', columns: [column('user_id', ref('users')), column('message', { columnType: 'text' })] },
+    ]);
+    assert.deepStrictEqual(names(tableRelations([...tables, { name: 'audit_log', columns: [column('user_id', ref('users')), column('message', { columnType: 'text' })] }]), 'users'),
+      ['many accounts', 'many applications', 'many groups', 'many auditLog']);
+    assert.deepStrictEqual(names(relations, 'users'), ['many accounts', 'many applications', 'many groups']);
+    assert.strictEqual(relations.has('audit_log'), false);
+    assert.strictEqual(relations.has('users_groups'), false);
   });
 
   it('skips a foreign key to a table outside the schema', () => {

@@ -43,7 +43,7 @@ api/
 
 - Each table with one primary key gets `GET /<table>`, `POST /<table>`, `GET|PUT|DELETE /<table>/{id}`. Link tables with a composite key get no routes.
 - The list route takes `limit` (at most 100, default 20) and `offset`.
-- The list and get routes take `with` to include related rows, for example `GET /users/1?with=accounts,groups`. A foreign key `accounts.user_id` gives `accounts.user` and `users.accounts`. A link table, such as `users_groups`, gives `users.groups` and `groups.users`. An unknown name gets 400.
+- The list and get routes take `with` to include related rows, for example `GET /users/1?with=accounts,groups`. A foreign key `accounts.user_id` gives `accounts.user` and `users.accounts`. A link table, such as `users_groups`, gives `users.groups` and `groups.users`. A nested list returns at most 100 rows. `with` reaches only tables that have routes, and an unknown name gets 400.
 - zod schemas from `drizzle-orm/zod` check request bodies. A bad body gets 400 with the zod issues.
 - Database errors get a generic 500. The response does not show the database message.
 - Column defaults from the database stay in the schema, so a client can leave those columns out.

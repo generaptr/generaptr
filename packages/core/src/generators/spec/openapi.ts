@@ -1,7 +1,7 @@
 import {
   assertSafeNames, camel, type ParsedType, parseColumnType, pascal, primaryColumns, routedTables, routePath,
 } from '../../commons/columns.js';
-import { type Relation, tableRelations } from '../../commons/relations.js';
+import { type Relation, routedRelations } from '../../commons/relations.js';
 import { DbColumn, DbSchema, DbTable, Dialect, PackageJsonInfo } from '../../commons/types.js';
 
 // razor: plain objects typed loosely; switch to `openapi-types` if callers need deep typing.
@@ -108,7 +108,7 @@ const tablePaths = (table: DbTable, dialect: Dialect, relations: Relation[]): Re
     name: 'with',
     in: 'query',
     required: false,
-    description: 'Relations to include, separated by commas. An unknown name gets 400.',
+    description: 'Relations to include, separated by commas. A nested list has at most 100 rows. An unknown name gets 400.',
     style: 'form',
     explode: false,
     schema: { type: 'array', items: { type: 'string', enum: relations.map((relation: Relation) => relation.name) } },
@@ -161,7 +161,7 @@ export const openApiDocument = (
 ): OpenApiDocument => {
   assertSafeNames(tables);
   const routed: DbTable[] = routedTables(tables);
-  const relations: Map<string, Relation[]> = tableRelations(tables);
+  const relations: Map<string, Relation[]> = routedRelations(tables);
   const schemas: Record<string, JsonSchema> = {
     Error: {
       type: 'object',

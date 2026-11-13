@@ -65,7 +65,7 @@ exports[`renderApi > writes openapi.json 1`] = `
             "name": "with",
             "in": "query",
             "required": false,
-            "description": "Relations to include, separated by commas. An unknown name gets 400.",
+            "description": "Relations to include, separated by commas. A nested list has at most 100 rows. An unknown name gets 400.",
             "style": "form",
             "explode": false,
             "schema": {
@@ -73,8 +73,7 @@ exports[`renderApi > writes openapi.json 1`] = `
               "items": {
                 "type": "string",
                 "enum": [
-                  "accounts",
-                  "usersGroups"
+                  "accounts"
                 ]
               }
             }
@@ -99,12 +98,6 @@ exports[`renderApi > writes openapi.json 1`] = `
                             "type": "array",
                             "items": {
                               "$ref": "#/components/schemas/Accounts"
-                            }
-                          },
-                          "usersGroups": {
-                            "type": "array",
-                            "items": {
-                              "$ref": "#/components/schemas/UsersGroups"
                             }
                           }
                         }
@@ -185,7 +178,7 @@ exports[`renderApi > writes openapi.json 1`] = `
             "name": "with",
             "in": "query",
             "required": false,
-            "description": "Relations to include, separated by commas. An unknown name gets 400.",
+            "description": "Relations to include, separated by commas. A nested list has at most 100 rows. An unknown name gets 400.",
             "style": "form",
             "explode": false,
             "schema": {
@@ -193,8 +186,7 @@ exports[`renderApi > writes openapi.json 1`] = `
               "items": {
                 "type": "string",
                 "enum": [
-                  "accounts",
-                  "usersGroups"
+                  "accounts"
                 ]
               }
             }
@@ -217,12 +209,6 @@ exports[`renderApi > writes openapi.json 1`] = `
                           "type": "array",
                           "items": {
                             "$ref": "#/components/schemas/Accounts"
-                          }
-                        },
-                        "usersGroups": {
-                          "type": "array",
-                          "items": {
-                            "$ref": "#/components/schemas/UsersGroups"
                           }
                         }
                       }
@@ -309,7 +295,7 @@ exports[`renderApi > writes openapi.json 1`] = `
             "name": "with",
             "in": "query",
             "required": false,
-            "description": "Relations to include, separated by commas. An unknown name gets 400.",
+            "description": "Relations to include, separated by commas. A nested list has at most 100 rows. An unknown name gets 400.",
             "style": "form",
             "explode": false,
             "schema": {
@@ -426,7 +412,7 @@ exports[`renderApi > writes openapi.json 1`] = `
             "name": "with",
             "in": "query",
             "required": false,
-            "description": "Relations to include, separated by commas. An unknown name gets 400.",
+            "description": "Relations to include, separated by commas. A nested list has at most 100 rows. An unknown name gets 400.",
             "style": "form",
             "explode": false,
             "schema": {
@@ -840,13 +826,9 @@ import * as schema from './schema.js';
 export const relations = defineRelations(schema, (r) => ({
   users: {
     accounts: r.many.accounts({ from: r.users.id, to: r.accounts.userId }),
-    usersGroups: r.many.usersGroups({ from: r.users.id, to: r.usersGroups.userId }),
   },
   accounts: {
     user: r.one.users({ from: r.accounts.userId, to: r.users.id }),
-  },
-  usersGroups: {
-    user: r.one.users({ from: r.usersGroups.userId, to: r.users.id }),
   },
 }));
 "
@@ -894,17 +876,17 @@ const { createInsertSchema, createUpdateSchema } = createSchemaFactory({ coerce:
 const insertSchema = createInsertSchema(accounts);
 const updateSchema = createUpdateSchema(accounts);
 const byId = (req) => eq(accounts.code, req.params.id);
-const relationNames = ["user"];
+const includes = {"user":true};
 
 // \`?with=a,b\` names the relations to include, as defined in src/db/relations.js.
 const withRelations = (req) => {
   const names = String(req.query.with ?? '').split(',').map((name) => name.trim()).filter(Boolean);
-  const unknown = names.find((name) => !relationNames.includes(name));
+  const unknown = names.find((name) => !Object.hasOwn(includes, name));
   if (unknown !== undefined) {
-    const message = \`Unknown relation "\${unknown}". Use: \${relationNames.join(', ') || 'none'}\`;
+    const message = \`Unknown relation "\${unknown}". Use: \${Object.keys(includes).join(', ') || 'none'}\`;
     throw Object.assign(new Error(message), { status: 400 });
   }
-  return Object.fromEntries(names.map((name) => [name, true]));
+  return Object.fromEntries(names.map((name) => [name, includes[name]]));
 };
 
 export const router = Router();
@@ -952,17 +934,17 @@ const { createInsertSchema, createUpdateSchema } = createSchemaFactory({ coerce:
 const insertSchema = createInsertSchema(users);
 const updateSchema = createUpdateSchema(users);
 const byId = (req) => eq(users.id, Number(req.params.id));
-const relationNames = ["accounts","usersGroups"];
+const includes = {"accounts":{"limit":100}};
 
 // \`?with=a,b\` names the relations to include, as defined in src/db/relations.js.
 const withRelations = (req) => {
   const names = String(req.query.with ?? '').split(',').map((name) => name.trim()).filter(Boolean);
-  const unknown = names.find((name) => !relationNames.includes(name));
+  const unknown = names.find((name) => !Object.hasOwn(includes, name));
   if (unknown !== undefined) {
-    const message = \`Unknown relation "\${unknown}". Use: \${relationNames.join(', ') || 'none'}\`;
+    const message = \`Unknown relation "\${unknown}". Use: \${Object.keys(includes).join(', ') || 'none'}\`;
     throw Object.assign(new Error(message), { status: 400 });
   }
-  return Object.fromEntries(names.map((name) => [name, true]));
+  return Object.fromEntries(names.map((name) => [name, includes[name]]));
 };
 
 export const router = Router();
@@ -1063,7 +1045,7 @@ exports[`renderApi for Postgres > writes openapi.json 1`] = `
             "name": "with",
             "in": "query",
             "required": false,
-            "description": "Relations to include, separated by commas. An unknown name gets 400.",
+            "description": "Relations to include, separated by commas. A nested list has at most 100 rows. An unknown name gets 400.",
             "style": "form",
             "explode": false,
             "schema": {
@@ -1174,7 +1156,7 @@ exports[`renderApi for Postgres > writes openapi.json 1`] = `
             "name": "with",
             "in": "query",
             "required": false,
-            "description": "Relations to include, separated by commas. An unknown name gets 400.",
+            "description": "Relations to include, separated by commas. A nested list has at most 100 rows. An unknown name gets 400.",
             "style": "form",
             "explode": false,
             "schema": {
@@ -1291,7 +1273,7 @@ exports[`renderApi for Postgres > writes openapi.json 1`] = `
             "name": "with",
             "in": "query",
             "required": false,
-            "description": "Relations to include, separated by commas. An unknown name gets 400.",
+            "description": "Relations to include, separated by commas. A nested list has at most 100 rows. An unknown name gets 400.",
             "style": "form",
             "explode": false,
             "schema": {
@@ -1406,7 +1388,7 @@ exports[`renderApi for Postgres > writes openapi.json 1`] = `
             "name": "with",
             "in": "query",
             "required": false,
-            "description": "Relations to include, separated by commas. An unknown name gets 400.",
+            "description": "Relations to include, separated by commas. A nested list has at most 100 rows. An unknown name gets 400.",
             "style": "form",
             "explode": false,
             "schema": {
@@ -1876,17 +1858,17 @@ const { createInsertSchema, createUpdateSchema } = createSchemaFactory({ coerce:
 const insertSchema = createInsertSchema(events);
 const updateSchema = createUpdateSchema(events);
 const byId = (req) => eq(events.id, Number(req.params.id));
-const relationNames = ["user"];
+const includes = {"user":true};
 
 // \`?with=a,b\` names the relations to include, as defined in src/db/relations.js.
 const withRelations = (req) => {
   const names = String(req.query.with ?? '').split(',').map((name) => name.trim()).filter(Boolean);
-  const unknown = names.find((name) => !relationNames.includes(name));
+  const unknown = names.find((name) => !Object.hasOwn(includes, name));
   if (unknown !== undefined) {
-    const message = \`Unknown relation "\${unknown}". Use: \${relationNames.join(', ') || 'none'}\`;
+    const message = \`Unknown relation "\${unknown}". Use: \${Object.keys(includes).join(', ') || 'none'}\`;
     throw Object.assign(new Error(message), { status: 400 });
   }
-  return Object.fromEntries(names.map((name) => [name, true]));
+  return Object.fromEntries(names.map((name) => [name, includes[name]]));
 };
 
 export const router = Router();
@@ -1934,17 +1916,17 @@ const { createInsertSchema, createUpdateSchema } = createSchemaFactory({ coerce:
 const insertSchema = createInsertSchema(users);
 const updateSchema = createUpdateSchema(users);
 const byId = (req) => eq(users.id, Number(req.params.id));
-const relationNames = ["events"];
+const includes = {"events":{"limit":100}};
 
 // \`?with=a,b\` names the relations to include, as defined in src/db/relations.js.
 const withRelations = (req) => {
   const names = String(req.query.with ?? '').split(',').map((name) => name.trim()).filter(Boolean);
-  const unknown = names.find((name) => !relationNames.includes(name));
+  const unknown = names.find((name) => !Object.hasOwn(includes, name));
   if (unknown !== undefined) {
-    const message = \`Unknown relation "\${unknown}". Use: \${relationNames.join(', ') || 'none'}\`;
+    const message = \`Unknown relation "\${unknown}". Use: \${Object.keys(includes).join(', ') || 'none'}\`;
     throw Object.assign(new Error(message), { status: 400 });
   }
-  return Object.fromEntries(names.map((name) => [name, true]));
+  return Object.fromEntries(names.map((name) => [name, includes[name]]));
 };
 
 export const router = Router();

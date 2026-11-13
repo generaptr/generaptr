@@ -3,7 +3,7 @@ import { Eta } from 'eta';
 import {
   assertSafeNames, camel, type ParsedType, parseColumnType, primaryColumns, routedTables, routePath,
 } from '../../commons/columns.js';
-import { type Relation, tableRelations } from '../../commons/relations.js';
+import { type Relation, routedRelations } from '../../commons/relations.js';
 import { DbColumn, DbSchema, DbTable, Dialect, PackageJsonInfo } from '../../commons/types.js';
 import { openApiDocument } from '../spec/openapi.js';
 
@@ -196,7 +196,9 @@ export const routeFile = (table: DbTable, dialect: Dialect, relations: Relation[
     key,
     id: parseColumnType(primary, dialect).kind === 'integer' ? 'Number(req.params.id)' : 'req.params.id',
     returning: DIALECTS[dialect].returning(entity, key),
-    relations: JSON.stringify(relations.map((relation: Relation) => relation.name)),
+    // A nested list returns at most 100 rows, as the list route does.
+    includes: JSON.stringify(Object.fromEntries(relations.map((relation: Relation) =>
+      [relation.name, relation.kind === 'many' ? { limit: 100 } : true]))),
   });
 };
 
@@ -215,7 +217,7 @@ export const relationsFile = (tables: DbTable[]): string => {
   };
 
   return eta.render('src/db/relations.js.eta', {
-    tables: [...tableRelations(tables)]
+    tables: [...routedRelations(tables)]
       .filter(([, relations]: [string, Relation[]]) => relations.length)
       .map(([table, relations]: [string, Relation[]]) => ({
         name: camel(table),
@@ -269,7 +271,7 @@ export const renderApi = (schema: DbSchema, info: PackageJsonInfo): Record<strin
     'src/db/relations.js': relationsFile(schema.tables),
     'openapi.json': `${JSON.stringify(openApiDocument(schema, info), undefined, 2)}\n`,
   };
-  const relations: Map<string, Relation[]> = tableRelations(schema.tables);
+  const relations: Map<string, Relation[]> = routedRelations(schema.tables);
   for (const table of routedTables(schema.tables)) {
     files[`src/routes/${camel(table.name)}.js`] = routeFile(table, schema.dialect, relations.get(table.name));
   }

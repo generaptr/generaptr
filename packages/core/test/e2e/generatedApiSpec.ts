@@ -121,6 +121,7 @@ describe.each(dialects)('generated Express + Drizzle API on $dialect', ({ dialec
     const accounts = await json<{ id: number; user: { email: string } }[]>(await send('GET', '/accounts?with=user&limit=100'));
     assert.strictEqual(accounts.find((account: { id: number }) => account.id === accountId)?.user.email, email);
 
+    assert.strictEqual((await send('GET', `/users/${userId}?with=constructor`)).status, 400);
     const unknown = await send('GET', `/users/${userId}?with=nope`);
     assert.strictEqual(unknown.status, 400);
     assert.deepStrictEqual(await json<object>(unknown), { message: 'Unknown relation "nope". Use: accounts, applications, groups' });

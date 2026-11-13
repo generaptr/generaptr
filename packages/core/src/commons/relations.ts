@@ -1,4 +1,4 @@
-import { camel, pascal, primaryColumns } from './columns.js';
+import { camel, pascal, primaryColumns, routedTables } from './columns.js';
 import type { DbColumn, DbTable } from './types.js';
 
 /** One Drizzle relation. `from` and `to` are column names on the source and target tables. */
@@ -83,4 +83,13 @@ export const tableRelations = (tables: DbTable[]): Map<string, Relation[]> => {
   }
 
   return relations;
+};
+
+/** Relations between tables that have routes. `?with=` never exposes a table that the routes do not. */
+export const routedRelations = (tables: DbTable[]): Map<string, Relation[]> => {
+  const routed: Set<string> = new Set(routedTables(tables).map((table: DbTable) => table.name));
+
+  return new Map([...tableRelations(tables)]
+    .filter(([table]: [string, Relation[]]) => routed.has(table))
+    .map(([table, relations]: [string, Relation[]]) => [table, relations.filter((relation: Relation) => routed.has(relation.target))]));
 };

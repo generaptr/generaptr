@@ -9,17 +9,17 @@ const { createInsertSchema, createUpdateSchema } = createSchemaFactory({ coerce:
 const insertSchema = createInsertSchema(<%= it.entity %>);
 const updateSchema = createUpdateSchema(<%= it.entity %>);
 const byId = (req) => eq(<%= it.entity %>.<%= it.key %>, <%= it.id %>);
-const relationNames = <%= it.relations %>;
+const includes = <%= it.includes %>;
 
 // `?with=a,b` names the relations to include, as defined in src/db/relations.js.
 const withRelations = (req) => {
   const names = String(req.query.with ?? '').split(',').map((name) => name.trim()).filter(Boolean);
-  const unknown = names.find((name) => !relationNames.includes(name));
+  const unknown = names.find((name) => !Object.hasOwn(includes, name));
   if (unknown !== undefined) {
-    const message = `Unknown relation "${unknown}". Use: ${relationNames.join(', ') || 'none'}`;
+    const message = `Unknown relation "${unknown}". Use: ${Object.keys(includes).join(', ') || 'none'}`;
     throw Object.assign(new Error(message), { status: 400 });
   }
-  return Object.fromEntries(names.map((name) => [name, true]));
+  return Object.fromEntries(names.map((name) => [name, includes[name]]));
 };
 
 export const router = Router();
