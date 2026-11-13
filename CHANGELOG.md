@@ -6,6 +6,9 @@
 - The generated schema keeps key names, composite unique constraints, composite foreign keys, `ON DELETE` and `ON UPDATE` actions, and Postgres `NULLS NOT DISTINCT`.
 - The generated schema keeps CHECK constraints, for Postgres and MySQL. A CHECK expression from an OpenAPI document must stay inside its parentheses, and a document read into another dialect keeps no CHECK constraints.
 - The generated schema keeps every index: method, column and expression keys, collation, operator class, order, `NULLS FIRST` or `LAST`, `WHERE`, and storage parameters, plus MySQL prefix lengths. Generaptr stops with an error on what Drizzle cannot write: Postgres `INCLUDE` columns, `NULLS NOT DISTINCT` unique indexes, and exclusion constraints, and MySQL `FULLTEXT` and `SPATIAL` indexes.
+- The generated schema keeps generated columns (MySQL `STORED` and `VIRTUAL`, Postgres `STORED`), Postgres identity columns with their sequence options, column collations, and MySQL `ON UPDATE CURRENT_TIMESTAMP`. The insert and update schemas leave out identity and generated columns. A generated expression from an OpenAPI document must stay inside its parentheses, and a document read into another dialect keeps an identity column as a serial and drops the rest.
+- A type without a Drizzle builder becomes a Drizzle custom type with the exact SQL type, for example `tsvector`, `inet`, `money`, `bit(3)`, MySQL `set(...)`, and multi-dimensional arrays. Binary types (`bytea`, MySQL `blob` and `binary`) carry base64 strings in JSON ([#166](https://github.com/generaptr/generaptr/issues/166)).
+- Breaking: a Postgres identity column reads as `DbColumn.identity`, not as `autoIncrement`.
 - A fidelity test rebuilds a schema from the generated Drizzle schema and compares the catalogs of both databases.
 
 ## 2.1.0

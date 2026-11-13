@@ -1,5 +1,5 @@
 import {
-  assertSafeNames, camel, type ParsedType, parseColumnType, pascal, primaryColumns, routedTables, routePath,
+  assertSafeNames, camel, type ParsedType, parseColumnType, pascal, primaryColumns, routedTables, routePath, SAFE_COLLATION,
 } from '../../commons/columns.js';
 import { type Relation, routedRelations } from '../../commons/relations.js';
 import {
@@ -18,6 +18,11 @@ export type OpenApiDocument = {
 
 const scalarSchema = (type: ParsedType): JsonSchema => {
   switch (type.kind) {
+    case 'binary':
+      return { type: 'string', contentEncoding: 'base64' };
+    case 'custom':
+      // The driver decides the JSON: a string for most types, an object for some, such as point.
+      return {};
     case 'boolean':
       return { type: 'boolean' };
     case 'integer':
@@ -47,7 +52,9 @@ const baseSchema = (type: ParsedType): JsonSchema =>
   type.array ? { type: 'array', items: scalarSchema(type) } : scalarSchema(type);
 
 const propertySchema = (column: DbColumn, dialect: Dialect): JsonSchema => {
-  const schema: JsonSchema = baseSchema(parseColumnType(column, dialect));
+  // A collation changes how the database sorts values, not their JSON shape.
+  const { collation: _collation, ...value }: DbColumn = column;
+  const schema: JsonSchema = baseSchema(parseColumnType(value, dialect));
   if (!column.nullable || schema.type === undefined) {
     return schema;
   }
@@ -73,7 +80,9 @@ const rowSchema = (table: DbTable, dialect: Dialect): JsonSchema => ({
   ])),
 });
 
-const writable = (table: DbTable): DbColumn[] => table.columns.filter((column: DbColumn) => !column.autoIncrement);
+/** The database fills serial, identity, and generated columns. */
+const writable = (table: DbTable): DbColumn[] => table.columns
+  .filter((column: DbColumn) => !column.autoIncrement && !column.identity && !column.generated);
 
 const inputSchema = (table: DbTable, requireColumns: boolean, dialect: Dialect): JsonSchema => ({
   type: 'object',
@@ -281,6 +290,43 @@ const assertSafeDefaults = (tables: DbTable[]): void => {
   }
 };
 
+const INTEGER: RegExp = /^-?\d+$/;
+
+/**
+ * Generated SQL, identity options, collations, and ON UPDATE belong to the document's dialect. Another dialect
+ * keeps an identity column as a serial and drops the rest.
+ */
+const columnFromDocument = (column: DbColumn, dialect: Dialect, exact: boolean): DbColumn => {
+  const { generated, identity, collation, onUpdateNow, ...rest }: DbColumn = column;
+  if (!exact) {
+    return identity ? { ...rest, autoIncrement: true } : rest;
+  }
+  const invalidColumn = (): Error => new Error(`Invalid x-column ${column.name}: generated, identity, or collation`);
+  if (generated !== undefined) {
+    if (typeof generated?.expression !== 'string' || ![undefined, true].includes(generated.virtual)) {
+      throw invalidColumn();
+    }
+    assertSafeExpression(generated.expression, dialect);
+  }
+  if (identity !== undefined) {
+    const { name, start, increment, min, max, cache } = identity ?? {};
+    if (dialect !== 'postgresql' || typeof name !== 'string'
+      || ![start, increment, min, max, cache].every((value: unknown) => typeof value === 'string' && INTEGER.test(value))) {
+      throw invalidColumn();
+    }
+  }
+  if (collation !== undefined && (typeof collation !== 'string' || !SAFE_COLLATION.test(collation))) {
+    throw invalidColumn();
+  }
+  return {
+    ...rest,
+    ...(generated ? { generated: { expression: generated.expression, ...(generated.virtual ? { virtual: true as const } : {}) } } : {}),
+    ...(identity ? { identity: { ...identity, always: identity.always === true, cycle: identity.cycle === true } } : {}),
+    ...(collation ? { collation } : {}),
+    ...(onUpdateNow === true && dialect === 'mysql' ? { onUpdateNow } : {}),
+  };
+};
+
 const invalid = (): Error => new Error('Invalid x-keys: names must be strings and columns lists of strings');
 const text = (value: unknown): string => {
   if (typeof value !== 'string') {
@@ -418,7 +464,8 @@ export const tablesFromOpenApi = (
       const { columns, keys } = schema['x-keys']
         ? { columns: properties.map((property: JsonSchema) => property['x-column'] as DbColumn), keys: keysFromDocument(schema['x-keys']) }
         : legacyKeys(name, properties.map((property: JsonSchema) => property['x-column']), dialect);
-      const converted: DbColumn[] = exact ? columns : columns.map((column: DbColumn, index: number) => {
+      const converted: DbColumn[] = columns.map((column: DbColumn) => columnFromDocument(column, dialect, exact));
+      const conventional: DbColumn[] = exact ? converted : converted.map((column: DbColumn, index: number) => {
         const { enumName, ...rest }: DbColumn = column;
         const columnType: string = conventionType(properties[index], dialect);
         const keepsEnum: boolean = dialect === 'postgresql' && columnType.startsWith('enum(');
@@ -431,7 +478,7 @@ export const tablesFromOpenApi = (
       const checks: DbCheck[] = exact ? checksFromDocument(schema['x-checks'], dialect) : [];
       const indexes: DbIndex[] = exact ? indexesFromDocument(schema['x-indexes'], dialect) : [];
       return {
-        name, columns: converted, ...keys, ...(primaryKey ? { primaryKey } : {}),
+        name, columns: conventional, ...keys, ...(primaryKey ? { primaryKey } : {}),
         ...(checks.length ? { checks } : {}), ...(indexes.length ? { indexes } : {}),
       };
     })

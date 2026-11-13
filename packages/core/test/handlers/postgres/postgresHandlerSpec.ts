@@ -36,7 +36,9 @@ describe('PostgresHandler', () => {
       column('external_id', 'uuid', { nullable: true }),
     ]);
     assert.deepStrictEqual(table('accounts'), [
-      column('id', 'integer', { autoIncrement: true }),
+      column('id', 'integer', {
+        identity: { always: false, name: 'accounts_id_seq', start: '1', increment: '1', min: '1', max: '2147483647', cache: '1', cycle: false },
+      }),
       column('type', "enum('admin','member','it''s')", { enumName: 'account_type' }),
       column('user_id', 'integer'),
     ]);

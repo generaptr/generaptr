@@ -19,6 +19,8 @@ const postgresConnection = config.CONNECTION_INFO.POSTGRES;
 // Every table object, with its name, as lines that sort the same in both databases.
 const POSTGRES_CATALOG: string = `
   SELECT 'column ' || c.relname || '.' || a.attname || ' ' || format_type(a.atttypid, a.atttypmod)
+    || coalesce(' collate ' || (SELECT co.collname FROM pg_collation co JOIN pg_type t ON t.oid = a.atttypid
+      WHERE co.oid = a.attcollation AND a.attcollation <> t.typcollation), '')
     || CASE WHEN a.attnotnull THEN ' not null' ELSE '' END
     || CASE WHEN a.attgenerated <> '' THEN ' generated ' ELSE '' END
     || CASE WHEN a.attidentity <> '' THEN ' identity ' || a.attidentity::text ELSE '' END

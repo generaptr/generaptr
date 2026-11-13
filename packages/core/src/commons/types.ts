@@ -19,9 +19,30 @@ export type DbColumn = {
   /** Postgres only: the name of the enum type. */
   enumName?: string;
   nullable: boolean;
+  /** MySQL AUTO_INCREMENT, or a Postgres serial: a default of `nextval` on the sequence that the column owns. */
   autoIncrement: boolean;
   /** The column default as an SQL expression in the dialect's syntax, for example `now()` or `'x'`. */
   default?: string;
+  /** The SQL that computes a generated column. Postgres has stored ones only. */
+  generated?: { expression: string; virtual?: true };
+  /** A Postgres identity column and its sequence, with every option the sequence has. */
+  identity?: DbIdentity;
+  /** MySQL `ON UPDATE CURRENT_TIMESTAMP`. */
+  onUpdateNow?: true;
+  /** The collation, when it is not the default for the column's type. */
+  collation?: string;
+};
+
+/** Sequence values are strings: a bigint maximum does not fit a JS number. */
+export type DbIdentity = {
+  always: boolean;
+  name: string;
+  start: string;
+  increment: string;
+  min: string;
+  max: string;
+  cache: string;
+  cycle: boolean;
 };
 
 /** `no action` is the default and is never stored. */

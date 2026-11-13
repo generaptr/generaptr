@@ -2,6 +2,20 @@
 import { sql } from 'drizzle-orm';
 <% } -%>
 import { <%= it.builders %> } from 'drizzle-orm/<%= it.core %>';
+<% if (it.customs.length) { %>
+<% for (const custom of it.customs) { -%>
+<% if (custom.binary) { -%>
+// JSON carries bytes as base64.
+const <%= custom.name %> = customType({
+  dataType: () => <%= custom.sql %>,
+  fromDriver: (value) => value.toString('base64'),
+  toDriver: (value) => Buffer.from(value, 'base64'),
+});
+<% } else { -%>
+const <%= custom.name %> = customType({ dataType: () => <%= custom.sql %> });
+<% } -%>
+<% } -%>
+<% } -%>
 <% if (it.enums.length) { %>
 <% for (const item of it.enums) { -%>
 export const <%= item.name %> = pgEnum(<%= item.type %>, <%= item.values %>);

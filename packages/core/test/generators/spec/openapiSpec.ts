@@ -251,6 +251,38 @@ describe('OpenAPI generator', () => {
     assert.throws(() => tablesFromOpenApi(doc, 'postgresql'), error);
   });
 
+  it('reads generated, identity, and collated columns back, and keeps only serials in another dialect', () => {
+    const identity = { always: true, name: 'users_id_seq', start: '100', increment: '5', min: '1', max: '2147483647', cache: '1', cycle: false };
+    const columns: DbColumn[] = [
+      column('id', 'integer', { identity }),
+      column('name', 'text', { collation: 'C' }),
+      column('upper', 'text', { nullable: true, generated: { expression: 'upper(name)' } }),
+    ];
+    const doc = openApiDocument({ dialect: 'postgresql', tables: [{ ...postgresTables[0], columns }] }, info);
+    assert.deepStrictEqual(Object.keys(doc.components.schemas.UsersInput.properties), ['name']);
+    assert.deepStrictEqual(tablesFromOpenApi(doc, 'postgresql').tables[0].columns, columns);
+    assert.deepStrictEqual(tablesFromOpenApi(doc, 'mysql').tables[0].columns, [
+      column('id', 'int', { autoIncrement: true }),
+      column('name', 'text'),
+      column('upper', 'text', { nullable: true }),
+    ]);
+  });
+
+  it.each([
+    ['a generated expression that leaves its brackets', { generated: { expression: 'upper(name)) STORED, evil text GENERATED ALWAYS AS (1' } }, /Unsafe expression/],
+    ['an identity option with SQL in it', {
+      identity: { always: true, name: 'users_id_seq', start: '1) ; DROP TABLE users; --', increment: '1', min: '1', max: '9', cache: '1', cycle: false },
+    }, /Invalid x-column/],
+    ['an identity sequence name with SQL in it', {
+      identity: { always: true, name: 'a"; DROP TABLE users; --', start: '1', increment: '1', min: '1', max: '9', cache: '1', cycle: false },
+    }, /Unsafe name/],
+    ['a collation with SQL in it', { collation: 'C"; DROP TABLE users; --' }, /Invalid x-column/],
+  ])('rejects x-column with %s', (_case: string, extra: object, error: RegExp) => {
+    const doc: Doc = structuredClone(openApiDocument({ dialect: 'postgresql', tables: postgresTables }, info));
+    Object.assign(doc.components.schemas.Users.properties.name['x-column'], extra);
+    assert.throws(() => tablesFromOpenApi(doc, 'postgresql'), error);
+  });
+
   it('reads the keys of a generaptr 2 document from its columns', () => {
     const legacy = (name: string, extra: object) => ({ name, columnType: 'integer', nullable: false, autoIncrement: false, ...extra });
     const doc = {

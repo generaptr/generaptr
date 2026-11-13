@@ -1,6 +1,6 @@
 import assert from 'node:assert';
 import { DbColumn, DbTable } from '../../../src/commons/types.js';
-import { columnBuilder, renderApi, routedTables, schemaFile } from '../../../src/generators/api/express.js';
+import { columnBuilder, type CustomTypes, renderApi, routedTables, schemaFile } from '../../../src/generators/api/express.js';
 
 const column = (name: string, columnType: string, extra: Partial<DbColumn> = {}): DbColumn => ({
   name, columnType, nullable: true, autoIncrement: false, ...extra,
@@ -37,8 +37,21 @@ describe('Express + Drizzle generator', () => {
     assert.strictEqual(columnBuilder(column('c', columnType), 'postgresql').call, call);
   });
 
-  it.each(['bytea', 'tsvector', 'text[][]', 'integer[3]'])('rejects the Postgres type %s', (columnType: string) => {
-    assert.throws(() => columnBuilder(column('c', columnType), 'postgresql'), /Unsupported type/);
+  it.each([
+    ['bytea', 'byteaType("c")', { name: 'byteaType', binary: true }],
+    ['tsvector', 'tsvectorType("c")', { name: 'tsvectorType', binary: false }],
+    ['text[][]', 'textArrayArrayType("c")', { name: 'textArrayArrayType', binary: false }],
+  ])('writes the Postgres type %s as a custom type', (columnType: string, call: string, custom: { name: string; binary: boolean }) => {
+    const customs: CustomTypes = new Map();
+    assert.strictEqual(columnBuilder(column('c', columnType), 'postgresql', undefined, customs).call, call);
+    assert.deepStrictEqual([...customs.values()], [custom]);
+  });
+
+  it('reuses one custom type for one SQL type', () => {
+    const customs: CustomTypes = new Map();
+    columnBuilder(column('a', 'tsvector'), 'postgresql', undefined, customs);
+    columnBuilder(column('b', 'tsvector'), 'postgresql', undefined, customs);
+    assert.strictEqual(customs.size, 1);
   });
 
   it('escapes enum values instead of copying them into code', () => {
@@ -57,8 +70,39 @@ describe('Express + Drizzle generator', () => {
     assert.throws(() => renderApi({ dialect: 'mysql', tables: [{ name: 'users', columns: [column('id: 1, x', 'int')] }] }, info), /Unsafe name/);
   });
 
-  it('rejects a type it cannot map', () => {
-    assert.throws(() => columnBuilder(column('shape', 'geometry')), /Unsupported type "geometry" for column shape/);
+  it('writes a type without a Drizzle builder as a custom type, and rejects a type that is not plain SQL', () => {
+    assert.strictEqual(columnBuilder(column('shape', 'geometry')).call, 'geometryType("shape")');
+    assert.throws(() => columnBuilder(column('shape', 'geometry) evil(')), /Unsupported type/);
+  });
+
+  it('writes identity, generated, collated, and ON UPDATE columns, and declares custom types once', () => {
+    const postgres: string = schemaFile({ dialect: 'postgresql', tables: [{
+      name: 'kinds',
+      columns: [
+        column('id', 'integer', { identity: { always: true, name: 'kinds_id_seq', start: '100', increment: '5', min: '1', max: '2147483647', cache: '1', cycle: false } }),
+        column('upper', 'text', { generated: { expression: 'upper(title)' } }),
+        column('title_c', 'text', { collation: 'C' }),
+        column('payload', 'bytea'),
+        column('copy', 'bytea'),
+      ],
+    }] });
+    assert.match(postgres, /integer\("id"\)\.generatedAlwaysAsIdentity\(\{ name: "kinds_id_seq", startWith: "100", increment: "5", minValue: "1", maxValue: "2147483647", cache: "1" \}\)/);
+    assert.match(postgres, /\.generatedAlwaysAs\(sql\.raw\("upper\(title\)"\)\)/);
+    assert.match(postgres, /textCollateCType\("title_c"\)/);
+    assert.strictEqual(postgres.match(/const byteaType = customType/g)?.length, 1);
+    assert.match(postgres, /fromDriver: \(value\) => value\.toString\('base64'\)/);
+
+    const mysql: string = schemaFile({ dialect: 'mysql', tables: [{
+      name: 'kinds',
+      columns: [
+        column('name', 'varchar(10)', { collation: 'utf8mb4_bin' }),
+        column('length', 'int', { generated: { expression: 'char_length(name)', virtual: true } }),
+        column('seen_at', 'datetime(3)', { onUpdateNow: true }),
+      ],
+    }] });
+    assert.match(mysql, /varchar\("name", \{ length: 10 \}\)\.collate\("utf8mb4_bin"\)/);
+    assert.match(mysql, /\.generatedAlwaysAs\(sql\.raw\("char_length\(name\)"\), \{ mode: 'virtual' \}\)/);
+    assert.match(mysql, /datetime\("seen_at", \{ fsp: 3 \}\)\.onUpdateNow\(\{ fsp: 3 \}\)/);
   });
 
   it('writes keys, a foreign key, and a composite primary key', () => {

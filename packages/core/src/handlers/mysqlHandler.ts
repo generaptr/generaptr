@@ -91,8 +91,10 @@ export default class MysqlHandler {
    */
   public async readSchema(): Promise<DbSchema> {
     const [columns] = await this.pool.query<mysql.RowDataPacket[]>(
-      `SELECT TABLE_NAME, COLUMN_NAME, COLUMN_TYPE, IS_NULLABLE, EXTRA, COLUMN_DEFAULT
-        FROM COLUMNS WHERE TABLE_SCHEMA = ? ORDER BY TABLE_NAME, ORDINAL_POSITION`,
+      `SELECT c.TABLE_NAME, c.COLUMN_NAME, c.COLUMN_TYPE, c.IS_NULLABLE, c.EXTRA, c.COLUMN_DEFAULT,
+          c.GENERATION_EXPRESSION, CASE WHEN c.COLLATION_NAME <> t.TABLE_COLLATION THEN c.COLLATION_NAME END AS COLLATION_NAME
+        FROM COLUMNS c JOIN TABLES t ON t.TABLE_SCHEMA = c.TABLE_SCHEMA AND t.TABLE_NAME = c.TABLE_NAME
+        WHERE c.TABLE_SCHEMA = ? ORDER BY c.TABLE_NAME, c.ORDINAL_POSITION`,
       [this.database],
     );
     const [keys] = await this.pool.query<mysql.RowDataPacket[]>(KEYS, [this.database]);
@@ -100,14 +102,21 @@ export default class MysqlHandler {
     for (const row of columns) {
       const table: DbTable = tables.get(row.TABLE_NAME) ?? { name: row.TABLE_NAME, columns: [] };
       tables.set(row.TABLE_NAME, table);
-      const autoIncrement: boolean = String(row.EXTRA).includes('auto_increment');
+      const extra = String(row.EXTRA);
+      const autoIncrement: boolean = extra.includes('auto_increment');
       const defaultValue: string | undefined = defaultOf(row, autoIncrement);
+      const generated: RegExpMatchArray | null = extra.match(/\b(STORED|VIRTUAL) GENERATED\b/);
       table.columns.push({
         name: row.COLUMN_NAME,
         columnType: row.COLUMN_TYPE,
         nullable: row.IS_NULLABLE === 'YES',
         autoIncrement,
         ...(defaultValue === undefined ? {} : { default: defaultValue }),
+        ...(generated ? {
+          generated: { expression: printedSql(row.GENERATION_EXPRESSION), ...(generated[1] === 'VIRTUAL' ? { virtual: true as const } : {}) },
+        } : {}),
+        ...(/\bon update CURRENT_TIMESTAMP\b/i.test(extra) ? { onUpdateNow: true as const } : {}),
+        ...(row.COLLATION_NAME ? { collation: row.COLLATION_NAME } : {}),
       });
     }
     for (const row of keys) {

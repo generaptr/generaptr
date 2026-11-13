@@ -9,6 +9,10 @@ type ColumnRow = {
   nullable: boolean;
   auto_increment: boolean;
   default_expr: string | null;
+  generated: '' | 's' | 'v';
+  identity: '' | 'a' | 'd';
+  sequence: { name: string; start: string; increment: string; min: string; max: string; cache: string; cycle: boolean } | null;
+  collation: string | null;
   enum_name: string | null;
   enum_values: string[] | null;
 };
@@ -47,8 +51,18 @@ const COLUMNS: string = `
   SELECT c.relname AS table_name, a.attname AS column_name,
     format_type(a.atttypid, a.atttypmod) AS column_type,
     NOT a.attnotnull AS nullable,
-    (a.attidentity <> '' OR coalesce(pg_get_expr(d.adbin, d.adrelid), '') LIKE 'nextval(%') AS auto_increment,
+    coalesce(pg_get_expr(d.adbin, d.adrelid), '') LIKE 'nextval(%' AS auto_increment,
     pg_get_expr(d.adbin, d.adrelid) AS default_expr,
+    a.attgenerated AS generated, a.attidentity AS identity,
+    CASE WHEN a.attidentity <> '' THEN (
+      SELECT json_build_object('name', s.relname, 'start', q.seqstart::text, 'increment', q.seqincrement::text,
+        'min', q.seqmin::text, 'max', q.seqmax::text, 'cache', q.seqcache::text, 'cycle', q.seqcycle)
+      FROM pg_sequence q JOIN pg_class s ON s.oid = q.seqrelid
+      WHERE q.seqrelid = pg_get_serial_sequence(format('%I.%I', n.nspname, c.relname), a.attname)::regclass
+    ) END AS sequence,
+    CASE WHEN a.attcollation <> t.typcollation THEN
+      (SELECT co.collname FROM pg_collation co WHERE co.oid = a.attcollation)
+    END AS collation,
     CASE WHEN t.typtype = 'e' THEN t.typname END AS enum_name,
     CASE WHEN t.typtype = 'e' THEN
       (SELECT array_agg(e.enumlabel::text ORDER BY e.enumsortorder) FROM pg_enum e WHERE e.enumtypid = t.oid)
@@ -164,7 +178,12 @@ export default class PostgresHandler {
         ...(row.enum_name ? { enumName: row.enum_name } : {}),
         nullable: row.nullable,
         autoIncrement: row.auto_increment,
-        ...(row.default_expr && !row.auto_increment ? { default: row.default_expr } : {}),
+        ...(row.default_expr && !row.auto_increment && !row.generated ? { default: row.default_expr } : {}),
+        ...(row.generated && row.default_expr
+          ? { generated: { expression: row.default_expr, ...(row.generated === 'v' ? { virtual: true as const } : {}) } }
+          : {}),
+        ...(row.identity && row.sequence ? { identity: { always: row.identity === 'a', ...row.sequence } } : {}),
+        ...(row.collation ? { collation: row.collation } : {}),
       });
     }
     for (const row of constraints) {

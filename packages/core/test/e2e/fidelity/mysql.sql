@@ -74,3 +74,18 @@ CREATE TABLE documents (
   KEY documents_title_tagged_idx ((concat(title, 'it''s'))),
   UNIQUE KEY documents_title_lower_key ((lower(title)))
 );
+
+-- Columns: generated, ON UPDATE, collation, fractional seconds, and types without a Drizzle builder.
+CREATE TABLE kinds (
+  id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  title varchar(100) NOT NULL,
+  title_bin varchar(100) COLLATE utf8mb4_bin,
+  title_upper varchar(100) GENERATED ALWAYS AS (upper(title)) STORED,
+  title_length int GENERATED ALWAYS AS (char_length(title)) VIRTUAL,
+  updated_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  seen_at datetime(3) DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  flags bit(3),
+  spot point,
+  payload blob,
+  tags set('a','b','it''s')
+);
