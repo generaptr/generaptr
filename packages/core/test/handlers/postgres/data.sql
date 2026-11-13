@@ -29,7 +29,8 @@ CREATE TABLE groups (
   id serial PRIMARY KEY,
   name varchar(255),
   tags text[],
-  seen_at timestamp(3) with time zone
+  seen_at timestamp(3) with time zone,
+  avatar bytea
 );
 
 CREATE TABLE users_groups (

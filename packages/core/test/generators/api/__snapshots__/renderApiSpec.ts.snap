@@ -526,6 +526,22 @@ exports[`renderApi > writes openapi.json 1`] = `
       "Users": {
         "type": "object",
         "x-table": "users",
+        "x-keys": {
+          "primaryKey": {
+            "name": "PRIMARY",
+            "columns": [
+              "id"
+            ]
+          },
+          "uniques": [
+            {
+              "name": "email",
+              "columns": [
+                "email"
+              ]
+            }
+          ]
+        },
         "required": [
           "id",
           "firstName",
@@ -540,8 +556,6 @@ exports[`renderApi > writes openapi.json 1`] = `
               "name": "id",
               "columnType": "int unsigned",
               "nullable": false,
-              "primary": true,
-              "unique": false,
               "autoIncrement": true
             }
           },
@@ -555,8 +569,6 @@ exports[`renderApi > writes openapi.json 1`] = `
               "name": "firstName",
               "columnType": "varchar(255)",
               "nullable": true,
-              "primary": false,
-              "unique": false,
               "autoIncrement": false
             }
           },
@@ -567,8 +579,6 @@ exports[`renderApi > writes openapi.json 1`] = `
               "name": "email",
               "columnType": "varchar(50)",
               "nullable": false,
-              "primary": false,
-              "unique": true,
               "autoIncrement": false
             }
           },
@@ -582,8 +592,6 @@ exports[`renderApi > writes openapi.json 1`] = `
               "name": "role",
               "columnType": "enum('admin','member')",
               "nullable": false,
-              "primary": false,
-              "unique": false,
               "autoIncrement": false
             }
           }
@@ -592,6 +600,34 @@ exports[`renderApi > writes openapi.json 1`] = `
       "Accounts": {
         "type": "object",
         "x-table": "accounts",
+        "x-keys": {
+          "primaryKey": {
+            "name": "PRIMARY",
+            "columns": [
+              "code"
+            ]
+          },
+          "uniques": [
+            {
+              "name": "user_id",
+              "columns": [
+                "user_id"
+              ]
+            }
+          ],
+          "foreignKeys": [
+            {
+              "name": "accounts_ibfk_1",
+              "columns": [
+                "user_id"
+              ],
+              "table": "users",
+              "foreignColumns": [
+                "id"
+              ]
+            }
+          ]
+        },
         "required": [
           "code",
           "userId"
@@ -604,8 +640,6 @@ exports[`renderApi > writes openapi.json 1`] = `
               "name": "code",
               "columnType": "char(8)",
               "nullable": false,
-              "primary": true,
-              "unique": false,
               "autoIncrement": false
             }
           },
@@ -616,13 +650,7 @@ exports[`renderApi > writes openapi.json 1`] = `
               "name": "user_id",
               "columnType": "int unsigned",
               "nullable": false,
-              "primary": false,
-              "unique": true,
-              "autoIncrement": false,
-              "references": {
-                "table": "users",
-                "column": "id"
-              }
+              "autoIncrement": false
             }
           }
         }
@@ -630,6 +658,28 @@ exports[`renderApi > writes openapi.json 1`] = `
       "UsersGroups": {
         "type": "object",
         "x-table": "users_groups",
+        "x-keys": {
+          "primaryKey": {
+            "name": "PRIMARY",
+            "columns": [
+              "user_id",
+              "group_id"
+            ]
+          },
+          "foreignKeys": [
+            {
+              "name": "users_groups_ibfk_1",
+              "columns": [
+                "user_id"
+              ],
+              "table": "users",
+              "foreignColumns": [
+                "id"
+              ],
+              "onDelete": "cascade"
+            }
+          ]
+        },
         "required": [
           "userId",
           "groupId"
@@ -642,13 +692,7 @@ exports[`renderApi > writes openapi.json 1`] = `
               "name": "user_id",
               "columnType": "int unsigned",
               "nullable": false,
-              "primary": true,
-              "unique": false,
-              "autoIncrement": false,
-              "references": {
-                "table": "users",
-                "column": "id"
-              }
+              "autoIncrement": false
             }
           },
           "groupId": {
@@ -658,8 +702,6 @@ exports[`renderApi > writes openapi.json 1`] = `
               "name": "group_id",
               "columnType": "int unsigned",
               "nullable": false,
-              "primary": true,
-              "unique": false,
               "autoIncrement": false
             }
           }
@@ -862,24 +904,32 @@ export const relations = defineRelations(schema, (r) => ({
 `;
 
 exports[`renderApi > writes src/db/schema.js 1`] = `
-"import { char, int, mysqlEnum, mysqlTable, primaryKey, varchar } from 'drizzle-orm/mysql-core';
+"import { char, foreignKey, int, mysqlEnum, mysqlTable, primaryKey, unique, varchar } from 'drizzle-orm/mysql-core';
 
 export const users = mysqlTable("users", {
   id: int("id", { unsigned: true }).autoincrement().primaryKey(),
   firstName: varchar("firstName", { length: 255 }),
-  email: varchar("email", { length: 50 }).notNull().unique(),
+  email: varchar("email", { length: 50 }).notNull(),
   role: mysqlEnum("role", ["admin","member"]).notNull(),
-});
+}, (table) => [
+  unique("email").on(table.email),
+]);
 
 export const accounts = mysqlTable("accounts", {
   code: char("code", { length: 8 }).primaryKey(),
-  userId: int("user_id", { unsigned: true }).notNull().unique().references(() => users.id),
-});
+  userId: int("user_id", { unsigned: true }).notNull(),
+}, (table) => [
+  unique("user_id").on(table.userId),
+  foreignKey({ name: "accounts_ibfk_1", columns: [table.userId], foreignColumns: [users.id] }),
+]);
 
 export const usersGroups = mysqlTable("users_groups", {
-  userId: int("user_id", { unsigned: true }).notNull().references(() => users.id),
+  userId: int("user_id", { unsigned: true }).notNull(),
   groupId: int("group_id", { unsigned: true }).notNull(),
-}, (table) => [primaryKey({ columns: [table.userId, table.groupId] })]);
+}, (table) => [
+  primaryKey({ columns: [table.userId, table.groupId] }),
+  foreignKey({ name: "users_groups_ibfk_1", columns: [table.userId], foreignColumns: [users.id] }).onDelete("cascade"),
+]);
 "
 `;
 
@@ -1529,6 +1579,22 @@ exports[`renderApi for Postgres > writes openapi.json 1`] = `
       "Users": {
         "type": "object",
         "x-table": "users",
+        "x-keys": {
+          "primaryKey": {
+            "name": "users_pkey",
+            "columns": [
+              "id"
+            ]
+          },
+          "uniques": [
+            {
+              "name": "users_email_key",
+              "columns": [
+                "email"
+              ]
+            }
+          ]
+        },
         "required": [
           "id",
           "email",
@@ -1544,8 +1610,6 @@ exports[`renderApi for Postgres > writes openapi.json 1`] = `
               "name": "id",
               "columnType": "integer",
               "nullable": false,
-              "primary": true,
-              "unique": false,
               "autoIncrement": true
             }
           },
@@ -1556,8 +1620,6 @@ exports[`renderApi for Postgres > writes openapi.json 1`] = `
               "name": "email",
               "columnType": "character varying(50)",
               "nullable": false,
-              "primary": false,
-              "unique": true,
               "autoIncrement": false
             }
           },
@@ -1571,8 +1633,6 @@ exports[`renderApi for Postgres > writes openapi.json 1`] = `
               "name": "role",
               "columnType": "enum('admin','member')",
               "nullable": false,
-              "primary": false,
-              "unique": false,
               "autoIncrement": false,
               "enumName": "user_role"
             }
@@ -1587,8 +1647,6 @@ exports[`renderApi for Postgres > writes openapi.json 1`] = `
               "name": "balance",
               "columnType": "numeric(10,2)",
               "nullable": true,
-              "primary": false,
-              "unique": false,
               "autoIncrement": false
             }
           },
@@ -1599,8 +1657,6 @@ exports[`renderApi for Postgres > writes openapi.json 1`] = `
               "name": "created_at",
               "columnType": "timestamp with time zone",
               "nullable": false,
-              "primary": false,
-              "unique": false,
               "autoIncrement": false
             }
           },
@@ -1609,8 +1665,6 @@ exports[`renderApi for Postgres > writes openapi.json 1`] = `
               "name": "settings",
               "columnType": "jsonb",
               "nullable": true,
-              "primary": false,
-              "unique": false,
               "autoIncrement": false
             }
           }
@@ -1619,6 +1673,27 @@ exports[`renderApi for Postgres > writes openapi.json 1`] = `
       "Events": {
         "type": "object",
         "x-table": "events",
+        "x-keys": {
+          "primaryKey": {
+            "name": "events_pkey",
+            "columns": [
+              "id"
+            ]
+          },
+          "foreignKeys": [
+            {
+              "name": "events_user_id_fkey",
+              "columns": [
+                "user_id"
+              ],
+              "table": "users",
+              "foreignColumns": [
+                "id"
+              ],
+              "onDelete": "set null"
+            }
+          ]
+        },
         "required": [
           "id",
           "userId",
@@ -1631,8 +1706,6 @@ exports[`renderApi for Postgres > writes openapi.json 1`] = `
               "name": "id",
               "columnType": "bigint",
               "nullable": false,
-              "primary": true,
-              "unique": false,
               "autoIncrement": true
             }
           },
@@ -1642,13 +1715,7 @@ exports[`renderApi for Postgres > writes openapi.json 1`] = `
               "name": "user_id",
               "columnType": "integer",
               "nullable": false,
-              "primary": false,
-              "unique": false,
-              "autoIncrement": false,
-              "references": {
-                "table": "users",
-                "column": "id"
-              }
+              "autoIncrement": false
             }
           },
           "externalId": {
@@ -1658,8 +1725,6 @@ exports[`renderApi for Postgres > writes openapi.json 1`] = `
               "name": "external_id",
               "columnType": "uuid",
               "nullable": false,
-              "primary": false,
-              "unique": false,
               "autoIncrement": false
             }
           }
@@ -1871,24 +1936,28 @@ export const relations = defineRelations(schema, (r) => ({
 `;
 
 exports[`renderApi for Postgres > writes src/db/schema.js 1`] = `
-"import { bigserial, integer, jsonb, numeric, pgEnum, pgTable, serial, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
+"import { bigserial, foreignKey, integer, jsonb, numeric, pgEnum, pgTable, serial, timestamp, unique, uuid, varchar } from 'drizzle-orm/pg-core';
 
 export const userRoleEnum = pgEnum("user_role", ["admin","member"]);
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
-  email: varchar("email", { length: 50 }).notNull().unique(),
+  email: varchar("email", { length: 50 }).notNull(),
   role: userRoleEnum("role").notNull(),
   balance: numeric("balance", { precision: 10, scale: 2 }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
   settings: jsonb("settings"),
-});
+}, (table) => [
+  unique("users_email_key").on(table.email),
+]);
 
 export const events = pgTable("events", {
   id: bigserial("id", { mode: 'number' }).primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id),
+  userId: integer("user_id").notNull(),
   externalId: uuid("external_id").notNull(),
-});
+}, (table) => [
+  foreignKey({ name: "events_user_id_fkey", columns: [table.userId], foreignColumns: [users.id] }).onDelete("set null"),
+]);
 "
 `;
 

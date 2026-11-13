@@ -31,6 +31,10 @@ await db.close();
 await operations.api.generateApi('./shop-api', info, schema);
 await operations.api.installApi('./shop-api');
 
+// Write the web app for the same API, then install its dependencies.
+await operations.web.generateWeb('./shop-web', info, schema);
+await operations.web.installWeb('./shop-web');
+
 // Write only the OpenAPI document.
 await operations.spec.generateSpec('./spec', info, schema);
 
@@ -43,6 +47,8 @@ const fromSpec = await operations.spec.readOpenApi('./spec/openapi.json', 'mysql
 | `handlers.MySql`, `handlers.Postgres` | `connect()` checks the connection. `readSchema()` returns `{ dialect, tables }`. `close()` ends the pool. |
 | `operations.api.generateApi(dir, info, schema)` | Writes the API into `dir`. Returns the paths it wrote. |
 | `operations.api.installApi(dir)` | Runs `npm install` in `dir`. |
+| `operations.web.generateWeb(dir, info, schema)` | Writes the web app into `dir`. Returns the paths it wrote. |
+| `operations.web.installWeb(dir)` | Runs `npm install` in `dir`. |
 | `operations.spec.generateSpec(dir, info, schema)` | Writes `dir/openapi.json`. Returns its path. |
 | `operations.spec.readOpenApi(file, dialect)` | Reads an OpenAPI document in YAML or JSON. `dialect` is `'mysql'` or `'postgresql'`. |
 

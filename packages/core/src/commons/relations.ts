@@ -1,5 +1,5 @@
-import { camel, pascal, primaryColumns, routedTables } from './columns.js';
-import type { DbColumn, DbTable } from './types.js';
+import { camel, pascal, routedTables } from './columns.js';
+import type { DbColumn, DbForeignKey, DbTable } from './types.js';
 
 /** One Drizzle relation. `from` and `to` are column names on the source and target tables. */
 export type Relation = {
@@ -11,7 +11,13 @@ export type Relation = {
   through?: { table: string; from: string; to: string };
 };
 
-type ForeignKey = DbColumn & { references: { table: string; column: string } };
+/** A single-column foreign key to a table in the schema. */
+type ForeignKey = { name: string; table: string; column: string };
+
+// razor: composite foreign keys get no relation; Drizzle relations take column arrays if `?with=` needs them.
+const foreignKeys = (table: DbTable, known: Set<string>): ForeignKey[] => (table.foreignKeys ?? [])
+  .filter((key: DbForeignKey) => key.columns.length === 1 && known.has(key.table))
+  .map((key: DbForeignKey) => ({ name: key.columns[0], table: key.table, column: key.foreignColumns[0] }));
 
 /** `user_id` and `userId` become `user`. A name without an id suffix stays undefined. */
 const stripId = (name: string): string | undefined => {
@@ -25,9 +31,9 @@ const stripId = (name: string): string | undefined => {
  * both foreign keys. It gets no routes and no relations of its own.
  */
 const linkColumns = (table: DbTable, known: Set<string>): [ForeignKey, ForeignKey] | undefined => {
-  const primary: DbColumn[] = primaryColumns(table);
-  const candidates: DbColumn[] = primary.length ? primary : table.columns;
-  const keys = candidates.filter((column: DbColumn): column is ForeignKey => Boolean(column.references && known.has(column.references.table)));
+  const primary: string[] = table.primaryKey?.columns ?? [];
+  const candidates: string[] = primary.length ? primary : table.columns.map((column: DbColumn) => column.name);
+  const keys: ForeignKey[] = foreignKeys(table, known).filter((key: ForeignKey) => candidates.includes(key.name));
 
   return candidates.length === 2 && keys.length === 2 ? [keys[0], keys[1]] : undefined;
 };
@@ -54,30 +60,29 @@ export const tableRelations = (tables: DbTable[]): Map<string, Relation[]> => {
     const link = linkColumns(table, known);
     if (link) {
       const [a, b] = link;
-      const self: boolean = a.references.table === b.references.table;
+      const self: boolean = a.table === b.table;
       const label = (column: ForeignKey): string =>
-        self ? `${camel(column.references.table)}By${pascal(stripId(column.name) ?? column.name)}` : camel(column.references.table);
-      add(a.references.table, {
-        name: label(b), kind: 'many', target: b.references.table, from: a.references.column, to: b.references.column,
+        self ? `${camel(column.table)}By${pascal(stripId(column.name) ?? column.name)}` : camel(column.table);
+      add(a.table, {
+        name: label(b), kind: 'many', target: b.table, from: a.column, to: b.column,
         through: { table: table.name, from: a.name, to: b.name },
       });
-      add(b.references.table, {
-        name: label(a), kind: 'many', target: a.references.table, from: b.references.column, to: a.references.column,
+      add(b.table, {
+        name: label(a), kind: 'many', target: a.table, from: b.column, to: a.column,
         through: { table: table.name, from: b.name, to: a.name },
       });
       continue;
     }
-    const keys: ForeignKey[] = table.columns.filter((column: DbColumn): column is ForeignKey =>
-      Boolean(column.references && known.has(column.references.table)));
+    const keys: ForeignKey[] = foreignKeys(table, known);
     for (const key of keys) {
-      const target: string = key.references.table;
-      const twice: boolean = keys.filter((other: ForeignKey) => other.references.table === target).length > 1;
+      const target: string = key.table;
+      const twice: boolean = keys.filter((other: ForeignKey) => other.table === target).length > 1;
       add(table.name, {
-        name: camel(stripId(key.name) ?? target), kind: 'one', target, from: key.name, to: key.references.column,
+        name: camel(stripId(key.name) ?? target), kind: 'one', target, from: key.name, to: key.column,
       });
       add(target, {
         name: twice ? `${camel(table.name)}By${pascal(stripId(key.name) ?? key.name)}` : camel(table.name),
-        kind: 'many', target: table.name, from: key.references.column, to: key.name,
+        kind: 'many', target: table.name, from: key.column, to: key.name,
       });
     }
   }

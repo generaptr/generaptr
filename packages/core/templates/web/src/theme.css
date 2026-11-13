@@ -1,0 +1,48 @@
+/*
+ * The theme of the web app: shadcn color tokens for light mode (:root) and dark mode (.dark).
+ * Change the values here, or paste a theme from https://ui.shadcn.com/themes in their place.
+ */
+:root {
+  color-scheme: light;
+  --radius: 0.625rem;
+  --background: oklch(0.99 0.004 150);
+  --foreground: oklch(0.2 0.02 155);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.2 0.02 155);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.2 0.02 155);
+  --primary: oklch(0.5 0.12 152);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.955 0.012 150);
+  --secondary-foreground: oklch(0.24 0.03 155);
+  --muted: oklch(0.96 0.01 150);
+  --muted-foreground: oklch(0.5 0.02 155);
+  --accent: oklch(0.94 0.03 152);
+  --accent-foreground: oklch(0.24 0.04 155);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.91 0.012 150);
+  --input: oklch(0.91 0.012 150);
+  --ring: oklch(0.5 0.12 152);
+}
+
+.dark {
+  color-scheme: dark;
+  --background: oklch(0.17 0.012 155);
+  --foreground: oklch(0.96 0.008 150);
+  --card: oklch(0.21 0.014 155);
+  --card-foreground: oklch(0.96 0.008 150);
+  --popover: oklch(0.21 0.014 155);
+  --popover-foreground: oklch(0.96 0.008 150);
+  --primary: oklch(0.74 0.14 152);
+  --primary-foreground: oklch(0.18 0.03 155);
+  --secondary: oklch(0.28 0.016 155);
+  --secondary-foreground: oklch(0.96 0.008 150);
+  --muted: oklch(0.25 0.014 155);
+  --muted-foreground: oklch(0.72 0.016 150);
+  --accent: oklch(0.3 0.04 152);
+  --accent-foreground: oklch(0.96 0.008 150);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 11%);
+  --input: oklch(1 0 0 / 16%);
+  --ring: oklch(0.74 0.14 152);
+}

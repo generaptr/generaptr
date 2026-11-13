@@ -2,9 +2,33 @@
 import { sql } from 'drizzle-orm';
 <% } -%>
 import { <%= it.builders %> } from 'drizzle-orm/<%= it.core %>';
+<% if (it.customs.length) { %>
+<% for (const custom of it.customs) { -%>
+<% if (custom.binary) { -%>
+// JSON carries bytes as base64. Buffer.from also takes array-likes, so a JSON object could allocate any size.
+const <%= custom.name %> = customType({
+  dataType: () => <%= custom.sql %>,
+  fromDriver: (value) => value.toString('base64'),
+  toDriver: (value) => {
+    if (typeof value !== 'string' || !/^[A-Za-z0-9+/]*={0,2}$/.test(value)) {
+      throw Object.assign(new TypeError('Expected a base64 string'), { status: 400 });
+    }
+    return Buffer.from(value, 'base64');
+  },
+});
+<% } else { -%>
+const <%= custom.name %> = customType({ dataType: () => <%= custom.sql %> });
+<% } -%>
+<% } -%>
+<% } -%>
 <% if (it.enums.length) { %>
 <% for (const item of it.enums) { -%>
 export const <%= item.name %> = pgEnum(<%= item.type %>, <%= item.values %>);
+<% } -%>
+<% } -%>
+<% if (it.sequences.length) { %>
+<% for (const sequence of it.sequences) { -%>
+export const <%= sequence.name %> = pgSequence(<%= sequence.sql %>, { <%= sequence.options %> });
 <% } -%>
 <% } -%>
 <% for (const table of it.tables) { %>
@@ -12,5 +36,9 @@ export const <%= table.name %> = <%= it.tableFunction %>(<%= table.table %>, {
 <% for (const column of table.columns) { -%>
   <%= column.key %>: <%= column.chain %>,
 <% } -%>
-}<% if (table.primaryKeys) { %>, (table) => [primaryKey({ columns: [<%= table.primaryKeys %>] })]<% } %>);
+}<% if (table.constraints.length) { %>, (table) => [
+<% for (const constraint of table.constraints) { -%>
+  <%= constraint %>,
+<% } -%>
+]<% } %>);
 <% } -%>

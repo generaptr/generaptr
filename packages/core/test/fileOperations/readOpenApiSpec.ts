@@ -12,9 +12,11 @@ const schema: DbSchema = {
   tables: [{
     name: 'users',
     columns: [
-      { name: 'id', columnType: 'integer', nullable: false, primary: true, unique: false, autoIncrement: true },
-      { name: 'email', columnType: 'character varying(50)', nullable: false, primary: false, unique: true, autoIncrement: false },
+      { name: 'id', columnType: 'integer', nullable: false, autoIncrement: true },
+      { name: 'email', columnType: 'character varying(50)', nullable: false, autoIncrement: false },
     ],
+    primaryKey: { name: 'users_pkey', columns: ['id'] },
+    uniques: [{ name: 'users_email_key', columns: ['email'] }],
   }],
 };
 
