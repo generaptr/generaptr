@@ -1,0 +1,91 @@
+import assert from 'node:assert';
+import { type ChildProcess, spawn } from 'node:child_process';
+import * as fs from 'node:fs/promises';
+import * as os from 'node:os';
+import * as path from 'node:path';
+import config from '../../src/configs/config';
+import { generateApi, installApi } from '../../src/fileOperations/apiFileOperations';
+import MysqlHandler from '../../src/handlers/mysqlHandler';
+
+const connection = config.CONNECTION_INFO.MYSQL[config.ENV];
+const port = 3919;
+const base = `http://127.0.0.1:${port}`;
+
+const send = async (method: string, url: string, body?: object): Promise<Response> =>
+  fetch(`${base}${url}`, {
+    method,
+    headers: { 'content-type': 'application/json' },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+
+// The API's own contract, so the test reads the body as that shape.
+const json = async <T>(response: Response): Promise<T> => (await response.json()) as T;
+
+describe('generated Express + Drizzle API', () => {
+  let dir: string;
+  let server: ChildProcess;
+
+  beforeAll(async () => {
+    const handler = new MysqlHandler(connection);
+    const tables = await handler.readTables();
+    await handler.close();
+
+    dir = await fs.mkdtemp(path.join(os.tmpdir(), 'generaptr api '));
+    await generateApi(dir, { name: 'demo-api', version: '1.0.0', description: '', author: '', license: 'MIT' }, tables);
+    await installApi(dir);
+
+    server = spawn('node', ['src/index.js'], {
+      cwd: dir,
+      env: {
+        ...process.env,
+        PORT: String(port),
+        DATABASE_URL: `mysql://${connection.user}:${connection.password}@${connection.host}:${connection.port}/${connection.database}`,
+      },
+    });
+    await new Promise<void>((resolve: () => void, reject: (reason: Error) => void): void => {
+      server.stdout?.on('data', (chunk: Buffer) => chunk.toString().includes('Listening') && resolve());
+      server.on('exit', (code: number | null) => reject(new Error(`API exited with code ${code}`)));
+    });
+  }, 300000);
+
+  afterAll(async () => {
+    server?.kill();
+    if (dir) {
+      await fs.rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('runs CRUD on a table and on a table with a foreign key', async () => {
+    const email = `ada-${Date.now()}@example.com`;
+    const created = await send('POST', '/users', { firstName: 'Ada', email });
+    assert.strictEqual(created.status, 201);
+    const { id: userId } = await json<{ id: number }>(created);
+    assert.strictEqual(created.headers.get('location'), `/users/${userId}`);
+
+    assert.strictEqual((await send('PUT', `/users/${userId}`, { lastName: 'Lovelace' })).status, 204);
+    const user = await json<object>(await send('GET', `/users/${userId}`));
+    assert.deepStrictEqual(user, { id: userId, firstName: 'Ada', lastName: 'Lovelace', email });
+
+    const account = await send('POST', '/accounts', { type: 'admin', userId });
+    assert.strictEqual(account.status, 201);
+    const { id: accountId } = await json<{ id: number }>(account);
+    const accounts = await json<{ id: number; userId: number }[]>(await send('GET', '/accounts?limit=100'));
+    assert.ok(accounts.some((row: { id: number; userId: number }) => row.id === accountId && row.userId === userId));
+
+    assert.strictEqual((await send('DELETE', `/accounts/${accountId}`)).status, 204);
+    assert.strictEqual((await send('DELETE', `/users/${userId}`)).status, 204);
+    assert.strictEqual((await send('GET', `/users/${userId}`)).status, 404);
+  });
+
+  it('returns a JSON error for a bad write', async () => {
+    const response = await send('POST', '/accounts', { type: 'admin', userId: 999999999 });
+    assert.strictEqual(response.status, 500);
+    assert.ok((await json<{ message: string }>(response)).message);
+  });
+
+  it('rejects an invalid body with 400 before it reaches the database', async () => {
+    const response = await send('POST', '/users', { email: 42 });
+    assert.strictEqual(response.status, 400);
+    assert.ok((await json<{ issues: object[] }>(response)).issues.length);
+  });
+});

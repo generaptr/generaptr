@@ -16,9 +16,10 @@ Make generaptr work again on current Node and npm, and make it generate a curren
 | Runtime | `engines.node >= 22`. CI on Node 22 and 24. CLI is ESM. Core stays CommonJS until Phase 2 rewrites it. | Done |
 | Generated API | Express 5 + Drizzle v1 beta (`drizzle-orm` and `drizzle-kit` `1.0.0-beta.22` on 2026-11-13). Pin the exact beta. Move to v1 stable when it ships. | Agreed |
 | Migrations | Drizzle native: `drizzle-kit generate` + `drizzle-kit migrate`. Forward-only. No custom migration script. No rollback. A bad migration gets a new forward migration. | Agreed |
-| Generated models | Use `drizzle-kit pull` output for `schema.ts`. Delete the Sequelize model generator. | Proposed |
+| Generated models | generaptr writes `src/db/schema.js` itself from `MysqlHandler.readTables()` (raw `information_schema`: real names, exact `COLUMN_TYPE`, FKs, link tables). Not `drizzle-kit pull`: a spec input has no database to pull from. The relation preprocessor is lossy and stays for spec output only. | Done |
 | Spec format | OpenAPI 3.1 replaces RAML (`raml-1-parser` is deprecated upstream). | Proposed |
-| Templates | Template files (from `feature/refactoring`) replace TS string literals. | Proposed |
+| Generated API shape | ESM JavaScript, Node 22+. `express.json()` (no body-parser), `node --watch` (no nodemon), `--env-file-if-exists=.env`. One route file per table with one primary key. Request bodies go through `drizzle-orm/zod`, so bad input gets 400. No relation includes yet. | Done |
+| Templates | Keep TS template literals in pure functions (`generators/api/express.ts`). No template engine. | Done |
 | Tooling | TypeScript 7. Vitest replaces mocha + nyc. Biome (root, lint only) replaces tslint and eslint. typedoc, coveralls, commitizen, npm-run-all, rimraf removed. | Done |
 | Releases | Changesets + npm provenance from CI. | Proposed |
 
@@ -83,13 +84,15 @@ Size: core about 3.8k lines of TypeScript. CLI 428 lines of JS.
 
 ### Phase 2: modernize generated output (1–2 weeks)
 
-- [ ] Start from `develop` (async/await generated API).
-- [ ] Move generated code into template files.
-- [ ] Generated stack: Express 5 + Drizzle v1. Use `drizzle-kit pull` for `schema.ts`.
-- [ ] Generated `package.json` scripts: `db:generate` (`drizzle-kit generate`) and `db:migrate` (`drizzle-kit migrate`). Remove the `sequelize-cli` scripts.
-- [ ] Optional boot-time migrate with `migrate()` from `drizzle-orm/mysql2/migrator`.
-- [ ] Replace RAML output and input with OpenAPI 3.1.
-- [ ] Gate: generated API passes a smoke test in CI (boot, migrate, CRUD on one table).
+- [x] PR 2 (stacked on #153): generated stack is Express 5 + Drizzle v1 beta, written from `readTables()`. Sequelize generators deleted.
+- [x] Generated `package.json` scripts: `db:generate` (`drizzle-kit generate`) and `db:migrate` (`drizzle-kit migrate`). Checked: `drizzle-kit generate` accepts the generated schema.
+- [x] Gate: `test/e2e/generatedApiSpec.ts` generates from MySQL, installs, boots, and runs CRUD (with a FK) over HTTP in CI.
+- [x] CLI boilerplate flow asks for the database once and reads raw tables. RAML input for the API flow is removed until OpenAPI input exists.
+- [ ] Skipped: `develop` branch. Its async/await work was in the Sequelize generators that PR 2 deletes.
+- [ ] Relation includes (`with`) through Drizzle relations v2.
+- [ ] Baseline for an existing database: the first `db:generate` migration creates every table, so it must not run on the database it came from.
+- [ ] PR 3: replace RAML output and input with OpenAPI 3.1. OpenAPI input must produce `DbTable[]` by convention (`<name>_id`, `<a>_<b>` link tables).
+- [ ] PR 4: core to ESM, fix items 17 and 18.
 
 ### Phase 3: publish
 

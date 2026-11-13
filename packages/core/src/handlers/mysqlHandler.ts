@@ -1,7 +1,7 @@
 import * as mysql from 'mysql2/promise';
 import Utils from '../commons/utils/utils';
 import BaseHandler from './baseHandler';
-import { Schema, Table, Column, MySqlColumnSchema, TableReference, RawTableReference } from '../commons/types';
+import { Schema, Table, Column, MySqlColumnSchema, TableReference, RawTableReference, DbTable } from '../commons/types';
 
 /**
  * MySql Handler.
@@ -45,6 +45,41 @@ export default class MysqlHandler extends BaseHandler {
     const schema: Schema = await Promise.all(tableNames.map(async (name: string) => this.getTableSchema(name)));
 
     return this.normalizeRelations(schema);
+  }
+
+  /**
+   * Reads every table as the database stores it: real column names, exact types, and foreign keys.
+   */
+  public async readTables(): Promise<DbTable[]> {
+    const [columns] = await this.pool.query<mysql.RowDataPacket[]>(
+      `SELECT TABLE_NAME, COLUMN_NAME, COLUMN_TYPE, IS_NULLABLE, COLUMN_KEY, EXTRA
+        FROM COLUMNS WHERE TABLE_SCHEMA = ? ORDER BY TABLE_NAME, ORDINAL_POSITION`,
+      [this.database],
+    );
+    const [keys] = await this.pool.query<mysql.RowDataPacket[]>(
+      `SELECT TABLE_NAME, COLUMN_NAME, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME
+        FROM KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = ? AND REFERENCED_TABLE_NAME IS NOT NULL`,
+      [this.database],
+    );
+    const tables: Map<string, DbTable> = new Map();
+    for (const row of columns) {
+      const table: DbTable = tables.get(row.TABLE_NAME) ?? { name: row.TABLE_NAME, columns: [] };
+      tables.set(row.TABLE_NAME, table);
+      const key: mysql.RowDataPacket | undefined = keys.find(
+        (k: mysql.RowDataPacket) => k.TABLE_NAME === row.TABLE_NAME && k.COLUMN_NAME === row.COLUMN_NAME,
+      );
+      table.columns.push({
+        name: row.COLUMN_NAME,
+        columnType: row.COLUMN_TYPE,
+        nullable: row.IS_NULLABLE === 'YES',
+        primary: row.COLUMN_KEY === 'PRI',
+        unique: row.COLUMN_KEY === 'UNI',
+        autoIncrement: String(row.EXTRA).includes('auto_increment'),
+        references: key ? { table: key.REFERENCED_TABLE_NAME, column: key.REFERENCED_COLUMN_NAME } : undefined,
+      });
+    }
+
+    return [...tables.values()];
   }
 
   /**
