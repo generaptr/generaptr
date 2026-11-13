@@ -7,14 +7,14 @@ export const questions = [
     name: 'action',
     type: 'select',
     message: 'What would you want to generate?',
-    choices: ['Boilerplate API', 'RAML Specification'],
+    choices: ['Boilerplate API', 'OpenAPI Specification'],
   },
 ];
 
 export const handler = async (data) => {
   let action;
   switch (data.action) {
-    case 'RAML Specification': {
+    case 'OpenAPI Specification': {
       action = specification;
       break;
     }

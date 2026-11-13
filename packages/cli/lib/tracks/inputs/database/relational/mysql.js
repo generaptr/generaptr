@@ -44,11 +44,10 @@ export const questions = [
 ];
 
 export const handler = async (data) => {
-  const sqlHandler = new handlers.MySql(data);
-  await sqlHandler.connect();
+  const reader = new handlers.MySql(data);
+  await reader.connect();
+  const tables = await reader.readTables();
+  await reader.close();
 
-  const schema = await sqlHandler.readSchema();
-  await sqlHandler.close();
-
-  return schema;
+  return tables;
 };

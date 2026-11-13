@@ -1,8 +1,8 @@
 import { styleText } from 'node:util';
 import inquirer from 'inquirer';
-import { handlers, operations } from 'generaptr';
+import { operations } from 'generaptr';
 
-import * as mysql from '../inputs/database/relational/mysql.js';
+import * as source from '../inputs/source.js';
 
 const { api } = operations;
 
@@ -43,11 +43,7 @@ export const questions = [
 ];
 
 export const handler = async (data) => {
-  const connection = await inquirer.prompt(mysql.questions);
-  const reader = new handlers.MySql(connection);
-  await reader.connect();
-  const tables = await reader.readTables();
-  await reader.close();
+  const tables = await source.handler(await inquirer.prompt(source.questions));
 
   const files = await api.generateApi(data.output, data, tables);
   console.log(styleText('green', `Generated ${files.length} files in ${data.output}`));
