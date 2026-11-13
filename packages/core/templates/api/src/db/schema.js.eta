@@ -26,6 +26,11 @@ const <%= custom.name %> = customType({ dataType: () => <%= custom.sql %> });
 export const <%= item.name %> = pgEnum(<%= item.type %>, <%= item.values %>);
 <% } -%>
 <% } -%>
+<% if (it.sequences.length) { %>
+<% for (const sequence of it.sequences) { -%>
+export const <%= sequence.name %> = pgSequence(<%= sequence.sql %>, { <%= sequence.options %> });
+<% } -%>
+<% } -%>
 <% for (const table of it.tables) { %>
 export const <%= table.name %> = <%= it.tableFunction %>(<%= table.table %>, {
 <% for (const column of table.columns) { -%>

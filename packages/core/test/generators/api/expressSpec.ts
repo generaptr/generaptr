@@ -109,6 +109,18 @@ describe('Express + Drizzle generator', () => {
     assert.match(mysql, /datetime\("seen_at", \{ fsp: 3 \}\)\.onUpdateNow\(\{ fsp: 3 \}\)/);
   });
 
+  it('writes enums that no column uses and sequences that no column owns', () => {
+    const file: string = schemaFile({
+      dialect: 'postgresql',
+      tables: [],
+      enums: [{ name: 'mood', values: ['sad', "it's"] }],
+      sequences: [{ name: 'invoice_number', start: '1000', increment: '10', min: '1000', max: '99999999', cache: '5', cycle: true }],
+    });
+    assert.match(file, /import \{ pgEnum, pgSequence, pgTable \} from 'drizzle-orm\/pg-core';/);
+    assert.match(file, /export const moodEnum = pgEnum\("mood", \["sad","it's"\]\);/);
+    assert.match(file, /export const invoiceNumberSequence = pgSequence\("invoice_number", \{ startWith: "1000", increment: "10", minValue: "1000", maxValue: "99999999", cache: "5", cycle: true \}\);/);
+  });
+
   it('writes keys, a foreign key, and a composite primary key', () => {
     const tables: DbTable[] = [
       {

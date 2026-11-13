@@ -5,7 +5,7 @@ import {
 } from '../../commons/columns.js';
 import { type Relation, routedRelations } from '../../commons/relations.js';
 import {
-  DbColumn, DbIdentity, DbSchema, DbTable, Dialect, PackageJsonInfo, REFERENTIAL_ACTIONS, ReferentialAction,
+  DbColumn, DbIdentity, DbSchema, DbSequence, DbTable, Dialect, PackageJsonInfo, REFERENTIAL_ACTIONS, ReferentialAction,
 } from '../../commons/types.js';
 import { openApiDocument } from '../spec/openapi.js';
 
@@ -146,15 +146,14 @@ const eta: Eta = new Eta({
 const inlinePrimaryKey = (table: DbTable, dialect: Dialect): boolean =>
   table.primaryKey?.columns.length === 1 && (dialect === 'mysql' || table.primaryKey.name === `${table.name}_pkey`);
 
-const identityCall = ({ always, name, start, increment, min, max, cache, cycle }: DbIdentity): string => {
-  const options: string = [
-    `name: ${JSON.stringify(name)}`, `startWith: ${JSON.stringify(start)}`, `increment: ${JSON.stringify(increment)}`,
-    `minValue: ${JSON.stringify(min)}`, `maxValue: ${JSON.stringify(max)}`, `cache: ${JSON.stringify(cache)}`,
-    ...(cycle ? ['cycle: true'] : []),
-  ].join(', ');
+const sequenceOptions = ({ start, increment, min, max, cache, cycle }: DbSequence): string => [
+  `startWith: ${JSON.stringify(start)}`, `increment: ${JSON.stringify(increment)}`,
+  `minValue: ${JSON.stringify(min)}`, `maxValue: ${JSON.stringify(max)}`, `cache: ${JSON.stringify(cache)}`,
+  ...(cycle ? ['cycle: true'] : []),
+].join(', ');
 
-  return `.generated${always ? 'Always' : 'ByDefault'}AsIdentity({ ${options} })`;
-};
+const identityCall = (identity: DbIdentity): string =>
+  `.generated${identity.always ? 'Always' : 'ByDefault'}AsIdentity({ name: ${JSON.stringify(identity.name)}, ${sequenceOptions(identity)} })`;
 
 const chainFor = (column: DbColumn, table: DbTable, schema: DbSchema, customs: CustomTypes): string => {
   const mysql: boolean = schema.dialect === 'mysql';
@@ -242,6 +241,18 @@ export const schemaFile = (schema: DbSchema): string => {
   const builders: Set<string> = new Set([tableFunction]);
   const enums: Map<string, { name: string; type: string; values: string }> = new Map();
   const customs: CustomTypes = new Map();
+  for (const item of schema.enums ?? []) {
+    enums.set(`${camel(item.name)}Enum`, { name: `${camel(item.name)}Enum`, type: JSON.stringify(item.name), values: JSON.stringify(item.values) });
+  }
+  const sequences = (schema.sequences ?? []).map((sequence: DbSequence) => ({
+    name: `${camel(sequence.name)}Sequence`, sql: JSON.stringify(sequence.name), options: sequenceOptions(sequence),
+  }));
+  if (enums.size) {
+    builders.add('pgEnum');
+  }
+  if (sequences.length) {
+    builders.add('pgSequence');
+  }
   const views = schema.tables.map((table: DbTable) => {
     for (const column of table.columns) {
       const { builder } = columnBuilder(column, schema.dialect, table, customs);
@@ -276,6 +287,7 @@ export const schemaFile = (schema: DbSchema): string => {
     core,
     tableFunction,
     enums: [...enums.values()],
+    sequences,
     tables: views,
   });
 };
@@ -352,7 +364,7 @@ export const packageJson = (info: PackageJsonInfo, dialect: Dialect): string => 
 
 /** Every file of the generated API, keyed by path relative to the output directory. */
 export const renderApi = (schema: DbSchema, info: PackageJsonInfo): Record<string, string> => {
-  assertSafeNames(schema.tables);
+  assertSafeNames(schema);
   const dialect = DIALECTS[schema.dialect];
   const files: Record<string, string> = {
     'package.json': packageJson(info, schema.dialect),

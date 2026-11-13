@@ -100,3 +100,11 @@ CREATE TABLE kinds (
   price money,
   doc xml
 );
+
+-- An enum that no column uses, a sequence that no column owns, and a column that takes its default from it.
+CREATE TYPE mood AS ENUM ('sad', 'ok', 'it''s');
+CREATE SEQUENCE invoice_number AS bigint START WITH 1000 INCREMENT BY 10 MINVALUE 1000 MAXVALUE 99999999 CACHE 5 CYCLE;
+CREATE TABLE invoices (
+  id serial PRIMARY KEY,
+  number bigint NOT NULL DEFAULT nextval('invoice_number')
+);

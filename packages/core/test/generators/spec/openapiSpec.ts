@@ -283,6 +283,26 @@ describe('OpenAPI generator', () => {
     assert.throws(() => tablesFromOpenApi(doc, 'postgresql'), error);
   });
 
+  it('reads enums and sequences back, and leaves them out in another dialect', () => {
+    const extra = {
+      enums: [{ name: 'mood', values: ['sad', "it's"] }],
+      sequences: [{ name: 'invoice_number', start: '1000', increment: '10', min: '1000', max: '99999999', cache: '5', cycle: true }],
+    };
+    const doc = openApiDocument({ dialect: 'postgresql', tables: postgresTables, ...extra }, info);
+    assert.deepStrictEqual(tablesFromOpenApi(doc, 'postgresql'), { dialect: 'postgresql', tables: postgresTables, ...extra });
+    assert.deepStrictEqual(Object.keys(tablesFromOpenApi(doc, 'mysql')), ['dialect', 'tables']);
+  });
+
+  it.each([
+    ['x-enums', [{ name: 'mood', values: [1] }], /Invalid x-enums/],
+    ['x-enums', [{ name: 'mood"; DROP TYPE x; --', values: ['a'] }], /Unsafe name/],
+    ['x-sequences', [{ name: 's', start: '1; DROP TABLE users', increment: '1', min: '1', max: '9', cache: '1' }], /Invalid x-sequences/],
+    ['x-sequences', { name: 's' }, /Invalid x-sequences/],
+  ])('rejects %s %j', (key: string, value: unknown, error: RegExp) => {
+    const doc = { ...openApiDocument({ dialect: 'postgresql', tables: postgresTables }, info), [key]: value };
+    assert.throws(() => tablesFromOpenApi(doc, 'postgresql'), error);
+  });
+
   it('reads the keys of a generaptr 2 document from its columns', () => {
     const legacy = (name: string, extra: object) => ({ name, columnType: 'integer', nullable: false, autoIncrement: false, ...extra });
     const doc = {

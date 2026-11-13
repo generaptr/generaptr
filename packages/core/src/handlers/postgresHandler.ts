@@ -1,6 +1,6 @@
 import { Pool, type PoolConfig } from 'pg';
 import { splitList } from '../commons/columns.js';
-import { DbForeignKey, DbIndex, DbSchema, DbTable, ReferentialAction } from '../commons/types.js';
+import { DbForeignKey, DbIndex, DbSchema, DbSequence, DbTable, ReferentialAction } from '../commons/types.js';
 
 type ColumnRow = {
   table_name: string;
@@ -51,7 +51,9 @@ const COLUMNS: string = `
   SELECT c.relname AS table_name, a.attname AS column_name,
     format_type(a.atttypid, a.atttypmod) AS column_type,
     NOT a.attnotnull AS nullable,
-    coalesce(pg_get_expr(d.adbin, d.adrelid), '') LIKE 'nextval(%' AS auto_increment,
+    -- razor: a serial keeps default sequence options; read them like identity options if a schema changes them.
+    (a.attidentity = '' AND pg_get_serial_sequence(format('%I.%I', n.nspname, c.relname), a.attname) IS NOT NULL)
+      AS auto_increment,
     pg_get_expr(d.adbin, d.adrelid) AS default_expr,
     a.attgenerated AS generated, a.attidentity AS identity,
     CASE WHEN a.attidentity <> '' THEN (
@@ -74,6 +76,31 @@ const COLUMNS: string = `
   LEFT JOIN pg_attrdef d ON d.adrelid = a.attrelid AND d.adnum = a.attnum
   WHERE n.nspname = $1 AND c.relkind IN ('r', 'p') AND a.attnum > 0 AND NOT a.attisdropped
   ORDER BY c.relname, a.attnum`;
+
+// An enum that only an array column uses is here too: the array column reads as a custom type of it.
+const ENUMS: string = `
+  SELECT t.typname AS name, array_agg(e.enumlabel::text ORDER BY e.enumsortorder) AS labels
+  FROM pg_type t
+  JOIN pg_namespace n ON n.oid = t.typnamespace
+  JOIN pg_enum e ON e.enumtypid = t.oid
+  WHERE n.nspname = $1 AND NOT EXISTS (
+    SELECT 1 FROM pg_attribute a JOIN pg_class c ON c.oid = a.attrelid
+    WHERE a.atttypid = t.oid AND c.relkind IN ('r', 'p') AND NOT a.attisdropped)
+  GROUP BY t.typname
+  ORDER BY t.typname`;
+
+// A serial or identity column owns its sequence; the column writes it.
+const SEQUENCES: string = `
+  SELECT s.relname AS name, format_type(q.seqtypid, NULL) AS type, q.seqstart::text AS start,
+    q.seqincrement::text AS increment, q.seqmin::text AS min, q.seqmax::text AS max, q.seqcache::text AS cache,
+    q.seqcycle AS cycle
+  FROM pg_sequence q
+  JOIN pg_class s ON s.oid = q.seqrelid
+  JOIN pg_namespace n ON n.oid = s.relnamespace
+  WHERE n.nspname = $1 AND NOT EXISTS (
+    SELECT 1 FROM pg_depend d
+    WHERE d.classid = 'pg_class'::regclass AND d.objid = s.oid AND d.refobjsubid > 0 AND d.deptype IN ('a', 'i'))
+  ORDER BY s.relname`;
 
 // Column lists keep key order. to_jsonb reads indnullsnotdistinct, which Postgres before 15 does not have.
 const CONSTRAINTS: string = `
@@ -224,7 +251,19 @@ export default class PostgresHandler {
       }
     }
 
-    return { dialect: 'postgresql', tables: [...tables.values()] };
+    const { rows: enums } = await this.pool.query<{ name: string; labels: string[] }>(ENUMS, [this.schema]);
+    const { rows: sequences } = await this.pool.query<DbSequence & { type: string }>(SEQUENCES, [this.schema]);
+    const odd: (DbSequence & { type: string }) | undefined = sequences.find((sequence) => sequence.type !== 'bigint');
+    if (odd) {
+      throw new Error(`Unsupported sequence ${odd.name}: Drizzle writes every sequence as bigint, not ${odd.type}`);
+    }
+
+    return {
+      dialect: 'postgresql',
+      tables: [...tables.values()],
+      ...(enums.length ? { enums: enums.map(({ name, labels }) => ({ name, values: labels })) } : {}),
+      ...(sequences.length ? { sequences: sequences.map(({ type: _type, ...sequence }) => sequence) } : {}),
+    };
   }
 
   /**

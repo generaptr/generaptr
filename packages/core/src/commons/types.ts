@@ -34,8 +34,7 @@ export type DbColumn = {
 };
 
 /** Sequence values are strings: a bigint maximum does not fit a JS number. */
-export type DbIdentity = {
-  always: boolean;
+export type DbSequence = {
   name: string;
   start: string;
   increment: string;
@@ -44,6 +43,10 @@ export type DbIdentity = {
   cache: string;
   cycle: boolean;
 };
+
+export type DbIdentity = DbSequence & { always: boolean };
+
+export type DbEnum = { name: string; values: string[] };
 
 /** `no action` is the default and is never stored. */
 export const REFERENTIAL_ACTIONS = ['restrict', 'cascade', 'set null', 'set default'] as const;
@@ -93,4 +96,8 @@ export type DbTable = {
 export type DbSchema = {
   dialect: Dialect;
   tables: DbTable[];
+  /** Postgres enums that no column uses. */
+  enums?: DbEnum[];
+  /** Postgres sequences that no column owns. */
+  sequences?: DbSequence[];
 };

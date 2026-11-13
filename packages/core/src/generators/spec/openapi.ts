@@ -3,7 +3,7 @@ import {
 } from '../../commons/columns.js';
 import { type Relation, routedRelations } from '../../commons/relations.js';
 import {
-  DbCheck, DbColumn, DbForeignKey, DbIndex, DbSchema, DbTable, DbUnique, Dialect, PackageJsonInfo, REFERENTIAL_ACTIONS, ReferentialAction,
+  DbCheck, DbColumn, DbEnum, DbForeignKey, DbIndex, DbSchema, DbSequence, DbTable, DbUnique, Dialect, PackageJsonInfo, REFERENTIAL_ACTIONS, ReferentialAction,
 } from '../../commons/types.js';
 
 // razor: plain objects typed loosely; switch to `openapi-types` if callers need deep typing.
@@ -11,6 +11,8 @@ type JsonSchema = Record<string, any>;
 export type OpenApiDocument = {
   openapi: string;
   'x-dialect': Dialect;
+  'x-enums'?: DbEnum[];
+  'x-sequences'?: DbSequence[];
   info: { title: string; version: string; description?: string };
   paths: Record<string, Record<string, unknown>>;
   components: { schemas: Record<string, JsonSchema> };
@@ -175,10 +177,10 @@ const tablePaths = (table: DbTable, dialect: Dialect, relations: Relation[]): Re
 
 /** The OpenAPI 3.1 contract of the API that `renderApi` writes for the same tables. */
 export const openApiDocument = (
-  { dialect, tables }: DbSchema,
+  { dialect, tables, enums, sequences }: DbSchema,
   info: Omit<PackageJsonInfo, 'author' | 'license'>,
 ): OpenApiDocument => {
-  assertSafeNames(tables);
+  assertSafeNames({ tables, enums, sequences });
   const routed: DbTable[] = routedTables(tables);
   const relations: Map<string, Relation[]> = routedRelations(tables);
   const schemas: Record<string, JsonSchema> = {
@@ -199,6 +201,8 @@ export const openApiDocument = (
   return {
     openapi: '3.1.0',
     'x-dialect': dialect,
+    ...(enums ? { 'x-enums': enums } : {}),
+    ...(sequences ? { 'x-sequences': sequences } : {}),
     info: { title: info.name, version: info.version, ...(info.description ? { description: info.description } : {}) },
     paths: Object.assign({}, ...routed.map((table: DbTable) => tablePaths(table, dialect, relations.get(table.name) ?? []))),
     components: { schemas },
@@ -327,6 +331,41 @@ const columnFromDocument = (column: DbColumn, dialect: Dialect, exact: boolean):
   };
 };
 
+const enumsFromDocument = (value: unknown): DbEnum[] => {
+  if (value === undefined) {
+    return [];
+  }
+  const items: unknown[] = Array.isArray(value) ? value : [undefined];
+  return items.map((item: unknown) => {
+    const { name, values } = (item ?? {}) as Record<string, unknown>;
+    if (typeof name !== 'string' || !Array.isArray(values) || !values.length || !values.every((v: unknown) => typeof v === 'string')) {
+      throw new Error('Invalid x-enums: each enum needs a name and a list of string values');
+    }
+    return { name, values: values as string[] };
+  });
+};
+
+const sequencesFromDocument = (value: unknown): DbSequence[] => {
+  if (value === undefined) {
+    return [];
+  }
+  const items: unknown[] = Array.isArray(value) ? value : [undefined];
+  return items.map((item: unknown) => {
+    const { name, start, increment, min, max, cache, cycle } = (item ?? {}) as Record<string, unknown>;
+    const integer = (n: unknown): string => {
+      if (typeof n !== 'string' || !INTEGER.test(n)) {
+        throw new Error('Invalid x-sequences: each sequence needs a name and integer options');
+      }
+      return n;
+    };
+    return {
+      name: typeof name === 'string' ? name : integer(undefined),
+      start: integer(start), increment: integer(increment), min: integer(min), max: integer(max), cache: integer(cache),
+      cycle: cycle === true,
+    };
+  });
+};
+
 const invalid = (): Error => new Error('Invalid x-keys: names must be strings and columns lists of strings');
 const text = (value: unknown): string => {
   if (typeof value !== 'string') {
@@ -450,7 +489,7 @@ const legacyKeys = (table: string, legacy: LegacyColumn[], dialect: Dialect): { 
  * dialect read back exactly through `x-table` and `x-column`. Other documents map by convention.
  */
 export const tablesFromOpenApi = (
-  doc: { 'x-dialect'?: Dialect; components?: { schemas?: Record<string, JsonSchema> } },
+  doc: { 'x-dialect'?: Dialect; 'x-enums'?: unknown; 'x-sequences'?: unknown; components?: { schemas?: Record<string, JsonSchema> } },
   dialect: Dialect,
 ): DbSchema => {
   const schemas: [string, JsonSchema][] = Object.entries(doc.components?.schemas ?? {});
@@ -502,8 +541,12 @@ export const tablesFromOpenApi = (
           }), dialect);
         return { name, columns, ...keys };
       });
-  assertSafeNames(tables);
+  // Enums and sequences are Postgres objects; another dialect has neither.
+  const enums: DbEnum[] = exact ? enumsFromDocument(doc['x-enums']) : [];
+  const sequences: DbSequence[] = exact ? sequencesFromDocument(doc['x-sequences']) : [];
+  const schema: DbSchema = { dialect, tables, ...(enums.length ? { enums } : {}), ...(sequences.length ? { sequences } : {}) };
+  assertSafeNames(schema);
   assertSafeDefaults(tables);
 
-  return { dialect, tables };
+  return schema;
 };

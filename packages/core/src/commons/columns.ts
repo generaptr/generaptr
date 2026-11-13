@@ -1,4 +1,4 @@
-import { DbCheck, DbColumn, DbForeignKey, DbIndex, DbTable, DbUnique, Dialect } from './types.js';
+import { DbCheck, DbColumn, DbForeignKey, DbIndex, DbSchema, DbTable, DbUnique, Dialect } from './types.js';
 
 export const camel = (name: string): string => name.replace(/[_\-\s]+(\w)/g, (_: string, c: string) => c.toUpperCase());
 
@@ -220,8 +220,8 @@ export const splitList = (text: string, start: number): string[] => {
 const SAFE_NAME: RegExp = /^[A-Za-z_][A-Za-z0-9_]*$/;
 
 /** Names become JS identifiers, URL paths, and file names in generated code. */
-export const assertSafeNames = (tables: DbTable[]): void => {
-  const names: string[] = tables.flatMap((table: DbTable) => [
+export const assertSafeNames = ({ tables, enums = [], sequences = [] }: Omit<DbSchema, 'dialect'>): void => {
+  const names: string[] = [...enums, ...sequences].map((item: { name: string }) => item.name).concat(tables.flatMap((table: DbTable) => [
     table.name,
     ...table.columns.flatMap((column: DbColumn) => [
       column.name, ...(column.enumName ? [column.enumName] : []), ...(column.identity ? [column.identity.name] : []),
@@ -231,7 +231,7 @@ export const assertSafeNames = (tables: DbTable[]): void => {
     ...(table.foreignKeys ?? []).flatMap((key: DbForeignKey) => [key.name, key.table, ...key.columns, ...key.foreignColumns]),
     ...(table.checks ?? []).map((check: DbCheck) => check.name),
     ...(table.indexes ?? []).map((index: DbIndex) => index.name),
-  ]);
+  ]));
   const unsafe: string | undefined = names.find((name: string) => !SAFE_NAME.test(name));
   if (unsafe !== undefined) {
     throw new Error(`Unsafe name "${unsafe}": generaptr supports names with letters, digits, and _ only`);
