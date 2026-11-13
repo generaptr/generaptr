@@ -4,6 +4,14 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title><%= it.title %></title>
+    <script>
+      // Sets the mode before the first paint, so a dark page does not flash white. main.jsx keeps it after.
+      try {
+        const mode = localStorage.getItem('mode');
+        const dark = mode === 'dark' || (mode !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.classList.toggle('dark', dark);
+      } catch {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

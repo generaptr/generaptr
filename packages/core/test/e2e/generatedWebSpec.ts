@@ -27,5 +27,8 @@ describe('generated web app', () => {
     const built = spawnSync('npx', ['vite', 'build'], { cwd: dir, encoding: 'utf-8' });
     assert.strictEqual(built.status, 0, built.stderr);
     assert.match(await fs.readFile(path.join(dir, 'dist/index.html'), 'utf-8'), /<title>demo-api<\/title>/);
+    const assets: string[] = await fs.readdir(path.join(dir, 'dist/assets'));
+    const css: string = await fs.readFile(path.join(dir, 'dist/assets', assets.find((file: string) => file.endsWith('.css')) as string), 'utf-8');
+    assert.match(css, /\.dark\{[^}]*--background:/, 'the dark theme reaches the built CSS');
   }, 300000);
 });

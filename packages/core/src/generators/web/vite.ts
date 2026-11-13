@@ -54,6 +54,7 @@ export const renderWeb = (schema: DbSchema, info: PackageJsonInfo): Record<strin
     'vite.config.js': copy('vite.config.js'),
     'src/main.jsx': copy('src/main.jsx'),
     'src/index.css': copy('src/index.css'),
+    'src/theme.css': copy('src/theme.css'),
     'src/pages.json': `${JSON.stringify(pages, undefined, 2)}\n`,
   };
 };

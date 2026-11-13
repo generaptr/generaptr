@@ -17,10 +17,10 @@ const LONG_TEXT = 200;
 function JsonText({ text }) {
   const [all, setAll] = useState(false);
   if (all || text.length <= LONG_TEXT) {
-    return <span className="text-emerald-700 whitespace-pre-wrap break-words">"{text}"</span>;
+    return <span className="text-emerald-700 dark:text-emerald-400 whitespace-pre-wrap break-words">"{text}"</span>;
   }
   return (
-    <span className="text-emerald-700 break-words">
+    <span className="text-emerald-700 dark:text-emerald-400 break-words">
       "{text.slice(0, LONG_TEXT)}…"{' '}
       <button type="button" className="text-foreground underline underline-offset-4" onClick={() => setAll(true)}>
         Show all {text.length} characters
@@ -38,7 +38,7 @@ function JsonTree({ value, depth = 0 }) {
     return depth ? <JsonText text={value} /> : <span className="whitespace-pre-wrap break-words">{value}</span>;
   }
   if (typeof value !== 'object') {
-    return <span className="text-sky-700">{String(value)}</span>;
+    return <span className="text-sky-700 dark:text-sky-400">{String(value)}</span>;
   }
   const entries = Array.isArray(value) ? value.map((item, index) => [index, item]) : Object.entries(value);
   if (!entries.length) {
@@ -161,6 +161,51 @@ const show = ({ value }) => {
   return typeof value === 'object' ? JSON.stringify(value) : String(value);
 };
 
+const MODES = ['light', 'dark', 'system'];
+const stored = () => {
+  try {
+    return localStorage.getItem('mode') ?? 'system';
+  } catch {
+    return 'system';
+  }
+};
+
+// Light, dark, or the system setting. The choice stays in this browser; `system` follows the OS as it changes.
+function useMode() {
+  const [mode, setMode] = useState(stored);
+  useEffect(() => {
+    const media = matchMedia('(prefers-color-scheme: dark)');
+    const apply = () => document.documentElement.classList.toggle('dark', mode === 'dark' || (mode === 'system' && media.matches));
+    apply();
+    try {
+      localStorage.setItem('mode', mode);
+    } catch {}
+    media.addEventListener('change', apply);
+    return () => media.removeEventListener('change', apply);
+  }, [mode]);
+  return [mode, setMode];
+}
+
+function ModeSwitch() {
+  const [mode, setMode] = useMode();
+  return (
+    <fieldset className="mb-2 flex rounded-md border p-0.5 text-xs">
+      <legend className="sr-only">Color mode</legend>
+      {MODES.map((name) => (
+        <button
+          key={name}
+          type="button"
+          aria-pressed={mode === name}
+          onClick={() => setMode(name)}
+          className={`flex-1 rounded px-2 py-1 capitalize ${mode === name ? 'bg-background shadow-sm font-medium' : 'text-muted-foreground hover:text-foreground'}`}
+        >
+          {name}
+        </button>
+      ))}
+    </fieldset>
+  );
+}
+
 function App() {
   const [hash, setHash] = useState(location.hash || `#${resources[0]?.path ?? ''}`);
   const [filter, setFilter] = useState('');
@@ -224,6 +269,7 @@ function App() {
     <div className="min-h-screen grid md:grid-cols-[14rem_1fr]">
       <nav className="border-r bg-muted/40 p-4 flex flex-col gap-1 max-h-64 md:max-h-screen md:sticky md:top-0 overflow-y-auto">
         <p className="px-2 pb-2 text-sm font-semibold">{title}</p>
+        <ModeSwitch />
         <input
           type="search"
           aria-label="Find a table"
