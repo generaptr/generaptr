@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- The generated API includes related rows: the list and get routes take `?with=`, and `src/db/relations.js` defines both sides of every foreign key, with many-to-many relations through link tables ([#167](https://github.com/generaptr/generaptr/issues/167)).
+
 ## 2.0.1
 
 - The package READMEs load the vector logo from the docs site at https://generaptr.github.io/generaptr/.

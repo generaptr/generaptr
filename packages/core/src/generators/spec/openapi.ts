@@ -1,6 +1,7 @@
 import {
   assertSafeNames, camel, type ParsedType, parseColumnType, pascal, primaryColumns, routedTables, routePath,
 } from '../../commons/columns.js';
+import { type Relation, routedRelations } from '../../commons/relations.js';
 import { DbColumn, DbSchema, DbTable, Dialect, PackageJsonInfo } from '../../commons/types.js';
 
 // razor: plain objects typed loosely; switch to `openapi-types` if callers need deep typing.
@@ -79,7 +80,22 @@ const ref = (name: string): JsonSchema => ({ $ref: `#/components/schemas/${name}
 const json = (schema: JsonSchema): JsonSchema => ({ content: { 'application/json': { schema } } });
 const errorResponse = (description: string): JsonSchema => ({ description, ...json(ref('Error')) });
 
-const tablePaths = (table: DbTable, dialect: Dialect): Record<string, Record<string, unknown>> => {
+/** A row plus the relations that `?with=` adds. Without relations, the plain row. */
+const rowWith = (name: string, relations: Relation[]): JsonSchema => relations.length
+  ? {
+    allOf: [ref(name), {
+      type: 'object',
+      properties: Object.fromEntries(relations.map((relation: Relation) => [
+        relation.name,
+        relation.kind === 'one'
+          ? { anyOf: [ref(pascal(relation.target)), { type: 'null' }] }
+          : { type: 'array', items: ref(pascal(relation.target)) },
+      ])),
+    }],
+  }
+  : ref(name);
+
+const tablePaths = (table: DbTable, dialect: Dialect, relations: Relation[]): Record<string, Record<string, unknown>> => {
   const name: string = pascal(table.name);
   const [primary] = primaryColumns(table);
   const idParameter: JsonSchema = {
@@ -88,13 +104,22 @@ const tablePaths = (table: DbTable, dialect: Dialect): Record<string, Record<str
   const query = (param: string, description: string): JsonSchema => ({
     name: param, in: 'query', required: false, description, schema: { type: 'integer', minimum: 0 },
   });
+  const withParameter: JsonSchema[] = relations.length ? [{
+    name: 'with',
+    in: 'query',
+    required: false,
+    description: 'Relations to include, separated by commas. A nested list has at most 100 rows. An unknown name gets 400.',
+    style: 'form',
+    explode: false,
+    schema: { type: 'array', items: { type: 'string', enum: relations.map((relation: Relation) => relation.name) } },
+  }] : [];
 
   return {
     [routePath(table)]: {
       get: {
         operationId: `list${name}`,
-        parameters: [query('limit', 'Rows to return, at most 100. Default 20.'), query('offset', 'Rows to skip.')],
-        responses: { 200: { description: `A page of ${table.name}`, ...json({ type: 'array', items: ref(name) }) } },
+        parameters: [query('limit', 'Rows to return, at most 100. Default 20.'), query('offset', 'Rows to skip.'), ...withParameter],
+        responses: { 200: { description: `A page of ${table.name}`, ...json({ type: 'array', items: rowWith(name, relations) }) } },
       },
       post: {
         operationId: `create${name}`,
@@ -113,7 +138,8 @@ const tablePaths = (table: DbTable, dialect: Dialect): Record<string, Record<str
       parameters: [idParameter],
       get: {
         operationId: `get${name}`,
-        responses: { 200: { description: 'Found', ...json(ref(name)) }, 404: errorResponse('Not found') },
+        ...(withParameter.length ? { parameters: withParameter } : {}),
+        responses: { 200: { description: 'Found', ...json(rowWith(name, relations)) }, 404: errorResponse('Not found') },
       },
       put: {
         operationId: `update${name}`,
@@ -135,6 +161,7 @@ export const openApiDocument = (
 ): OpenApiDocument => {
   assertSafeNames(tables);
   const routed: DbTable[] = routedTables(tables);
+  const relations: Map<string, Relation[]> = routedRelations(tables);
   const schemas: Record<string, JsonSchema> = {
     Error: {
       type: 'object',
@@ -154,7 +181,7 @@ export const openApiDocument = (
     openapi: '3.1.0',
     'x-dialect': dialect,
     info: { title: info.name, version: info.version, ...(info.description ? { description: info.description } : {}) },
-    paths: Object.assign({}, ...routed.map((table: DbTable) => tablePaths(table, dialect))),
+    paths: Object.assign({}, ...routed.map((table: DbTable) => tablePaths(table, dialect, relations.get(table.name) ?? []))),
     components: { schemas },
   };
 };

@@ -107,6 +107,29 @@ describe.each(dialects)('generated Express + Drizzle API on $dialect', ({ dialec
     assert.strictEqual((await send('GET', `/users/${userId}`)).status, 404);
   });
 
+  it('includes related rows with ?with and rejects unknown relations', async () => {
+    const email = `rel-${Date.now()}@example.com`;
+    const { id: userId } = await json<{ id: number }>(await send('POST', '/users', { firstName: 'Rel', email }));
+    const { id: accountId } = await json<{ id: number }>(await send('POST', '/accounts', { type: 'admin', userId }));
+
+    const user = await json<{ accounts: { id: number }[]; groups: unknown[] }>(
+      await send('GET', `/users/${userId}?with=accounts,groups`),
+    );
+    assert.deepStrictEqual(user.accounts.map((account: { id: number }) => account.id), [accountId]);
+    assert.deepStrictEqual(user.groups, []);
+
+    const accounts = await json<{ id: number; user: { email: string } }[]>(await send('GET', '/accounts?with=user&limit=100'));
+    assert.strictEqual(accounts.find((account: { id: number }) => account.id === accountId)?.user.email, email);
+
+    assert.strictEqual((await send('GET', `/users/${userId}?with=constructor`)).status, 400);
+    const unknown = await send('GET', `/users/${userId}?with=nope`);
+    assert.strictEqual(unknown.status, 400);
+    assert.deepStrictEqual(await json<object>(unknown), { message: 'Unknown relation "nope". Use: accounts, applications, groups' });
+
+    assert.strictEqual((await send('DELETE', `/accounts/${accountId}`)).status, 204);
+    assert.strictEqual((await send('DELETE', `/users/${userId}`)).status, 204);
+  });
+
   it.runIf(dialect === 'postgresql')('round-trips arrays and timestamps through JSON', async () => {
     const seenAt = '2026-11-13T10:00:00.123Z';
     const created = await send('POST', '/groups', { name: 'ops', tags: ['a', "it's"], seenAt });

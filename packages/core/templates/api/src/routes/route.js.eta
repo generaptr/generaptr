@@ -9,17 +9,29 @@ const { createInsertSchema, createUpdateSchema } = createSchemaFactory({ coerce:
 const insertSchema = createInsertSchema(<%= it.entity %>);
 const updateSchema = createUpdateSchema(<%= it.entity %>);
 const byId = (req) => eq(<%= it.entity %>.<%= it.key %>, <%= it.id %>);
+const includes = <%= it.includes %>;
+
+// `?with=a,b` names the relations to include, as defined in src/db/relations.js.
+const withRelations = (req) => {
+  const names = String(req.query.with ?? '').split(',').map((name) => name.trim()).filter(Boolean);
+  const unknown = names.find((name) => !Object.hasOwn(includes, name));
+  if (unknown !== undefined) {
+    const message = `Unknown relation "${unknown}". Use: ${Object.keys(includes).join(', ') || 'none'}`;
+    throw Object.assign(new Error(message), { status: 400 });
+  }
+  return Object.fromEntries(names.map((name) => [name, includes[name]]));
+};
 
 export const router = Router();
 
 router.get('/', async (req, res) => {
   const limit = Math.min(Number(req.query.limit) || 20, 100);
   const offset = Number(req.query.offset) || 0;
-  res.json(await db.select().from(<%= it.entity %>).limit(limit).offset(offset));
+  res.json(await db.query.<%= it.entity %>.findMany({ limit, offset, with: withRelations(req) }));
 });
 
 router.get('/:id', async (req, res) => {
-  const [row] = await db.select().from(<%= it.entity %>).where(byId(req));
+  const row = await db.query.<%= it.entity %>.findFirst({ where: { <%= it.key %>: <%= it.id %> }, with: withRelations(req) });
   if (!row) {
     return res.status(404).json({ message: 'Not found' });
   }

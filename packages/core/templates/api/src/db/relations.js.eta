@@ -1,0 +1,12 @@
+import { defineRelations } from 'drizzle-orm';
+import * as schema from './schema.js';
+
+export const relations = defineRelations(schema, (r) => ({
+<% for (const table of it.tables) { -%>
+  <%= table.name %>: {
+<% for (const relation of table.relations) { -%>
+    <%= relation.name %>: <%= relation.call %>,
+<% } -%>
+  },
+<% } -%>
+}));
