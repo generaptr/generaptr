@@ -130,8 +130,9 @@ export default class MysqlHandler {
     for (const row of checks) {
       const table: DbTable | undefined = tables.get(row.TABLE_NAME);
       if (table) {
-        // CHECK_CLAUSE escapes quotes and backslashes once more than the SQL it holds.
-        const expression: string = String(row.CHECK_CLAUSE).replace(/\\(.)/g, '$1');
+        // CHECK_CLAUSE escapes quotes and backslashes once more than the SQL it holds. A quote in a literal then
+        // becomes '' so the expression holds no backslash, which an OpenAPI document may not carry.
+        const expression: string = String(row.CHECK_CLAUSE).replace(/\\(.)/g, '$1').replace(/\\'/g, "''");
         table.checks = [...table.checks ?? [], { name: row.CONSTRAINT_NAME, expression }];
       }
     }

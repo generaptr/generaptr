@@ -236,32 +236,34 @@ const SAFE_DEFAULT: RegExp =
   /^(?:-?\d+(?:\.\d+)?|'(?:[^'\\]|'')*'|true|false|null|now\(\)|gen_random_uuid\(\)|current_(?:timestamp|date|time)(?:\(\d\))?)(?:::[a-z][a-z ]*(?:\(\d+(?:,\d+)?\))?(?:\[\])?)*$/i;
 
 /**
- * Rejects SQL that can leave the parentheses Drizzle puts around it: a statement end, a comment, or an unbalanced
- * bracket or quote. Only MySQL escapes with a backslash inside a literal; Postgres gets no backslash and no `$` quote.
+ * Rejects SQL that can leave the parentheses Drizzle puts around it: a statement end, a comment, a control
+ * character, or an unbalanced bracket or quote. A backslash means different things in each dialect and SQL mode,
+ * so no expression from a document may hold one. Postgres also gets no `$` quote and no backtick.
  */
 const assertSafeExpression = (expression: string, dialect: Dialect): void => {
   const unsafe = (): Error => new Error(`Unsafe expression "${expression}"`);
+  const quotes: string = dialect === 'mysql' ? "'\"`" : "'\"";
+  const forbidden: RegExp = dialect === 'mysql' ? /[;\\#\x00-\x1f\x7f]|--|\/\*/ : /[;\\$`\x00-\x1f\x7f]|--|\/\*/;
   let depth = 0;
+  let code = '';
   for (let i = 0; i < expression.length; i++) {
     const char: string = expression[i];
-    if (char === "'" || char === '"' || char === '`') {
-      let end: number = i + 1;
-      while (end < expression.length && expression[end] !== char) {
-        end += dialect === 'mysql' && expression[end] === '\\' ? 2 : 1;
-      }
-      if (end >= expression.length) {
+    if (quotes.includes(char)) {
+      const end: number = expression.indexOf(char, i + 1);
+      if (end < 0 || /[\\\x00-\x1f\x7f]/.test(expression.slice(i, end))) {
         throw unsafe();
       }
       i = end;
-    } else if (char === ';' || char === '\\' || char === '$' || expression.startsWith('--', i) || expression.startsWith('/*', i)) {
-      throw unsafe();
-    } else if (char === '(') {
-      depth++;
-    } else if (char === ')' && --depth < 0) {
-      throw unsafe();
+      code += ' ';
+    } else {
+      depth += char === '(' ? 1 : char === ')' ? -1 : 0;
+      if (depth < 0) {
+        throw unsafe();
+      }
+      code += char;
     }
   }
-  if (depth) {
+  if (depth || forbidden.test(code)) {
     throw unsafe();
   }
 };

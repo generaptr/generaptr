@@ -8,6 +8,9 @@ const column = (name: string, columnType: string, extra: Partial<DbColumn> = {})
 });
 
 type Doc = ReturnType<typeof openApiDocument>;
+const postgresTables: DbTable[] = [{
+  name: 'users', columns: [column('id', 'integer'), column('name', 'text')], primaryKey: { name: 'users_pkey', columns: ['id'] },
+}];
 
 const info = { name: 'demo-api', version: '1.2.3', description: 'Demo', author: '', license: 'MIT' };
 
@@ -200,23 +203,29 @@ describe('OpenAPI generator', () => {
   });
 
   it('reads CHECK constraints back, and leaves them out in another dialect', () => {
-    const checks = [{ name: 'users_role_known', expression: "(`role` in (_utf8mb4'a;b',_utf8mb4'it\\'s'))" }];
+    const checks = [{ name: 'users_role_known', expression: "(`role` in (_utf8mb4'a;b',_utf8mb4'it''s'))" }];
     const doc = openApiDocument({ dialect: 'mysql', tables: [{ ...tables[0], checks }] }, info);
     assert.deepStrictEqual(tablesFromOpenApi(doc, 'mysql').tables[0].checks, checks);
     assert.strictEqual(tablesFromOpenApi(doc, 'postgresql').tables[0].checks, undefined);
   });
 
   it.each([
-    'amount > 0); DROP TABLE users; --',
-    'amount > 0 -- comment',
-    'amount > 0 /* comment */',
-    'amount > 0) OR (1 = 1',
-    'amount > (0',
-    "name = 'open",
-  ])('rejects the CHECK expression %s from a document', (expression: string) => {
-    const doc: Doc = structuredClone(openApiDocument({ dialect: 'mysql', tables }, info));
+    ['mysql', 'amount > 0); DROP TABLE users; --'],
+    ['mysql', 'amount > 0 -- comment'],
+    ['mysql', 'amount > 0 /* comment */'],
+    ['mysql', 'amount > 0 # comment'],
+    ['mysql', 'amount > 0\nOR true'],
+    ['mysql', 'amount > 0) OR (1 = 1'],
+    ['mysql', 'amount > (0'],
+    ['mysql', "name = 'open"],
+    ['mysql', "name = 'it\\'s'"],
+    ['postgresql', "name = E'\\' ) OR (true'"],
+    ['postgresql', 'name = `a`'],
+    ['postgresql', 'name = $$a$$'],
+  ] as const)('rejects the %s CHECK expression %s from a document', (dialect: 'mysql' | 'postgresql', expression: string) => {
+    const doc: Doc = structuredClone(openApiDocument({ dialect, tables: dialect === 'mysql' ? tables : postgresTables }, info));
     doc.components.schemas.Users['x-checks'] = [{ name: 'users_check', expression }];
-    assert.throws(() => tablesFromOpenApi(doc, 'mysql'), /Unsafe expression/);
+    assert.throws(() => tablesFromOpenApi(doc, dialect), /Unsafe expression/);
   });
 
   it('reads the keys of a generaptr 2 document from its columns', () => {
