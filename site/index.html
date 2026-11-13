@@ -250,7 +250,7 @@ npm start</pre>
             <p>MySQL through <code>information_schema</code>, PostgreSQL through <code>pg_catalog</code>. The user needs read access only.</p>
           </div>
           <div>
-            <h3>An OpenAPI 3.1 file</h3>
+            <h3>An OpenAPI 3.1 file, in YAML or JSON</h3>
             <p>A file that generaptr wrote reads back to the same tables. Other files map by convention: each object schema becomes a table.</p>
           </div>
         </div>
@@ -316,7 +316,6 @@ npm run db:migrate    <span class="c"># applies the SQL</span></pre>
         <ul class="limits">
           <li>PostgreSQL <code>bytea</code> and <code>tsvector</code> columns are not supported. <a href="https://github.com/generaptr/generaptr/issues/166">#166</a></li>
           <li>The first migration has no baseline for an existing database. <a href="https://github.com/generaptr/generaptr/issues/168">#168</a></li>
-          <li>OpenAPI input is JSON only. <a href="https://github.com/generaptr/generaptr/issues/169">#169</a></li>
         </ul>
       </div>
     </section>
