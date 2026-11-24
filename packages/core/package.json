@@ -38,11 +38,11 @@
     "node": ">=22"
   },
   "devDependencies": {
-    "@readme/openapi-parser": "10.0.0",
-    "@types/node": "^22.20.5",
+    "@readme/openapi-parser": "11.0.0",
+    "@types/node": "^26.6.6",
     "@types/pg": "8.23.1",
     "typescript": "^7.0.2",
-    "vitest": "^5.1.0"
+    "vitest": "^5.1.1"
   },
   "dependencies": {
     "eta": "4.6.0",
